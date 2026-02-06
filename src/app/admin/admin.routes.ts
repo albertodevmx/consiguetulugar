@@ -14,11 +14,23 @@ export const adminRoutes: Routes = [
       import('./schools/schools.component').then((m) => m.SchoolsComponent),
   },
   {
+    path: 'exam-types',
+    loadComponent: () =>
+      import('./exam-types/exam-types.component').then(
+        (m) => m.ExamTypesComponent,
+      ),
+  },
+  {
     path: 'subjects',
     loadComponent: () =>
       import('./subjects/subjects.component').then(
         (m) => m.SubjectsComponent,
       ),
+  },
+  {
+    path: 'units',
+    loadComponent: () =>
+      import('./units/units.component').then((m) => m.UnitsComponent),
   },
   {
     path: 'topics',

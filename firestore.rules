@@ -11,16 +11,28 @@ service cloud.firestore {
     match /schools/{docId} {
       allow write: if request.auth != null;
     }
+    match /examTypes/{docId} {
+      allow write: if request.auth != null;
+    }
     match /subjects/{docId} {
+      allow write: if request.auth != null;
+    }
+    match /units/{docId} {
       allow write: if request.auth != null;
     }
     match /topics/{docId} {
       allow write: if request.auth != null;
     }
-    match /schoolSubjects/{docId} {
+    match /schoolExamTypes/{docId} {
       allow write: if request.auth != null;
     }
-    match /schoolSubjectTopics/{docId} {
+    match /examTypeSubjects/{docId} {
+      allow write: if request.auth != null;
+    }
+    match /subjectUnits/{docId} {
+      allow write: if request.auth != null;
+    }
+    match /unitTopics/{docId} {
       allow write: if request.auth != null;
     }
     match /questions/{docId} {

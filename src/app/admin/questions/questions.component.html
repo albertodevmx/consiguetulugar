@@ -3,31 +3,13 @@
 <!-- Tabs -->
 <ul class="nav nav-tabs mb-3">
   <li class="nav-item">
-    <button
-      class="nav-link"
-      [class.active]="activeTab() === 'list'"
-      (click)="activeTab.set('list')"
-    >
-      Lista
-    </button>
+    <button class="nav-link" [class.active]="activeTab() === 'list'" (click)="activeTab.set('list')">Lista</button>
   </li>
   <li class="nav-item">
-    <button
-      class="nav-link"
-      [class.active]="activeTab() === 'new'"
-      (click)="activeTab.set('new')"
-    >
-      Nueva pregunta
-    </button>
+    <button class="nav-link" [class.active]="activeTab() === 'new'" (click)="activeTab.set('new')">Nueva pregunta</button>
   </li>
   <li class="nav-item">
-    <button
-      class="nav-link"
-      [class.active]="activeTab() === 'import'"
-      (click)="activeTab.set('import')"
-    >
-      Importar lote
-    </button>
+    <button class="nav-link" [class.active]="activeTab() === 'import'" (click)="activeTab.set('import')">Importar lote</button>
   </li>
 </ul>
 
@@ -37,8 +19,6 @@
     <thead>
       <tr>
         <th>Pregunta</th>
-        <th>Escuela</th>
-        <th>Materia</th>
         <th>Tema</th>
         <th>Opciones</th>
         <th></th>
@@ -47,19 +27,15 @@
     <tbody>
       @for (q of questions$ | async; track q.id) {
         <tr>
-          <td>{{ q.text | slice:0:60 }}{{ q.text.length > 60 ? '...' : '' }}</td>
-          <td>{{ schoolName(q.schoolId) }}</td>
-          <td>{{ subjectName(q.subjectId) }}</td>
+          <td>{{ q.text | slice:0:80 }}{{ q.text.length > 80 ? '...' : '' }}</td>
           <td>{{ topicName(q.topicId) }}</td>
           <td>{{ q.options.length }}</td>
           <td>
-            <button class="btn btn-sm btn-outline-danger" (click)="removeQuestion(q.id!)">
-              Eliminar
-            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="removeQuestion(q.id!)">Eliminar</button>
           </td>
         </tr>
       } @empty {
-        <tr><td colspan="6" class="text-center text-muted">No hay preguntas.</td></tr>
+        <tr><td colspan="4" class="text-center text-muted">No hay preguntas.</td></tr>
       }
     </tbody>
   </table>
@@ -72,58 +48,23 @@
   }
 
   <form (ngSubmit)="submitQuestion()">
-    <!-- Selectores en cascada -->
-    <div class="row g-3 mb-3">
-      <div class="col-md-4">
-        <label class="form-label">Escuela</label>
-        <select
-          class="form-select"
-          [ngModel]="selectedSchoolId()"
-          (ngModelChange)="onSchoolChange($event)"
-          name="school"
-          required
-        >
-          <option value="">-- Seleccionar --</option>
-          @for (s of schools(); track s.id) {
-            <option [value]="s.id">{{ s.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Materia</label>
-        <select
-          class="form-select"
-          [ngModel]="selectedSubjectId()"
-          (ngModelChange)="onSubjectChange($event)"
-          name="subject"
-          required
-          [disabled]="!selectedSchoolId()"
-        >
-          <option value="">-- Seleccionar --</option>
-          @for (s of availableSubjects(); track s.id) {
-            <option [value]="s.id">{{ s.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Tema</label>
-        <select
-          class="form-select"
-          [ngModel]="selectedTopicId()"
-          (ngModelChange)="selectedTopicId.set($event)"
-          name="topic"
-          required
-          [disabled]="!selectedSubjectId()"
-        >
-          <option value="">-- Seleccionar --</option>
-          @for (t of availableTopics(); track t.id) {
-            <option [value]="t.id">{{ t.name }}</option>
-          }
-        </select>
-      </div>
+    <div class="mb-3">
+      <label class="form-label">Tema</label>
+      <select
+        class="form-select"
+        [ngModel]="selectedTopicId()"
+        (ngModelChange)="selectedTopicId.set($event)"
+        name="topic"
+        required
+      >
+        <option value="">-- Seleccionar tema --</option>
+        @for (t of topics(); track t.id) {
+          <option [value]="t.id">{{ t.name }}</option>
+        }
+      </select>
+      <div class="form-text">La pregunta se liga al tema. El arbol de navegacion se configura en Asignaciones.</div>
     </div>
 
-    <!-- Texto de la pregunta -->
     <div class="mb-3">
       <label class="form-label">Texto de la pregunta</label>
       <textarea
@@ -160,25 +101,16 @@
             required
           />
           @if (options().length > 3) {
-            <button
-              type="button"
-              class="btn btn-outline-danger"
-              (click)="removeOption(i)"
-            >
-              &times;
-            </button>
+            <button type="button" class="btn btn-outline-danger" (click)="removeOption(i)">&times;</button>
           }
         </div>
       }
       @if (options().length < 5) {
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addOption()">
-          + Agregar opcion
-        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addOption()">+ Agregar opcion</button>
       }
       <div class="form-text">Selecciona el radio de la respuesta correcta.</div>
     </div>
 
-    <!-- Imagen -->
     <div class="mb-3">
       <label class="form-label">Imagen (opcional)</label>
       <input type="file" class="form-control" accept="image/*" (change)="onFileSelected($event)" />
@@ -198,7 +130,7 @@
 
   <p class="text-muted mb-2">
     Pega un JSON con formato:
-    <code>[{{ '{' }}"text":"...", "schoolId":"...", "subjectId":"...", "topicId":"...", "options":["A","B","C","D"], "correctOption":0{{ '}' }}]</code>
+    <code>[{{ '{' }}"text":"...", "topicId":"...", "options":["A","B","C","D"], "correctOption":0{{ '}' }}]</code>
   </p>
 
   <div class="mb-3">
@@ -208,15 +140,11 @@
       [ngModel]="importJson()"
       (ngModelChange)="importJson.set($event)"
       name="importJson"
-      placeholder='[{"text": "...", ...}]'
+      placeholder='[{"text": "...", "topicId": "...", ...}]'
     ></textarea>
   </div>
 
-  <button
-    class="btn btn-primary"
-    (click)="submitImport()"
-    [disabled]="importing() || !importJson()"
-  >
+  <button class="btn btn-primary" (click)="submitImport()" [disabled]="importing() || !importJson()">
     {{ importing() ? 'Importando...' : 'Importar preguntas' }}
   </button>
 }

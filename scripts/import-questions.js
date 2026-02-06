@@ -10,8 +10,6 @@
  * [
  *   {
  *     "text": "Texto de la pregunta",
- *     "schoolId": "<id>",
- *     "subjectId": "<id>",
  *     "topicId": "<id>",
  *     "options": ["Opcion A", "Opcion B", "Opcion C", "Opcion D"],
  *     "correctOption": 0,
@@ -55,7 +53,7 @@ const db = getFirestore(app);
 const BATCH_LIMIT = 500;
 
 function validate(question, index) {
-  const required = ['text', 'schoolId', 'subjectId', 'topicId', 'options', 'correctOption'];
+  const required = ['text', 'topicId', 'options', 'correctOption'];
   for (const field of required) {
     if (question[field] == null) {
       throw new Error(`Pregunta [${index}]: falta campo "${field}".`);
@@ -96,20 +94,10 @@ async function run() {
   questions.forEach((q, i) => validate(q, i));
   console.log('Validacion correcta.');
 
-  // Verificar que los IDs referenciados existen
-  const uniqueSchools = [...new Set(questions.map((q) => q.schoolId))];
-  const uniqueSubjects = [...new Set(questions.map((q) => q.subjectId))];
+  // Verificar que los topicIds referenciados existen
   const uniqueTopics = [...new Set(questions.map((q) => q.topicId))];
 
-  console.log('Verificando IDs en Firestore...');
-  for (const id of uniqueSchools) {
-    const snap = await getDoc(doc(db, 'schools', id));
-    if (!snap.exists()) console.warn(`ADVERTENCIA: schoolId "${id}" no existe en Firestore.`);
-  }
-  for (const id of uniqueSubjects) {
-    const snap = await getDoc(doc(db, 'subjects', id));
-    if (!snap.exists()) console.warn(`ADVERTENCIA: subjectId "${id}" no existe en Firestore.`);
-  }
+  console.log('Verificando topicIds en Firestore...');
   for (const id of uniqueTopics) {
     const snap = await getDoc(doc(db, 'topics', id));
     if (!snap.exists()) console.warn(`ADVERTENCIA: topicId "${id}" no existe en Firestore.`);
@@ -127,8 +115,6 @@ async function run() {
       const ref = doc(colRef);
       batch.set(ref, {
         text: q.text,
-        schoolId: q.schoolId,
-        subjectId: q.subjectId,
         topicId: q.topicId,
         options: q.options.map((o) => (typeof o === 'string' ? { text: o } : o)),
         correctOption: q.correctOption,

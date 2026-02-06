@@ -7,8 +7,6 @@ export interface QuestionOption {
 export interface Question {
   id?: string;
   text: string;
-  schoolId: string;
-  subjectId: string;
   topicId: string;
   options: QuestionOption[];
   correctOption: number;

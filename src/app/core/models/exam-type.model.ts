@@ -1,9 +1,9 @@
 import { Timestamp } from '@angular/fire/firestore';
 
-export interface SchoolSubject {
+export interface ExamType {
   id?: string;
-  schoolId: string;
-  subjectId: string;
+  name: string;
+  slug: string;
   active: boolean;
   createdAt: Timestamp;
 }

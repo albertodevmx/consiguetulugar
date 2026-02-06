@@ -16,6 +16,16 @@
     flex-direction: column;
     gap: 0.25rem;
 
+    .sidebar-section {
+      display: block;
+      color: #6b7a99;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.75rem 0.75rem 0.25rem;
+      margin-top: 0.5rem;
+    }
+
     a {
       color: #bbb;
       text-decoration: none;

@@ -26,17 +26,8 @@ export class QuestionService {
     >;
   }
 
-  listBySchoolSubjectTopic(
-    schoolId: string,
-    subjectId: string,
-    topicId: string,
-  ): Observable<Question[]> {
-    const q = query(
-      this.col,
-      where('schoolId', '==', schoolId),
-      where('subjectId', '==', subjectId),
-      where('topicId', '==', topicId),
-    );
+  listByTopic(topicId: string): Observable<Question[]> {
+    const q = query(this.col, where('topicId', '==', topicId));
     return collectionData(q, { idField: 'id' }) as Observable<Question[]>;
   }
 

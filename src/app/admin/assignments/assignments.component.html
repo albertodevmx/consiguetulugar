@@ -1,155 +1,192 @@
 <h2>Asignaciones</h2>
+<p class="text-muted mb-4">Arma el arbol de navegacion: Escuela &rarr; Tipo de examen &rarr; Materia &rarr; Unidad &rarr; Tema</p>
 
-<!-- ============ ESCUELA -> MATERIA ============ -->
-<div class="card mb-4">
-  <div class="card-body">
-    <h5 class="card-title">Escuela &rarr; Materias</h5>
-
-    <div class="row g-2 mb-3">
-      <div class="col-md-4">
-        <label class="form-label">Escuela</label>
-        <select
-          class="form-select"
-          [ngModel]="selectedSchoolId()"
-          (ngModelChange)="selectedSchoolId.set($event)"
-          name="school"
-        >
-          <option value="">-- Seleccionar --</option>
-          @for (s of schools(); track s.id) {
-            <option [value]="s.id">{{ s.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Materia a asignar</label>
-        <select
-          class="form-select"
-          [ngModel]="selectedSubjectId()"
-          (ngModelChange)="selectedSubjectId.set($event)"
-          name="subject"
-          [disabled]="!selectedSchoolId()"
-        >
-          <option value="">-- Seleccionar --</option>
-          @for (s of subjects(); track s.id) {
-            <option [value]="s.id">{{ s.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="col-md-4 d-flex align-items-end">
-        <button
-          class="btn btn-primary"
-          (click)="assignSubject()"
-          [disabled]="!selectedSchoolId() || !selectedSubjectId()"
-        >
-          Asignar materia
-        </button>
-      </div>
-    </div>
-
-    @if (selectedSchoolId()) {
-      <table class="table table-sm">
-        <thead>
-          <tr>
-            <th>Materia</th>
-            <th style="width: 100px"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ss of filteredSchoolSubjects(); track ss.id) {
-            <tr>
-              <td>{{ subjectName(ss.subjectId) }}</td>
-              <td>
-                <button
-                  class="btn btn-sm btn-outline-danger"
-                  (click)="removeSchoolSubject(ss.id!)"
-                >
-                  Quitar
-                </button>
-              </td>
-            </tr>
-          } @empty {
-            <tr><td colspan="2" class="text-muted">Sin materias asignadas.</td></tr>
-          }
-        </tbody>
-      </table>
-    }
+<!-- Selector de escuela (siempre visible) -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <label class="form-label fw-bold">1. Escuela</label>
+    <select
+      class="form-select"
+      [ngModel]="selSchoolId()"
+      (ngModelChange)="onSchoolChange($event)"
+      name="school"
+    >
+      <option value="">-- Seleccionar escuela --</option>
+      @for (s of schools(); track s.id) {
+        <option [value]="s.id">{{ s.name }}</option>
+      }
+    </select>
   </div>
 </div>
 
-<!-- ============ MATERIA -> TEMAS (por escuela) ============ -->
-<div class="card">
-  <div class="card-body">
-    <h5 class="card-title">Materia &rarr; Temas (por escuela)</h5>
-
-    <div class="row g-2 mb-3">
-      <div class="col-md-4">
-        <label class="form-label">Escuela + Materia</label>
-        <select
-          class="form-select"
-          [ngModel]="selectedSSForTopics()"
-          (ngModelChange)="selectedSSForTopics.set($event)"
-          name="ssForTopics"
-        >
-          <option value="">-- Seleccionar --</option>
-          @for (ss of schoolSubjects(); track ss.id) {
-            <option [value]="ss.id">
-              {{ schoolName(ss.schoolId) }} / {{ subjectName(ss.subjectId) }}
-            </option>
-          }
-        </select>
+<!-- ========== NIVEL 2: Tipos de examen ========== -->
+@if (selSchoolId()) {
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">2. Tipos de examen de {{ schoolName(selSchoolId()) }}</h5>
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <select
+            class="form-select"
+            [ngModel]="selExamTypeId()"
+            (ngModelChange)="selExamTypeId.set($event)"
+            name="examType"
+          >
+            <option value="">-- Tipo de examen --</option>
+            @for (et of examTypes(); track et.id) {
+              <option [value]="et.id">{{ et.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary" (click)="assignExamType()" [disabled]="!selExamTypeId()">
+            Asignar
+          </button>
+        </div>
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Tema a asignar</label>
-        <select
-          class="form-select"
-          [ngModel]="selectedTopicId()"
-          (ngModelChange)="selectedTopicId.set($event)"
-          name="topic"
-          [disabled]="!selectedSSForTopics()"
-        >
-          <option value="">-- Seleccionar --</option>
-          @for (t of topics(); track t.id) {
-            <option [value]="t.id">{{ t.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="col-md-4 d-flex align-items-end">
-        <button
-          class="btn btn-primary"
-          (click)="assignTopic()"
-          [disabled]="!selectedSSForTopics() || !selectedTopicId()"
-        >
-          Asignar tema
-        </button>
-      </div>
-    </div>
-
-    @if (selectedSSForTopics()) {
       <table class="table table-sm">
-        <thead>
-          <tr>
-            <th>Tema</th>
-            <th style="width: 100px"></th>
-          </tr>
-        </thead>
         <tbody>
-          @for (sst of filteredSSTopics(); track sst.id) {
+          @for (x of filteredSET(); track x.id) {
             <tr>
-              <td>{{ topicName(sst.topicId) }}</td>
-              <td>
-                <button
-                  class="btn btn-sm btn-outline-danger"
-                  (click)="removeSST(sst.id!)"
-                >
-                  Quitar
-                </button>
+              <td>{{ examTypeName(x.examTypeId) }}</td>
+              <td style="width:80px">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeExamType(x.id!)">Quitar</button>
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="2" class="text-muted">Sin temas asignados.</td></tr>
+            <tr><td class="text-muted">Sin tipos de examen asignados.</td></tr>
           }
         </tbody>
       </table>
-    }
+    </div>
   </div>
-</div>
+}
+
+<!-- ========== NIVEL 3: Materias ========== -->
+@if (showSubjects()) {
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">3. Materias de {{ schoolName(selSchoolId()) }} / {{ examTypeName(selExamTypeId()) }}</h5>
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <select
+            class="form-select"
+            [ngModel]="selSubjectId()"
+            (ngModelChange)="selSubjectId.set($event)"
+            name="subject"
+          >
+            <option value="">-- Materia --</option>
+            @for (s of subjects(); track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary" (click)="assignSubject()" [disabled]="!selSubjectId()">
+            Asignar
+          </button>
+        </div>
+      </div>
+      <table class="table table-sm">
+        <tbody>
+          @for (x of filteredETS(); track x.id) {
+            <tr>
+              <td>{{ subjectName(x.subjectId) }}</td>
+              <td style="width:80px">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeSubject(x.id!)">Quitar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td class="text-muted">Sin materias asignadas.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ========== NIVEL 4: Unidades ========== -->
+@if (showUnits()) {
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">4. Unidades de {{ subjectName(selSubjectId()) }}</h5>
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <select
+            class="form-select"
+            [ngModel]="selUnitId()"
+            (ngModelChange)="selUnitId.set($event)"
+            name="unit"
+          >
+            <option value="">-- Unidad --</option>
+            @for (u of units(); track u.id) {
+              <option [value]="u.id">{{ u.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary" (click)="assignUnit()" [disabled]="!selUnitId()">
+            Asignar
+          </button>
+        </div>
+      </div>
+      <table class="table table-sm">
+        <tbody>
+          @for (x of filteredSU(); track x.id) {
+            <tr>
+              <td>{{ unitName(x.unitId) }}</td>
+              <td style="width:80px">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeUnit(x.id!)">Quitar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td class="text-muted">Sin unidades asignadas.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ========== NIVEL 5: Temas ========== -->
+@if (showTopics()) {
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">5. Temas de {{ unitName(selUnitId()) }}</h5>
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <select
+            class="form-select"
+            [ngModel]="selTopicId()"
+            (ngModelChange)="selTopicId.set($event)"
+            name="topic"
+          >
+            <option value="">-- Tema --</option>
+            @for (t of topics(); track t.id) {
+              <option [value]="t.id">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary" (click)="assignTopic()" [disabled]="!selTopicId()">
+            Asignar
+          </button>
+        </div>
+      </div>
+      <table class="table table-sm">
+        <tbody>
+          @for (x of filteredUT(); track x.id) {
+            <tr>
+              <td>{{ topicName(x.topicId) }}</td>
+              <td style="width:80px">
+                <button class="btn btn-sm btn-outline-danger" (click)="removeTopic(x.id!)">Quitar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td class="text-muted">Sin temas asignados.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

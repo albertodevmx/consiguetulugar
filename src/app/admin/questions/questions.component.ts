@@ -1,12 +1,8 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AsyncPipe, SlicePipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { SchoolService } from '../../core/services/school.service';
-import { SubjectService } from '../../core/services/subject.service';
 import { TopicService } from '../../core/services/topic.service';
-import { SchoolSubjectService } from '../../core/services/school-subject.service';
-import { SchoolSubjectTopicService } from '../../core/services/school-subject-topic.service';
 import { QuestionService } from '../../core/services/question.service';
 import { StorageService } from '../../core/services/storage.service';
 
@@ -17,25 +13,14 @@ import { StorageService } from '../../core/services/storage.service';
   templateUrl: './questions.component.html',
 })
 export class QuestionsComponent {
-  private readonly schoolSvc = inject(SchoolService);
-  private readonly subjectSvc = inject(SubjectService);
   private readonly topicSvc = inject(TopicService);
-  private readonly ssSvc = inject(SchoolSubjectService);
-  private readonly sstSvc = inject(SchoolSubjectTopicService);
   private readonly qSvc = inject(QuestionService);
   private readonly storageSvc = inject(StorageService);
 
   questions$ = this.qSvc.list();
-
-  schools = toSignal(this.schoolSvc.list(), { initialValue: [] });
-  subjects = toSignal(this.subjectSvc.list(), { initialValue: [] });
   topics = toSignal(this.topicSvc.list(), { initialValue: [] });
-  schoolSubjects = toSignal(this.ssSvc.list(), { initialValue: [] });
-  schoolSubjectTopics = toSignal(this.sstSvc.list(), { initialValue: [] });
 
   // Form state
-  selectedSchoolId = signal('');
-  selectedSubjectId = signal('');
   selectedTopicId = signal('');
   questionText = signal('');
   options = signal<string[]>(['', '', '', '']);
@@ -43,28 +28,6 @@ export class QuestionsComponent {
   imageFile = signal<File | null>(null);
   saving = signal(false);
   successMsg = signal('');
-
-  // Cascading filters
-  availableSubjects = computed(() => {
-    const schoolId = this.selectedSchoolId();
-    if (!schoolId) return [];
-    const assignedSubjectIds = this.schoolSubjects()
-      .filter((ss) => ss.schoolId === schoolId)
-      .map((ss) => ss.subjectId);
-    return this.subjects().filter((s) => assignedSubjectIds.includes(s.id!));
-  });
-
-  availableTopics = computed(() => {
-    const schoolId = this.selectedSchoolId();
-    const subjectId = this.selectedSubjectId();
-    if (!schoolId || !subjectId) return [];
-    const assignedTopicIds = this.schoolSubjectTopics()
-      .filter(
-        (sst) => sst.schoolId === schoolId && sst.subjectId === subjectId,
-      )
-      .map((sst) => sst.topicId);
-    return this.topics().filter((t) => assignedTopicIds.includes(t.id!));
-  });
 
   // Tab state
   activeTab = signal<'list' | 'new' | 'import'>('list');
@@ -75,25 +38,8 @@ export class QuestionsComponent {
   importMsg = signal('');
 
   // Helpers
-  schoolName(id: string) {
-    return this.schools().find((s) => s.id === id)?.name ?? id;
-  }
-  subjectName(id: string) {
-    return this.subjects().find((s) => s.id === id)?.name ?? id;
-  }
   topicName(id: string) {
     return this.topics().find((t) => t.id === id)?.name ?? id;
-  }
-
-  onSchoolChange(val: string) {
-    this.selectedSchoolId.set(val);
-    this.selectedSubjectId.set('');
-    this.selectedTopicId.set('');
-  }
-
-  onSubjectChange(val: string) {
-    this.selectedSubjectId.set(val);
-    this.selectedTopicId.set('');
   }
 
   addOption() {
@@ -124,12 +70,10 @@ export class QuestionsComponent {
 
   async submitQuestion() {
     const text = this.questionText().trim();
-    const schoolId = this.selectedSchoolId();
-    const subjectId = this.selectedSubjectId();
     const topicId = this.selectedTopicId();
     const opts = this.options().map((o) => o.trim());
 
-    if (!text || !schoolId || !subjectId || !topicId) {
+    if (!text || !topicId) {
       alert('Completa todos los campos obligatorios.');
       return;
     }
@@ -151,8 +95,6 @@ export class QuestionsComponent {
 
       await this.qSvc.add({
         text,
-        schoolId,
-        subjectId,
         topicId,
         options: opts.map((o) => ({ text: o })),
         correctOption: this.correctOption(),
@@ -182,20 +124,23 @@ export class QuestionsComponent {
 
     try {
       const questions = JSON.parse(raw);
-      if (!Array.isArray(questions)) throw new Error('El JSON debe ser un array.');
+      if (!Array.isArray(questions))
+        throw new Error('El JSON debe ser un array.');
 
       for (const q of questions) {
-        if (!q.text || !q.schoolId || !q.subjectId || !q.topicId || !q.options || q.correctOption == null) {
-          throw new Error('Cada pregunta debe tener: text, schoolId, subjectId, topicId, options, correctOption.');
+        if (!q.text || !q.topicId || !q.options || q.correctOption == null) {
+          throw new Error(
+            'Cada pregunta debe tener: text, topicId, options, correctOption.',
+          );
         }
       }
 
       const batch = questions.map((q: any) => ({
         text: q.text,
-        schoolId: q.schoolId,
-        subjectId: q.subjectId,
         topicId: q.topicId,
-        options: q.options.map((o: any) => (typeof o === 'string' ? { text: o } : o)),
+        options: q.options.map((o: any) =>
+          typeof o === 'string' ? { text: o } : o,
+        ),
         correctOption: q.correctOption,
         imageUrl: q.imageUrl,
         active: true,
