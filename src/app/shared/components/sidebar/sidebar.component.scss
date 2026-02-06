@@ -1,0 +1,33 @@
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background-color: #16213e;
+  padding: 1.5rem 1rem;
+
+  .sidebar-title {
+    color: #fff;
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    padding-left: 0.5rem;
+  }
+
+  nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    a {
+      color: #bbb;
+      text-decoration: none;
+      padding: 0.625rem 0.75rem;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+
+      &:hover,
+      &.active {
+        background-color: #0f3460;
+        color: #fff;
+      }
+    }
+  }
+}

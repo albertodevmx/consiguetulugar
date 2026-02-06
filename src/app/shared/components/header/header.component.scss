@@ -1,0 +1,25 @@
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background-color: #0f3460;
+  color: #fff;
+
+  .logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  nav a {
+    color: #ddd;
+    text-decoration: none;
+    margin-left: 1.5rem;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}

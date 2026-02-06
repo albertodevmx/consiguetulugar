@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+}

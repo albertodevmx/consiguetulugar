@@ -1,0 +1,44 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  min-height: 70vh;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #1a1a2e;
+  }
+
+  .subtitle {
+    font-size: 1.25rem;
+    color: #555;
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    max-width: 600px;
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background-color: #0f3460;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #16213e;
+    }
+  }
+}
