@@ -1,8 +1,11 @@
 <aside class="sidebar">
   <h2 class="sidebar-title">Admin</h2>
   <nav>
-    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="/dashboard/users" routerLinkActive="active">Usuarios</a>
-    <a routerLink="/dashboard/settings" routerLinkActive="active">Configuracion</a>
+    <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+    <a routerLink="/dashboard/schools" routerLinkActive="active">Escuelas</a>
+    <a routerLink="/dashboard/subjects" routerLinkActive="active">Materias</a>
+    <a routerLink="/dashboard/topics" routerLinkActive="active">Temas</a>
+    <a routerLink="/dashboard/assignments" routerLinkActive="active">Asignaciones</a>
+    <a routerLink="/dashboard/questions" routerLinkActive="active">Preguntas</a>
   </nav>
 </aside>

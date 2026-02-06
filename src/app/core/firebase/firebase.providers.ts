@@ -1,6 +1,8 @@
 import { EnvironmentProviders } from '@angular/core';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
+import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideStorage, getStorage } from '@angular/fire/storage';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyB3Cbzk0mmao6SaCLuhdiDc0GRsD9ql7BU',
@@ -15,4 +17,6 @@ const firebaseConfig = {
 export const firebaseProviders: EnvironmentProviders[] = [
   provideFirebaseApp(() => initializeApp(firebaseConfig)),
   provideAuth(() => getAuth()),
+  provideFirestore(() => getFirestore()),
+  provideStorage(() => getStorage()),
 ];
