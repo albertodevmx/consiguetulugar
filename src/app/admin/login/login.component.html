@@ -1,0 +1,49 @@
+<div class="login-wrapper">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <h2 class="card-title text-center mb-4">Acceso Administrador</h2>
+
+      @if (errorMessage()) {
+        <div class="alert alert-danger" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="email" class="form-label">Correo electronico</label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            [(ngModel)]="email"
+            name="email"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Contrasena</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            [(ngModel)]="password"
+            name="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          [disabled]="loading()"
+        >
+          {{ loading() ? 'Ingresando...' : 'Ingresar' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

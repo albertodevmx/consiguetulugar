@@ -1,0 +1,12 @@
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f5f6fa;
+
+  .card {
+    width: 100%;
+    max-width: 400px;
+  }
+}
