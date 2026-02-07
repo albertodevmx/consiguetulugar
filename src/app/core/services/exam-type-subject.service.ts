@@ -22,9 +22,8 @@ export class ExamTypeSubjectService {
     >;
   }
 
-  add(schoolId: string, examTypeId: string, subjectId: string) {
+  add(examTypeId: string, subjectId: string) {
     return addDoc(this.col, {
-      schoolId,
       examTypeId,
       subjectId,
       active: true,

@@ -1,20 +1,25 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AsyncPipe } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { UnitService } from '../../core/services/unit.service';
+import { SubjectService } from '../../core/services/subject.service';
 import { Unit } from '../../core/models';
 
 @Component({
   selector: 'app-units',
   standalone: true,
-  imports: [FormsModule, AsyncPipe],
+  imports: [FormsModule],
   templateUrl: './units.component.html',
 })
 export class UnitsComponent {
   private readonly svc = inject(UnitService);
+  private readonly subjectSvc = inject(SubjectService);
 
-  units$ = this.svc.list();
+  units = toSignal(this.svc.list(), { initialValue: [] });
+  subjects = toSignal(this.subjectSvc.list(), { initialValue: [] });
+
   name = '';
+  selectedSubjectId = '';
   editingId = signal<string | null>(null);
   editingName = signal('');
 
@@ -27,10 +32,18 @@ export class UnitsComponent {
       .replace(/(^-|-$)/g, '');
   }
 
+  subjectName(id: string): string {
+    return this.subjects().find((s) => s.id === id)?.name ?? id;
+  }
+
   async add() {
     const trimmed = this.name.trim();
-    if (!trimmed) return;
-    await this.svc.add({ name: trimmed, slug: this.slugify(trimmed) });
+    if (!trimmed || !this.selectedSubjectId) return;
+    await this.svc.add({
+      name: trimmed,
+      slug: this.slugify(trimmed),
+      subjectId: this.selectedSubjectId,
+    });
     this.name = '';
   }
 

@@ -21,7 +21,7 @@ export class UnitService {
     return collectionData(this.col, { idField: 'id' }) as Observable<Unit[]>;
   }
 
-  add(data: Pick<Unit, 'name' | 'slug'>) {
+  add(data: Pick<Unit, 'name' | 'slug' | 'subjectId'>) {
     return addDoc(this.col, {
       ...data,
       active: true,

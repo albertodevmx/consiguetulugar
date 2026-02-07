@@ -1,7 +1,20 @@
 <h2>Unidades</h2>
 
 <form (ngSubmit)="add()" class="row g-2 mb-4">
-  <div class="col-auto">
+  <div class="col-md-3">
+    <select
+      class="form-select"
+      [(ngModel)]="selectedSubjectId"
+      name="subject"
+      required
+    >
+      <option value="">-- Materia --</option>
+      @for (s of subjects(); track s.id) {
+        <option [value]="s.id">{{ s.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-md-3">
     <input
       type="text"
       class="form-control"
@@ -12,22 +25,23 @@
     />
   </div>
   <div class="col-auto">
-    <button type="submit" class="btn btn-primary">Agregar</button>
+    <button type="submit" class="btn btn-primary" [disabled]="!selectedSubjectId">Agregar</button>
   </div>
 </form>
 
 <table class="table table-striped">
   <thead>
     <tr>
+      <th>Materia</th>
       <th>Nombre</th>
       <th>Slug</th>
-      <th>Activa</th>
       <th style="width: 180px">Acciones</th>
     </tr>
   </thead>
   <tbody>
-    @for (item of units$ | async; track item.id) {
+    @for (item of units(); track item.id) {
       <tr>
+        <td>{{ subjectName(item.subjectId) }}</td>
         <td>
           @if (editingId() === item.id) {
             <input
@@ -42,7 +56,6 @@
           }
         </td>
         <td>{{ item.slug }}</td>
-        <td>{{ item.active ? 'Si' : 'No' }}</td>
         <td>
           @if (editingId() === item.id) {
             <button class="btn btn-sm btn-success me-1" (click)="saveEdit(item.id!)">Guardar</button>

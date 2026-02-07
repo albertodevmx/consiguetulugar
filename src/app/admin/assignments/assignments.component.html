@@ -1,7 +1,7 @@
 <h2>Asignaciones</h2>
 <p class="text-muted mb-4">Arma el arbol de navegacion: Escuela &rarr; Tipo de examen &rarr; Materia &rarr; Unidad &rarr; Tema</p>
 
-<!-- Selector de escuela (siempre visible) -->
+<!-- ========== NIVEL 1: Escuela ========== -->
 <div class="row mb-4">
   <div class="col-md-4">
     <label class="form-label fw-bold">1. Escuela</label>
@@ -19,54 +19,38 @@
   </div>
 </div>
 
-<!-- ========== NIVEL 2: Tipos de examen ========== -->
+<!-- ========== NIVEL 2: Tipo de examen (filtrado por escuela) ========== -->
 @if (selSchoolId()) {
   <div class="card mb-3">
     <div class="card-body">
-      <h5 class="card-title">2. Tipos de examen de {{ schoolName(selSchoolId()) }}</h5>
-      <div class="row g-2 mb-3">
+      <h5 class="card-title">2. Tipo de examen de {{ schoolName(selSchoolId()) }}</h5>
+      <div class="row g-2">
         <div class="col-md-4">
           <select
             class="form-select"
             [ngModel]="selExamTypeId()"
-            (ngModelChange)="selExamTypeId.set($event)"
+            (ngModelChange)="onExamTypeChange($event)"
             name="examType"
           >
-            <option value="">-- Tipo de examen --</option>
-            @for (et of examTypes(); track et.id) {
+            <option value="">-- Seleccionar tipo de examen --</option>
+            @for (et of filteredExamTypes(); track et.id) {
               <option [value]="et.id">{{ et.name }}</option>
             }
           </select>
         </div>
-        <div class="col-auto">
-          <button class="btn btn-primary" (click)="assignExamType()" [disabled]="!selExamTypeId()">
-            Asignar
-          </button>
-        </div>
       </div>
-      <table class="table table-sm">
-        <tbody>
-          @for (x of filteredSET(); track x.id) {
-            <tr>
-              <td>{{ examTypeName(x.examTypeId) }}</td>
-              <td style="width:80px">
-                <button class="btn btn-sm btn-outline-danger" (click)="removeExamType(x.id!)">Quitar</button>
-              </td>
-            </tr>
-          } @empty {
-            <tr><td class="text-muted">Sin tipos de examen asignados.</td></tr>
-          }
-        </tbody>
-      </table>
+      @if (filteredExamTypes().length === 0) {
+        <p class="text-muted mt-2 mb-0">No hay tipos de examen para esta escuela. Crealos en Catalogos &rarr; Tipos de examen.</p>
+      }
     </div>
   </div>
 }
 
-<!-- ========== NIVEL 3: Materias ========== -->
+<!-- ========== NIVEL 3: Materias (asignadas a tipo de examen) ========== -->
 @if (showSubjects()) {
   <div class="card mb-3">
     <div class="card-body">
-      <h5 class="card-title">3. Materias de {{ schoolName(selSchoolId()) }} / {{ examTypeName(selExamTypeId()) }}</h5>
+      <h5 class="card-title">3. Materias de {{ examTypeName(selExamTypeId()) }}</h5>
       <div class="row g-2 mb-3">
         <div class="col-md-4">
           <select
@@ -105,50 +89,34 @@
   </div>
 }
 
-<!-- ========== NIVEL 4: Unidades ========== -->
+<!-- ========== NIVEL 4: Unidades (filtradas por materia) ========== -->
 @if (showUnits()) {
   <div class="card mb-3">
     <div class="card-body">
       <h5 class="card-title">4. Unidades de {{ subjectName(selSubjectId()) }}</h5>
-      <div class="row g-2 mb-3">
+      <div class="row g-2">
         <div class="col-md-4">
           <select
             class="form-select"
             [ngModel]="selUnitId()"
-            (ngModelChange)="selUnitId.set($event)"
+            (ngModelChange)="onUnitChange($event)"
             name="unit"
           >
-            <option value="">-- Unidad --</option>
-            @for (u of units(); track u.id) {
+            <option value="">-- Seleccionar unidad --</option>
+            @for (u of filteredUnits(); track u.id) {
               <option [value]="u.id">{{ u.name }}</option>
             }
           </select>
         </div>
-        <div class="col-auto">
-          <button class="btn btn-primary" (click)="assignUnit()" [disabled]="!selUnitId()">
-            Asignar
-          </button>
-        </div>
       </div>
-      <table class="table table-sm">
-        <tbody>
-          @for (x of filteredSU(); track x.id) {
-            <tr>
-              <td>{{ unitName(x.unitId) }}</td>
-              <td style="width:80px">
-                <button class="btn btn-sm btn-outline-danger" (click)="removeUnit(x.id!)">Quitar</button>
-              </td>
-            </tr>
-          } @empty {
-            <tr><td class="text-muted">Sin unidades asignadas.</td></tr>
-          }
-        </tbody>
-      </table>
+      @if (filteredUnits().length === 0) {
+        <p class="text-muted mt-2 mb-0">No hay unidades para esta materia. Crealas en Catalogos &rarr; Unidades.</p>
+      }
     </div>
   </div>
 }
 
-<!-- ========== NIVEL 5: Temas ========== -->
+<!-- ========== NIVEL 5: Temas (asignados a unidad) ========== -->
 @if (showTopics()) {
   <div class="card mb-3">
     <div class="card-body">

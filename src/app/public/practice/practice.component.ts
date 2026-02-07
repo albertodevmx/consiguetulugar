@@ -5,7 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { take } from 'rxjs';
 
 import { SchoolService } from '../../core/services/school.service';
+import { ExamTypeService } from '../../core/services/exam-type.service';
+import { ExamTypeSubjectService } from '../../core/services/exam-type-subject.service';
 import { SubjectService } from '../../core/services/subject.service';
+import { UnitService } from '../../core/services/unit.service';
 import { TopicService } from '../../core/services/topic.service';
 import { UnitTopicService } from '../../core/services/unit-topic.service';
 import { QuestionService } from '../../core/services/question.service';
@@ -20,14 +23,20 @@ import { Question } from '../../core/models';
 })
 export class PracticeComponent {
   private schoolSvc = inject(SchoolService);
+  private examTypeSvc = inject(ExamTypeService);
+  private etsSvc = inject(ExamTypeSubjectService);
   private subjectSvc = inject(SubjectService);
+  private unitSvc = inject(UnitService);
   private topicSvc = inject(TopicService);
   private unitTopicSvc = inject(UnitTopicService);
   private questionSvc = inject(QuestionService);
 
   /* ── catalogues ── */
   schools = toSignal(this.schoolSvc.list(), { initialValue: [] });
+  examTypes = toSignal(this.examTypeSvc.list(), { initialValue: [] });
+  examTypeSubjects = toSignal(this.etsSvc.list(), { initialValue: [] });
   subjects = toSignal(this.subjectSvc.list(), { initialValue: [] });
+  units = toSignal(this.unitSvc.list(), { initialValue: [] });
   topics = toSignal(this.topicSvc.list(), { initialValue: [] });
   unitTopics = toSignal(this.unitTopicSvc.list(), { initialValue: [] });
 
@@ -36,33 +45,40 @@ export class PracticeComponent {
   selSubjectId = signal('');
   selTopicId = signal('');
 
-  /* ── derived: subjects for selected school (via unitTopics) ── */
+  /* ── derived: subjects for selected school ── */
+  /* School → ExamTypes (schoolId) → ExamTypeSubjects → Subjects */
   availableSubjects = computed(() => {
-    const sid = this.selSchoolId();
-    if (!sid) return [];
-    const ids = [
-      ...new Set(
-        this.unitTopics()
-          .filter((ut) => ut.schoolId === sid)
-          .map((ut) => ut.subjectId),
-      ),
-    ];
-    return this.subjects().filter((s) => ids.includes(s.id!));
+    const schoolId = this.selSchoolId();
+    if (!schoolId) return [];
+    const etIds = new Set(
+      this.examTypes()
+        .filter((et) => et.schoolId === schoolId)
+        .map((et) => et.id!),
+    );
+    const subjectIds = new Set(
+      this.examTypeSubjects()
+        .filter((ets) => etIds.has(ets.examTypeId))
+        .map((ets) => ets.subjectId),
+    );
+    return this.subjects().filter((s) => subjectIds.has(s.id!));
   });
 
-  /* ── derived: topics for selected school + subject ── */
+  /* ── derived: topics for selected subject ── */
+  /* Subject → Units (subjectId) → UnitTopics → Topics */
   availableTopics = computed(() => {
-    const sid = this.selSchoolId();
-    const subId = this.selSubjectId();
-    if (!sid || !subId) return [];
-    const ids = [
-      ...new Set(
-        this.unitTopics()
-          .filter((ut) => ut.schoolId === sid && ut.subjectId === subId)
-          .map((ut) => ut.topicId),
-      ),
-    ];
-    return this.topics().filter((t) => ids.includes(t.id!));
+    const subjectId = this.selSubjectId();
+    if (!subjectId) return [];
+    const unitIds = new Set(
+      this.units()
+        .filter((u) => u.subjectId === subjectId)
+        .map((u) => u.id!),
+    );
+    const topicIds = new Set(
+      this.unitTopics()
+        .filter((ut) => unitIds.has(ut.unitId))
+        .map((ut) => ut.topicId),
+    );
+    return this.topics().filter((t) => topicIds.has(t.id!));
   });
 
   /* ── question state ── */

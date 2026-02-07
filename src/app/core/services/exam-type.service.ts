@@ -23,7 +23,7 @@ export class ExamTypeService {
     >;
   }
 
-  add(data: Pick<ExamType, 'name' | 'slug'>) {
+  add(data: Pick<ExamType, 'name' | 'slug' | 'schoolId'>) {
     return addDoc(this.col, {
       ...data,
       active: true,

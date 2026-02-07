@@ -4,6 +4,7 @@ export interface ExamType {
   id?: string;
   name: string;
   slug: string;
+  schoolId: string;
   active: boolean;
   createdAt: Timestamp;
 }

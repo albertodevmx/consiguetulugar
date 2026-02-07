@@ -22,17 +22,8 @@ export class UnitTopicService {
     >;
   }
 
-  add(
-    schoolId: string,
-    examTypeId: string,
-    subjectId: string,
-    unitId: string,
-    topicId: string,
-  ) {
+  add(unitId: string, topicId: string) {
     return addDoc(this.col, {
-      schoolId,
-      examTypeId,
-      subjectId,
       unitId,
       topicId,
       active: true,

@@ -3,8 +3,6 @@ export type { ExamType } from './exam-type.model';
 export type { Subject } from './subject.model';
 export type { Unit } from './unit.model';
 export type { Topic } from './topic.model';
-export type { SchoolExamType } from './school-exam-type.model';
 export type { ExamTypeSubject } from './exam-type-subject.model';
-export type { SubjectUnit } from './subject-unit.model';
 export type { UnitTopic } from './unit-topic.model';
 export type { Question, QuestionOption } from './question.model';
