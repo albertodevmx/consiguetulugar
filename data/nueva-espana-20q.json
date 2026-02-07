@@ -1,0 +1,222 @@
+[
+  {
+    "text": "¿Cuáles son las tres superáreas culturales en las que se divide el territorio del México antiguo?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Mesoamérica, Aridoamérica y Oasisamérica",
+      "Mesoamérica, Centroamérica y Norteamérica",
+      "Altiplano, Costa del Golfo y Zona Maya",
+      "Occidente, Sureste y Altiplano Central"
+    ],
+    "correctOption": 0
+  },
+  {
+    "text": "¿Qué civilización mesoamericana es conocida como la 'cultura madre' y floreció entre 1200 y 400 a.C. en las regiones de Veracruz y Tabasco?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Maya",
+      "Zapoteca",
+      "Olmeca",
+      "Teotihuacana"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "Según la tradición mexica, ¿en qué año se fundó México-Tenochtitlan?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "1325",
+      "1428",
+      "1250",
+      "1519"
+    ],
+    "correctOption": 0
+  },
+  {
+    "text": "¿Cuál fue el sitio más importante de la cultura de Oasisamérica, ubicado en el actual estado de Chihuahua?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Monte Albán",
+      "Paquimé (Casas Grandes)",
+      "La Venta",
+      "Cuicuilco"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Qué nombre recibe la derrota sufrida por las tropas españolas el 30 de junio de 1520, cuando fueron expulsadas de Tenochtitlan?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "La Batalla de Otumba",
+      "La Matanza de Cholula",
+      "La Noche Triste",
+      "El Sitio de Tenochtitlan"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿En qué fecha cayó México-Tenochtitlan en manos de los conquistadores españoles, tras la captura de Cuauhtémoc?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "30 de junio de 1520",
+      "13 de agosto de 1521",
+      "18 de octubre de 1519",
+      "13 de marzo de 1519"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Qué papel desempeñó Malintzin (La Malinche) durante la conquista de México?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Fue líder militar de los tlaxcaltecas",
+      "Fue intérprete, consejera e intermediaria de Hernán Cortés",
+      "Fue la primera monja de la Nueva España",
+      "Fue gobernadora de Tenochtitlan tras la conquista"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Cuál fue la primera orden religiosa que llegó a la Nueva España en 1524 para iniciar la evangelización sistemática?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Dominicos",
+      "Agustinos",
+      "Jesuitas",
+      "Franciscanos"
+    ],
+    "correctOption": 3
+  },
+  {
+    "text": "¿Quién fue el primer virrey de la Nueva España, que asumió el cargo en 1535?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Luis de Velasco",
+      "Hernán Cortés",
+      "Antonio de Mendoza",
+      "Juan de Zumárraga"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Qué institución era la máxima autoridad legislativa y administrativa para los territorios americanos después del rey de España?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "La Real Audiencia",
+      "La Casa de Contratación de Sevilla",
+      "El Consejo de Indias",
+      "El Ayuntamiento de México"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Cuál era la función principal de la Real Audiencia en la Nueva España?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Regular el comercio transatlántico",
+      "Administrar las misiones religiosas",
+      "Servir como tribunal de justicia y contrapeso del virrey",
+      "Recaudar los tributos de los indígenas"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "En el sistema de castas de la Nueva España, ¿cómo se llamaba a los hijos de españoles nacidos en América?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Peninsulares",
+      "Mestizos",
+      "Criollos",
+      "Mulatos"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Qué actividad económica fue el pilar de la economía novohispana a partir de mediados del siglo XVI, con centros importantes como Zacatecas y Guanajuato?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "La agricultura de exportación",
+      "La minería de plata",
+      "El comercio de especias",
+      "La ganadería extensiva"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Qué técnica de extracción de plata fue implementada por Bartolomé de Medina en Pachuca, usando mercurio y azogue?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Beneficio de fundición",
+      "Método de amalgamación directa",
+      "Beneficio de patio",
+      "Sistema de lixiviación"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Qué grupo social ocupaba la posición más alta en la jerarquía novohispana y tenía acceso a los cargos políticos más importantes?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Los criollos",
+      "Los mestizos",
+      "Los peninsulares (españoles nacidos en España)",
+      "El clero regular"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿En qué año el rey Carlos III ordenó la expulsión de los jesuitas de todos los dominios españoles, incluida la Nueva España?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "1810",
+      "1767",
+      "1789",
+      "1750"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Qué sistema político-administrativo crearon las Reformas Borbónicas para dividir el virreinato en 12 demarcaciones gobernadas por funcionarios formados en ideas ilustradas?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "El sistema de encomiendas",
+      "El sistema de corregimientos",
+      "El sistema de intendencias",
+      "El sistema de capitanías generales"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Quién fue el visitador general enviado por Carlos III a la Nueva España entre 1765 y 1771, y principal impulsor de las Reformas Borbónicas?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Antonio de Mendoza",
+      "José de Gálvez",
+      "Luis de Velasco",
+      "Matías de Gálvez"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Qué escritora novohispana, monja jerónima, es conocida como 'La Décima Musa' y es considerada una de las figuras más importantes de la literatura en lengua española?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Sor María de Ágreda",
+      "Sor Juana Inés de la Cruz",
+      "Sor Filotea de la Cruz",
+      "Catalina de Erauso"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿En qué año fue fundada por decreto real de Carlos V la Real y Pontificia Universidad de México, una de las más antiguas del continente americano?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "1539",
+      "1524",
+      "1551",
+      "1580"
+    ],
+    "correctOption": 2
+  }
+]
