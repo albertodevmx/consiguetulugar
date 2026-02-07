@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, NgZone } from '@angular/core';
 import {
   Storage,
   ref,
@@ -9,10 +9,11 @@ import {
 @Injectable({ providedIn: 'root' })
 export class StorageService {
   private readonly storage = inject(Storage);
+  private readonly ngZone = inject(NgZone);
 
   async uploadImage(file: File, path: string): Promise<string> {
     const storageRef = ref(this.storage, path);
-    await uploadBytes(storageRef, file);
-    return getDownloadURL(storageRef);
+    await this.ngZone.run(() => uploadBytes(storageRef, file));
+    return this.ngZone.run(() => getDownloadURL(storageRef));
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, NgZone } from '@angular/core';
 import {
   Auth,
   signInWithEmailAndPassword,
@@ -10,6 +10,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly auth = inject(Auth);
+  private readonly ngZone = inject(NgZone);
 
   private readonly _user = signal<User | null>(null);
   readonly user = this._user.asReadonly();
@@ -18,15 +19,17 @@ export class AuthService {
 
   constructor() {
     onAuthStateChanged(this.auth, (user) => {
-      this._user.set(user);
+      this.ngZone.run(() => this._user.set(user));
     });
   }
 
   login(email: string, password: string) {
-    return signInWithEmailAndPassword(this.auth, email, password);
+    return this.ngZone.run(() =>
+      signInWithEmailAndPassword(this.auth, email, password),
+    );
   }
 
   logout() {
-    return signOut(this.auth);
+    return this.ngZone.run(() => signOut(this.auth));
   }
 }

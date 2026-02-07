@@ -39,12 +39,12 @@ const fs = require('fs');
 const path = require('path');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyB3Cbzk0mmao6SaCLuhdiDc0GRsD9ql7BU',
-  authDomain: 'consiguetulugar.firebaseapp.com',
-  projectId: 'consiguetulugar',
-  storageBucket: 'consiguetulugar.firebasestorage.app',
-  messagingSenderId: '540106876976',
-  appId: '1:540106876976:web:d77f785eb73c4cdc9325f5',
+  apiKey: 'AIzaSyBG3q34Nzp3JYw09eXwf5hjJvfKey6hHl4',
+  authDomain: 'estudiarbarato.firebaseapp.com',
+  projectId: 'estudiarbarato',
+  storageBucket: 'estudiarbarato.firebasestorage.app',
+  messagingSenderId: '94280676835',
+  appId: '1:94280676835:web:dd383c20a9534f83685cd6',
 };
 
 const app = initializeApp(firebaseConfig);
