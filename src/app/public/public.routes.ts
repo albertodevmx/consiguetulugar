@@ -6,4 +6,11 @@ export const publicRoutes: Routes = [
     loadComponent: () =>
       import('./home/home.component').then((m) => m.HomeComponent),
   },
+  {
+    path: 'practice',
+    loadComponent: () =>
+      import('./practice/practice.component').then(
+        (m) => m.PracticeComponent,
+      ),
+  },
 ];
