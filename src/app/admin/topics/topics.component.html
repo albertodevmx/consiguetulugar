@@ -2,6 +2,20 @@
 
 <form (ngSubmit)="add()" class="row g-2 mb-4">
   <div class="col-auto">
+    <select
+      class="form-select"
+      [ngModel]="selectedUnitId()"
+      (ngModelChange)="selectedUnitId.set($event)"
+      name="unitId"
+      required
+    >
+      <option value="" disabled>— Unidad —</option>
+      @for (unit of units(); track unit.id) {
+        <option [value]="unit.id">{{ unit.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-auto">
     <input
       type="text"
       class="form-control"
@@ -12,7 +26,13 @@
     />
   </div>
   <div class="col-auto">
-    <button type="submit" class="btn btn-primary">Agregar</button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="!name.trim() || !selectedUnitId()"
+    >
+      Agregar
+    </button>
   </div>
 </form>
 
@@ -20,13 +40,14 @@
   <thead>
     <tr>
       <th>Nombre</th>
+      <th>Unidad(es)</th>
       <th>Slug</th>
       <th>Activo</th>
       <th style="width: 180px">Acciones</th>
     </tr>
   </thead>
   <tbody>
-    @for (topic of topics$ | async; track topic.id) {
+    @for (topic of topics(); track topic.id) {
       <tr>
         <td>
           @if (editingId() === topic.id) {
@@ -39,6 +60,13 @@
             />
           } @else {
             {{ topic.name }}
+          }
+        </td>
+        <td>
+          @if (topicUnits().get(topic.id!); as unitNames) {
+            {{ unitNames.join(', ') }}
+          } @else {
+            <span class="text-muted">Sin unidad</span>
           }
         </td>
         <td>{{ topic.slug }}</td>
@@ -54,7 +82,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="4" class="text-center text-muted">No hay temas registrados.</td></tr>
+      <tr><td colspan="5" class="text-center text-muted">No hay temas registrados.</td></tr>
     }
   </tbody>
 </table>
