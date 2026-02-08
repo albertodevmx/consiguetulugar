@@ -1,0 +1,112 @@
+[
+  {
+    "text": "¿Quién acuñó el término 'Mesoamérica' y en qué año lo publicó?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Paul Kirchhoff, en 1943",
+      "Manuel Gamio, en 1940",
+      "Wigberto Jiménez Moreno, en 1950",
+      "Alfonso Caso, en 1935"
+    ],
+    "correctOption": 0
+  },
+  {
+    "text": "¿Cuál es la principal diferencia entre Aridoamérica y Oasisamérica?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Aridoamérica tenía ciudades más grandes que Oasisamérica",
+      "En Aridoamérica los pueblos eran nómadas cazadores-recolectores, mientras que en Oasisamérica eran sedentarios con agricultura de riego",
+      "Oasisamérica se ubicaba en Centroamérica y Aridoamérica en Norteamérica",
+      "Aridoamérica practicaba el juego de pelota y Oasisamérica no"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Cuáles son las tres culturas principales que se desarrollaron en Oasisamérica?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Olmeca, Maya y Zapoteca",
+      "Anasazi, Hohokam y Mogollón",
+      "Yaqui, Seri y Rarámuri",
+      "Tolteca, Mixteca y Purépecha"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿Qué periodo de Mesoamérica abarca desde 2500 a.C. hasta 200 d.C. y en él surgió la civilización olmeca?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Clásico",
+      "Posclásico Temprano",
+      "Preclásico",
+      "Posclásico Tardío"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿En qué área cultural de Mesoamérica se desarrolló la civilización olmeca?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Altiplano Central",
+      "Occidente de México",
+      "Costa del Golfo (Veracruz y Tabasco)",
+      "Área Maya"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Cuál de los siguientes NO es un rasgo cultural compartido por los pueblos mesoamericanos según la definición de Kirchhoff?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Uso de dos calendarios: uno ritual de 260 días y otro solar de 365 días",
+      "Juego de pelota como actividad ceremonial",
+      "Metalurgia avanzada desde el periodo Preclásico",
+      "Sistema de numeración vigesimal (base 20)"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Qué civilización mesoamericana es reconocida como la 'cultura madre' y dejó como legado cabezas colosales de basalto?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Teotihuacana",
+      "Maya",
+      "Tolteca",
+      "Olmeca"
+    ],
+    "correctOption": 3
+  },
+  {
+    "text": "¿Cuál de las siguientes áreas culturales de Mesoamérica corresponde a Teotihuacán, Tula y Tenochtitlan?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Oaxaca",
+      "Altiplano Central",
+      "Costa del Golfo",
+      "Área Maya"
+    ],
+    "correctOption": 1
+  },
+  {
+    "text": "¿A qué periodo de Mesoamérica pertenecen los toltecas y los mexicas, caracterizado por el militarismo y la aparición de la metalurgia?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Preclásico",
+      "Clásico",
+      "Posclásico",
+      "Arcaico"
+    ],
+    "correctOption": 2
+  },
+  {
+    "text": "¿Qué sitio arqueológico fue la capital de la civilización zapoteca y se construyó en la cima de una montaña en los valles centrales de Oaxaca?",
+    "topicId": "TOPIC_ID",
+    "options": [
+      "Mitla",
+      "Tula",
+      "El Tajín",
+      "Monte Albán"
+    ],
+    "correctOption": 3
+  }
+]
