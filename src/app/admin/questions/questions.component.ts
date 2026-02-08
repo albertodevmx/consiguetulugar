@@ -93,14 +93,16 @@ export class QuestionsComponent {
         imageUrl = await this.storageSvc.uploadImage(file, path);
       }
 
-      await this.qSvc.add({
+      const questionData: any = {
         text,
         topicId,
         options: opts.map((o) => ({ text: o })),
         correctOption: this.correctOption(),
-        imageUrl,
         active: true,
-      });
+      };
+      if (imageUrl) questionData.imageUrl = imageUrl;
+
+      await this.qSvc.add(questionData);
 
       // Reset
       this.questionText.set('');
@@ -135,16 +137,19 @@ export class QuestionsComponent {
         }
       }
 
-      const batch = questions.map((q: any) => ({
-        text: q.text,
-        topicId: q.topicId,
-        options: q.options.map((o: any) =>
-          typeof o === 'string' ? { text: o } : o,
-        ),
-        correctOption: q.correctOption,
-        imageUrl: q.imageUrl,
-        active: true,
-      }));
+      const batch = questions.map((q: any) => {
+        const item: any = {
+          text: q.text,
+          topicId: q.topicId,
+          options: q.options.map((o: any) =>
+            typeof o === 'string' ? { text: o } : o,
+          ),
+          correctOption: q.correctOption,
+          active: true,
+        };
+        if (q.imageUrl) item.imageUrl = q.imageUrl;
+        return item;
+      });
 
       await this.qSvc.importBatch(batch);
       this.importMsg.set(`${batch.length} preguntas importadas correctamente.`);
