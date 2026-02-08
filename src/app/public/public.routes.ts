@@ -13,4 +13,11 @@ export const publicRoutes: Routes = [
         (m) => m.PracticeComponent,
       ),
   },
+  {
+    path: 'quick-practice',
+    loadComponent: () =>
+      import('./quick-practice/quick-practice.component').then(
+        (m) => m.QuickPracticeComponent,
+      ),
+  },
 ];
