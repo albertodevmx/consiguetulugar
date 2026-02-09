@@ -1,9 +1,11 @@
+@use 'variables' as v;
+
 .site-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 2rem;
-  background-color: #0f3460;
+  background-color: v.$primary;
   color: #fff;
 
   .logo {
@@ -22,7 +24,7 @@
   }
 
   nav a {
-    color: #ddd;
+    color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
     margin-left: 1.5rem;
 

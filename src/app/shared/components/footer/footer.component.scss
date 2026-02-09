@@ -1,7 +1,11 @@
+@use 'variables' as v;
+
 .site-footer {
   padding: 1.5rem 2rem;
   text-align: center;
-  background-color: #1a1a2e;
-  color: #aaa;
+  background-color: v.$warning;
+  border-top: 3px solid v.$primary;
+  color: v.$primary;
   font-size: 0.875rem;
+  font-weight: 600;
 }

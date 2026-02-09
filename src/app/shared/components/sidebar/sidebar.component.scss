@@ -1,7 +1,10 @@
+@use 'sass:color';
+@use 'variables' as v;
+
 .sidebar {
   width: 240px;
   min-height: 100vh;
-  background-color: #16213e;
+  background-color: color.adjust(v.$primary, $lightness: -10%);
   padding: 1.5rem 1rem;
 
   .sidebar-title {
@@ -18,7 +21,7 @@
 
     .sidebar-section {
       display: block;
-      color: #6b7a99;
+      color: rgba(255, 255, 255, 0.45);
       font-size: 0.7rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -27,7 +30,7 @@
     }
 
     a {
-      color: #bbb;
+      color: rgba(255, 255, 255, 0.65);
       text-decoration: none;
       padding: 0.625rem 0.75rem;
       border-radius: 4px;
@@ -35,7 +38,7 @@
 
       &:hover,
       &.active {
-        background-color: #0f3460;
+        background-color: v.$primary;
         color: #fff;
       }
     }
