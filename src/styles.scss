@@ -1,5 +1,24 @@
-// Global styles — Bootstrap 5.3 + Bootstrap Icons loaded via CDN in index.html
+// ============================================================
+// Estudiar Barato — Global Styles
+// ============================================================
 
+// 1. Custom variables (MUST come before Bootstrap import)
+@use 'variables' as v;
+
+// 2. Bootstrap SCSS (with our variable overrides forwarded)
+@use 'bootstrap/scss/bootstrap' with (
+  $primary:   v.$primary,
+  $success:   v.$success,
+  $warning:   v.$warning,
+  $danger:    v.$danger,
+  $info:      v.$info,
+  $secondary: v.$secondary
+);
+
+// 3. Bootstrap Icons
+@use 'bootstrap-icons/font/bootstrap-icons.css';
+
+// 4. App-level overrides
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
