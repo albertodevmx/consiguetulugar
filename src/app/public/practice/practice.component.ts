@@ -160,6 +160,13 @@ export class PracticeComponent {
   }
 
   /* ── helpers ── */
+  selectedFeedback(): string {
+    const q = this.currentQuestion();
+    const idx = this.selectedOption();
+    if (!q || idx === null) return '';
+    return q.options[idx]?.feedback ?? '';
+  }
+
   optionClass(idx: number, correctIdx: number): string {
     if (!this.answered()) {
       return this.selectedOption() === idx

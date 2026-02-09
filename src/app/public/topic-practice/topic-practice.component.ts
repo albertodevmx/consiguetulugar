@@ -95,15 +95,20 @@ import { Question } from '../../core/models';
                   Responder
                 </button>
               } @else {
-                <div class="d-flex align-items-center gap-3 flex-wrap">
-                  @if (selectedOption() === q.correctOption) {
-                    <span class="text-success fw-bold fs-5">Correcto!</span>
-                  } @else {
-                    <span class="text-danger fw-bold">
-                      Incorrecto. La respuesta correcta es {{ optionLetter(q.correctOption) }}.
-                    </span>
-                  }
-                  <button class="btn btn-primary ms-auto" (click)="nextQuestion()">
+                @if (selectedOption() === q.correctOption) {
+                  <span class="text-success fw-bold fs-5">Correcto!</span>
+                } @else {
+                  <span class="text-danger fw-bold">
+                    Incorrecto. La respuesta correcta es {{ optionLetter(q.correctOption) }}.
+                  </span>
+                }
+                @if (selectedFeedback()) {
+                  <div class="alert mt-3" [ngClass]="selectedOption() === q.correctOption ? 'alert-success' : 'alert-danger'">
+                    {{ selectedFeedback() }}
+                  </div>
+                }
+                <div class="text-end mt-3">
+                  <button class="btn btn-primary" (click)="nextQuestion()">
                     Siguiente pregunta
                   </button>
                 </div>
@@ -194,6 +199,13 @@ export class TopicPracticeComponent {
     this.sessionFinished.set(false);
     this.correctCount.set(0);
     this.totalAnswered.set(0);
+  }
+
+  selectedFeedback(): string {
+    const q = this.currentQuestion();
+    const idx = this.selectedOption();
+    if (!q || idx === null) return '';
+    return q.options[idx]?.feedback ?? '';
   }
 
   optionClass(idx: number, correctIdx: number): string {

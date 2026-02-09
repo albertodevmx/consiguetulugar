@@ -2,6 +2,7 @@ import { Timestamp } from '@angular/fire/firestore';
 
 export interface QuestionOption {
   text: string;
+  feedback?: string;
 }
 
 export interface Question {
