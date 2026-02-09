@@ -19,32 +19,41 @@ interface UnitWithTopics {
   imports: [RouterLink],
   template: `
     <div class="container py-4">
-      <a [routerLink]="['/explore', schoolId(), examTypeId()]" class="btn btn-outline-secondary btn-sm mb-3">&larr; Materias</a>
+      <a [routerLink]="['/explore', schoolId(), examTypeId()]" class="btn btn-warning btn-sm mb-3">
+        <i class="bi bi-arrow-left me-1"></i> Materias
+      </a>
 
       @if (subject(); as s) {
-        <h2 class="mb-2">{{ s.name }}</h2>
+        <h2 class="mb-2"><i class="bi bi-list-columns-reverse me-2"></i>{{ s.name }}</h2>
         <p class="text-muted mb-4">Elige un tema para comenzar a practicar.</p>
       }
 
       @for (unit of unitsWithTopics(); track unit.id) {
         <div class="card mb-3">
-          <div class="card-header fw-bold">{{ unit.name }}</div>
+          <div class="card-header fw-bold">
+            <i class="bi bi-folder2-open me-2"></i>{{ unit.name }}
+          </div>
           <div class="list-group list-group-flush">
             @for (topic of unit.topics; track topic.id) {
               <a
                 [routerLink]="['/practice', 'topic', topic.id]"
                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
               >
-                {{ topic.name }}
-                <span class="badge bg-primary rounded-pill">Practicar</span>
+                <span><i class="bi bi-journal-bookmark me-2"></i>{{ topic.name }}</span>
+                <span class="badge bg-success rounded-pill">
+                  <i class="bi bi-play-fill me-1"></i>Practicar
+                </span>
               </a>
             } @empty {
-              <div class="list-group-item text-muted">Sin temas asignados a esta unidad.</div>
+              <div class="list-group-item text-muted">
+                <i class="bi bi-info-circle me-1"></i> Sin temas asignados a esta unidad.
+              </div>
             }
           </div>
         </div>
       } @empty {
         <div class="text-center text-muted py-5">
+          <i class="bi bi-inbox fs-1 d-block mb-2"></i>
           <p class="fs-5">No hay unidades para esta materia.</p>
         </div>
       }

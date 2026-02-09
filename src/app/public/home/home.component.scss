@@ -26,31 +26,4 @@
     line-height: 1.6;
     margin-bottom: 2rem;
   }
-
-  .cta-button {
-    display: inline-block;
-    padding: 0.75rem 2rem;
-    background-color: #0f3460;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: background-color 0.2s;
-    margin: 0.5rem;
-
-    &:hover {
-      background-color: #16213e;
-    }
-
-    &.cta-secondary {
-      background-color: transparent;
-      color: #0f3460;
-      border: 2px solid #0f3460;
-
-      &:hover {
-        background-color: #0f3460;
-        color: #fff;
-      }
-    }
-  }
 }

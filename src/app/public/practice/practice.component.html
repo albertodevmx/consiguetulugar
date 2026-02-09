@@ -1,11 +1,11 @@
 <div class="container py-4">
-  <h2>Practica</h2>
+  <h2><i class="bi bi-pencil-square me-2"></i>Practica</h2>
   <p class="text-muted mb-4">Elige escuela, materia y tema para comenzar a resolver preguntas.</p>
 
   <!-- ========== Selectors ========== -->
   <div class="row g-3 mb-4">
     <div class="col-md-4">
-      <label class="form-label fw-bold">Escuela</label>
+      <label class="form-label fw-bold"><i class="bi bi-building me-1"></i>Escuela</label>
       <select
         class="form-select"
         [ngModel]="selSchoolId()"
@@ -20,7 +20,7 @@
     </div>
 
     <div class="col-md-4">
-      <label class="form-label fw-bold">Materia</label>
+      <label class="form-label fw-bold"><i class="bi bi-book me-1"></i>Materia</label>
       <select
         class="form-select"
         [ngModel]="selSubjectId()"
@@ -36,7 +36,7 @@
     </div>
 
     <div class="col-md-4">
-      <label class="form-label fw-bold">Tema</label>
+      <label class="form-label fw-bold"><i class="bi bi-journal-bookmark me-1"></i>Tema</label>
       <select
         class="form-select"
         [ngModel]="selTopicId()"
@@ -55,6 +55,7 @@
   <!-- ========== Empty state ========== -->
   @if (!selTopicId() && !loading()) {
     <div class="text-center text-muted py-5">
+      <i class="bi bi-hand-index-thumb fs-1 d-block mb-2"></i>
       <p class="fs-5">Selecciona escuela, materia y tema para comenzar.</p>
     </div>
   }
@@ -73,6 +74,7 @@
   @if (selTopicId() && !loading() && questions().length === 0 && sessionFinished()) {
     <div class="card text-center py-5">
       <div class="card-body">
+        <i class="bi bi-question-circle fs-1 text-muted d-block mb-2"></i>
         <h5 class="text-muted">No hay preguntas disponibles para este tema.</h5>
         <p class="text-muted">Prueba con otro tema o vuelve mas tarde.</p>
       </div>
@@ -83,11 +85,14 @@
   @if (sessionFinished() && totalAnswered() > 0) {
     <div class="card text-center py-4">
       <div class="card-body">
+        <i class="bi bi-trophy fs-1 text-warning d-block mb-2"></i>
         <h4>Has completado todas las preguntas de este tema</h4>
         <p class="fs-5 mt-3">
-          Resultado: <strong>{{ correctCount() }}</strong> de <strong>{{ totalAnswered() }}</strong> correctas
+          Resultado: <span class="badge bg-success fs-5">{{ correctCount() }}</span> de <span class="badge bg-secondary fs-5">{{ totalAnswered() }}</span> correctas
         </p>
-        <button class="btn btn-primary mt-2" (click)="restartTopic()">Reiniciar tema</button>
+        <button class="btn btn-success mt-2" (click)="restartTopic()">
+          <i class="bi bi-arrow-repeat me-1"></i> Reiniciar tema
+        </button>
       </div>
     </div>
   }
@@ -100,11 +105,11 @@
           <!-- Progress bar -->
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="badge bg-secondary">
-              Pregunta {{ currentIndex() + 1 }} de {{ questions().length }}
+              <i class="bi bi-hash"></i> {{ currentIndex() + 1 }} / {{ questions().length }}
             </span>
             @if (totalAnswered() > 0) {
-              <span class="badge bg-primary">
-                {{ correctCount() }} / {{ totalAnswered() }} correctas
+              <span class="badge bg-success">
+                <i class="bi bi-check-circle me-1"></i>{{ correctCount() }} / {{ totalAnswered() }}
               </span>
             }
           </div>
@@ -141,28 +146,28 @@
           <!-- Action buttons -->
           @if (!answered()) {
             <button
-              class="btn btn-primary"
+              class="btn btn-success"
               (click)="submitAnswer()"
               [disabled]="selectedOption() === null"
             >
-              Responder
+              <i class="bi bi-send me-1"></i> Responder
             </button>
           } @else {
             @if (selectedOption() === q.correctOption) {
-              <span class="text-success fw-bold fs-5">Correcto!</span>
+              <span class="text-success fw-bold fs-5"><i class="bi bi-check-circle-fill me-1"></i>Correcto!</span>
             } @else {
               <span class="text-danger fw-bold">
-                Incorrecto. La respuesta correcta es {{ optionLetter(q.correctOption) }}.
+                <i class="bi bi-x-circle-fill me-1"></i>Incorrecto. La respuesta correcta es {{ optionLetter(q.correctOption) }}.
               </span>
             }
             @if (selectedFeedback()) {
               <div class="alert mt-3" [ngClass]="selectedOption() === q.correctOption ? 'alert-success' : 'alert-danger'">
-                {{ selectedFeedback() }}
+                <i class="bi bi-info-circle me-1"></i> {{ selectedFeedback() }}
               </div>
             }
             <div class="text-end mt-3">
-              <button class="btn btn-primary" (click)="nextQuestion()">
-                Siguiente pregunta
+              <button class="btn btn-success" (click)="nextQuestion()">
+                Siguiente <i class="bi bi-arrow-right ms-1"></i>
               </button>
             </div>
           }

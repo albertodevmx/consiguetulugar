@@ -14,7 +14,7 @@ import { Question } from '../../core/models';
   template: `
     <div class="container py-4">
       @if (topicName(); as name) {
-        <h2 class="mb-4">{{ name }}</h2>
+        <h2 class="mb-4"><i class="bi bi-pencil-square me-2"></i>{{ name }}</h2>
       }
 
       <!-- Loading -->
@@ -31,8 +31,11 @@ import { Question } from '../../core/models';
       @if (!loading() && questions().length === 0) {
         <div class="card text-center py-5">
           <div class="card-body">
+            <i class="bi bi-question-circle fs-1 text-muted d-block mb-2"></i>
             <h5 class="text-muted">No hay preguntas disponibles para este tema.</h5>
-            <button class="btn btn-outline-primary mt-3" onclick="history.back()">Volver</button>
+            <button class="btn btn-warning mt-3" onclick="history.back()">
+              <i class="bi bi-arrow-left me-1"></i> Volver
+            </button>
           </div>
         </div>
       }
@@ -41,13 +44,18 @@ import { Question } from '../../core/models';
       @if (sessionFinished() && totalAnswered() > 0) {
         <div class="card text-center py-4">
           <div class="card-body">
+            <i class="bi bi-trophy fs-1 text-warning d-block mb-2"></i>
             <h4>Has completado todas las preguntas</h4>
             <p class="fs-5 mt-3">
-              Resultado: <strong>{{ correctCount() }}</strong> de <strong>{{ totalAnswered() }}</strong> correctas
+              Resultado: <span class="badge bg-success fs-5">{{ correctCount() }}</span> de <span class="badge bg-secondary fs-5">{{ totalAnswered() }}</span> correctas
             </p>
             <div class="d-flex justify-content-center gap-3 mt-3">
-              <button class="btn btn-primary" (click)="restart()">Reiniciar</button>
-              <button class="btn btn-outline-secondary" onclick="history.back()">Volver</button>
+              <button class="btn btn-success" (click)="restart()">
+                <i class="bi bi-arrow-repeat me-1"></i> Reiniciar
+              </button>
+              <button class="btn btn-warning" onclick="history.back()">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+              </button>
             </div>
           </div>
         </div>
@@ -60,11 +68,11 @@ import { Question } from '../../core/models';
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="badge bg-secondary">
-                  Pregunta {{ currentIndex() + 1 }} de {{ questions().length }}
+                  <i class="bi bi-hash"></i> {{ currentIndex() + 1 }} / {{ questions().length }}
                 </span>
                 @if (totalAnswered() > 0) {
-                  <span class="badge bg-primary">
-                    {{ correctCount() }} / {{ totalAnswered() }} correctas
+                  <span class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i>{{ correctCount() }} / {{ totalAnswered() }}
                   </span>
                 }
               </div>
@@ -91,25 +99,23 @@ import { Question } from '../../core/models';
               </div>
 
               @if (!answered()) {
-                <button class="btn btn-primary" (click)="submitAnswer()" [disabled]="selectedOption() === null">
-                  Responder
+                <button class="btn btn-success" (click)="submitAnswer()" [disabled]="selectedOption() === null">
+                  <i class="bi bi-send me-1"></i> Responder
                 </button>
               } @else {
                 @if (selectedOption() === q.correctOption) {
-                  <span class="text-success fw-bold fs-5">Correcto!</span>
+                  <span class="text-success fw-bold fs-5"><i class="bi bi-check-circle-fill me-1"></i>Correcto!</span>
                 } @else {
-                  <span class="text-danger fw-bold">
-                    Incorrecto. La respuesta correcta es {{ optionLetter(q.correctOption) }}.
-                  </span>
+                  <span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Incorrecto. La respuesta es {{ optionLetter(q.correctOption) }}.</span>
                 }
                 @if (selectedFeedback()) {
                   <div class="alert mt-3" [ngClass]="selectedOption() === q.correctOption ? 'alert-success' : 'alert-danger'">
-                    {{ selectedFeedback() }}
+                    <i class="bi bi-info-circle me-1"></i> {{ selectedFeedback() }}
                   </div>
                 }
                 <div class="text-end mt-3">
-                  <button class="btn btn-primary" (click)="nextQuestion()">
-                    Siguiente pregunta
+                  <button class="btn btn-success" (click)="nextQuestion()">
+                    Siguiente <i class="bi bi-arrow-right ms-1"></i>
                   </button>
                 </div>
               }
