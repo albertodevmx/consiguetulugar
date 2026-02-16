@@ -65,6 +65,15 @@ export class ExploreExamTypesComponent {
     this.route.paramMap.pipe(
       map((p) => p.get('escuela')!),
       switchMap((esc) => this.examenSvc.listByEscuela(esc)),
+      map((exams) => {
+        const seen = new Map<string, true>();
+        return exams.filter((ex) => {
+          const key = `${ex.nombre}|${ex.area}`;
+          if (seen.has(key)) return false;
+          seen.set(key, true);
+          return true;
+        });
+      }),
     ),
     { initialValue: [] },
   );
