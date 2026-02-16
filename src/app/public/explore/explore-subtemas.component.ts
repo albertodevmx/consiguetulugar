@@ -4,6 +4,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap, combineLatest } from 'rxjs';
 import { MateriaService } from '../../core/services/materia.service';
 import { SubtemaService } from '../../core/services/subtema.service';
+import { PreguntaService } from '../../core/services/pregunta.service';
+import { Subtema } from '../../core/models';
 
 @Component({
   selector: 'app-explore-subtemas',
@@ -21,14 +23,14 @@ import { SubtemaService } from '../../core/services/subtema.service';
       }
 
       <div class="list-group">
-        @for (sub of subtemas(); track sub.id) {
+        @for (item of subtemasWithCount(); track item.subtema.id) {
           <a
-            [routerLink]="['/practice/subtema', materiaId(), temaId(), sub.id]"
+            [routerLink]="['/practice/subtema', materiaId(), temaId(), item.subtema.id]"
             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
           >
-            <span><i class="bi bi-journal-bookmark me-2"></i>{{ sub.orden }}. {{ sub.nombre_canonical }}</span>
+            <span><i class="bi bi-journal-bookmark me-2"></i>{{ item.subtema.orden }}. {{ item.subtema.nombre_canonical }}</span>
             <span class="badge bg-success rounded-pill">
-              <i class="bi bi-play-fill me-1"></i>{{ sub.total_preguntas }} preguntas
+              <i class="bi bi-play-fill me-1"></i>{{ item.count }} preguntas
             </span>
           </a>
         } @empty {
@@ -45,6 +47,7 @@ export class ExploreSubtemasComponent {
   private route = inject(ActivatedRoute);
   private materiaSvc = inject(MateriaService);
   private subtemaSvc = inject(SubtemaService);
+  private preguntaSvc = inject(PreguntaService);
 
   escuela = toSignal(this.route.paramMap.pipe(map((p) => p.get('escuela')!)), { initialValue: '' });
   examenId = toSignal(this.route.paramMap.pipe(map((p) => p.get('examenId')!)), { initialValue: '' });
@@ -59,12 +62,27 @@ export class ExploreSubtemasComponent {
     { initialValue: undefined },
   );
 
-  subtemas = toSignal(
+  subtemasWithCount = toSignal(
     this.route.paramMap.pipe(
-      switchMap((p) =>
-        this.subtemaSvc.listByTema(p.get('materiaId')!, p.get('temaId')!),
-      ),
+      switchMap((p) => {
+        const materiaId = p.get('materiaId')!;
+        const temaId = p.get('temaId')!;
+        return combineLatest([
+          this.subtemaSvc.listByTema(materiaId, temaId),
+          this.preguntaSvc.listByTema(temaId),
+        ]);
+      }),
+      map(([subtemas, preguntas]) => {
+        const counts = new Map<string, number>();
+        for (const q of preguntas) {
+          counts.set(q.subtema_id, (counts.get(q.subtema_id) ?? 0) + 1);
+        }
+        return subtemas.map((subtema) => ({
+          subtema,
+          count: counts.get(subtema.id!) ?? 0,
+        }));
+      }),
     ),
-    { initialValue: [] },
+    { initialValue: [] as { subtema: Subtema; count: number }[] },
   );
 }

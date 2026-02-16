@@ -24,6 +24,11 @@ export class PreguntaService {
     return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
   }
 
+  listByTema(temaId: string): Observable<Pregunta[]> {
+    const q = query(this.col, where('tema_id', '==', temaId));
+    return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
+  }
+
   listByMateria(materiaId: string, max = 30): Observable<Pregunta[]> {
     const q = query(
       this.col,
