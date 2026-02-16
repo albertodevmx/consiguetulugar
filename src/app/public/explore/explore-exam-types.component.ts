@@ -23,8 +23,8 @@ import { ExamenService } from '../../core/services/examen.service';
             <a [routerLink]="['/explore', escuela(), ex.id]" class="card explore-card h-100 text-decoration-none">
               <div class="card-body text-center">
                 <i class="bi bi-file-earmark-text fs-1 mb-2 text-success"></i>
-                <h5 class="card-title">{{ ex.nombre }}</h5>
-                <p class="text-muted small mb-0">{{ ex.area }} · {{ ex.total_reactivos }} reactivos</p>
+                <h5 class="card-title">{{ ex.area }}</h5>
+                <p class="text-muted small mb-0">{{ ex.total_reactivos }} reactivos</p>
               </div>
             </a>
           </div>
