@@ -35,14 +35,7 @@ export const publicRoutes: Routes = [
       ),
   },
   {
-    path: 'explore/:escuela/:examenId/:materiaId/:temaId',
-    loadComponent: () =>
-      import('./explore/explore-subtemas.component').then(
-        (m) => m.ExploreSubtemasComponent,
-      ),
-  },
-  {
-    path: 'practice/subtema/:materiaId/:temaId/:subtemaId',
+    path: 'practice/tema/:materiaId/:temaId',
     loadComponent: () =>
       import('./topic-practice/topic-practice.component').then(
         (m) => m.TopicPracticeComponent,
