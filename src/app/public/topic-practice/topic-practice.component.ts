@@ -3,7 +3,6 @@ import { NgClass } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { switchMap, take, map } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
-import { SubtemaService } from '../../core/services/subtema.service';
 import { Pregunta } from '../../core/models';
 
 @Component({
@@ -124,7 +123,6 @@ import { Pregunta } from '../../core/models';
 export class TopicPracticeComponent {
   private route = inject(ActivatedRoute);
   private preguntaSvc = inject(PreguntaService);
-  private subtemaSvc = inject(SubtemaService);
 
   questions = signal<Pregunta[]>([]);
   currentIndex = signal(0);
@@ -165,16 +163,8 @@ export class TopicPracticeComponent {
   constructor() {
     this.route.paramMap
       .pipe(
-        switchMap((p) => {
-          const materiaId = p.get('materiaId')!;
-          const temaId = p.get('temaId')!;
-          // Get subtema IDs for this tema, then query preguntas by subtema_id IN [...]
-          return this.subtemaSvc.listByTema(materiaId, temaId).pipe(
-            take(1),
-            map((subtemas) => subtemas.map((s) => s.id!)),
-            switchMap((ids) => this.preguntaSvc.listBySubtemaIds(ids).pipe(take(1))),
-          );
-        }),
+        map((p) => p.get('temaId')!),
+        switchMap((temaId) => this.preguntaSvc.listByTema(temaId).pipe(take(1))),
       )
       .subscribe((qs) => {
         this.questions.set(this.shuffle(qs));

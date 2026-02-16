@@ -105,18 +105,25 @@ export class ExploreUnitsComponent {
           switchMap(([temas, preguntas]) => {
             if (temas.length === 0) return of([] as { tema: Tema; subtemas: Subtema[]; count: number }[]);
 
-            // Fetch subtemas for each tema
+            // Count preguntas per tema using tema_id directly
+            const countByTema = new Map<string, number>();
+            for (const q of preguntas) {
+              if (q.tema_id) {
+                countByTema.set(q.tema_id, (countByTema.get(q.tema_id) ?? 0) + 1);
+              }
+            }
+
+            // Fetch subtemas for each tema (for accordion display)
             const subtema$ = temas.map((t) =>
               this.subtemaSvc.listByTema(materiaId, t.id!),
             );
             return combineLatest(subtema$).pipe(
               map((subtemasArrays) =>
-                temas.map((tema, i) => {
-                  const subtemas = subtemasArrays[i];
-                  const subtemaIds = new Set(subtemas.map((s) => s.id!));
-                  const count = preguntas.filter((q) => subtemaIds.has(q.subtema_id)).length;
-                  return { tema, subtemas, count };
-                }),
+                temas.map((tema, i) => ({
+                  tema,
+                  subtemas: subtemasArrays[i],
+                  count: countByTema.get(tema.id!) ?? 0,
+                })),
               ),
             );
           }),
