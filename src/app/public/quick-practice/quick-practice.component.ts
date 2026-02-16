@@ -1,11 +1,10 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { take } from 'rxjs';
 
-import { QuestionService } from '../../core/services/question.service';
-import { Question } from '../../core/models';
+import { PreguntaService } from '../../core/services/pregunta.service';
+import { Pregunta } from '../../core/models';
 
 @Component({
   selector: 'app-quick-practice',
@@ -14,10 +13,9 @@ import { Question } from '../../core/models';
   templateUrl: './quick-practice.component.html',
 })
 export class QuickPracticeComponent {
-  private questionSvc = inject(QuestionService);
+  private preguntaSvc = inject(PreguntaService);
 
-  /* ── state ── */
-  pool = signal<Question[]>([]);
+  pool = signal<Pregunta[]>([]);
   currentIndex = signal(0);
   selectedOption = signal<number | null>(null);
   answered = signal(false);
@@ -31,38 +29,51 @@ export class QuickPracticeComponent {
     return idx < p.length ? p[idx] : null;
   });
 
+  isCorrect = computed(() => {
+    const q = this.currentQuestion();
+    const idx = this.selectedOption();
+    if (!q || idx === null) return false;
+    return q.opciones[idx]?.es_correcta === true;
+  });
+
+  correctLetter = computed(() => {
+    const q = this.currentQuestion();
+    if (!q) return '';
+    const ci = q.opciones.findIndex((o) => o.es_correcta);
+    return String.fromCharCode(65 + ci);
+  });
+
+  selectedExplicacion = computed(() => {
+    const q = this.currentQuestion();
+    const idx = this.selectedOption();
+    if (!q || idx === null) return '';
+    return q.opciones[idx]?.explicacion ?? '';
+  });
+
   constructor() {
     this.loadAll();
   }
 
-  /* ── load all active questions and shuffle ── */
   private loadAll() {
     this.loading.set(true);
-    this.questionSvc
-      .list()
+    this.preguntaSvc
+      .listAll(100)
       .pipe(take(1))
       .subscribe((qs) => {
-        const active = qs.filter((q) => q.active);
-        this.pool.set(this.shuffle(active));
+        this.pool.set(this.shuffle(qs));
         this.loading.set(false);
       });
   }
 
-  /* ── user actions ── */
   selectOption(idx: number) {
-    if (!this.answered()) {
-      this.selectedOption.set(idx);
-    }
+    if (!this.answered()) this.selectedOption.set(idx);
   }
 
   submitAnswer() {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
-    const q = this.currentQuestion();
-    if (q && this.selectedOption() === q.correctOption) {
-      this.correctCount.update((n) => n + 1);
-    }
+    if (this.isCorrect()) this.correctCount.update((n) => n + 1);
   }
 
   nextQuestion() {
@@ -70,7 +81,6 @@ export class QuickPracticeComponent {
     if (next < this.pool().length) {
       this.currentIndex.set(next);
     } else {
-      // Reshuffle and loop back to start (infinite)
       this.pool.set(this.shuffle(this.pool()));
       this.currentIndex.set(0);
     }
@@ -78,21 +88,12 @@ export class QuickPracticeComponent {
     this.answered.set(false);
   }
 
-  /* ── helpers ── */
-  selectedFeedback(): string {
-    const q = this.currentQuestion();
-    const idx = this.selectedOption();
-    if (!q || idx === null) return '';
-    return q.options[idx]?.feedback ?? '';
-  }
-
-  optionClass(idx: number, correctIdx: number): string {
+  optionClass(idx: number): string {
     if (!this.answered()) {
-      return this.selectedOption() === idx
-        ? 'btn-secondary'
-        : 'btn-outline-secondary';
+      return this.selectedOption() === idx ? 'btn-secondary' : 'btn-outline-secondary';
     }
-    if (idx === correctIdx) return 'btn-success';
+    const q = this.currentQuestion()!;
+    if (q.opciones[idx]?.es_correcta) return 'btn-success';
     if (this.selectedOption() === idx) return 'btn-danger';
     return 'btn-outline-secondary';
   }

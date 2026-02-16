@@ -14,38 +14,38 @@ export const publicRoutes: Routes = [
       ),
   },
   {
-    path: 'explore/:schoolId',
+    path: 'explore/:escuela',
     loadComponent: () =>
       import('./explore/explore-exam-types.component').then(
         (m) => m.ExploreExamTypesComponent,
       ),
   },
   {
-    path: 'explore/:schoolId/:examTypeId',
+    path: 'explore/:escuela/:examenId',
     loadComponent: () =>
       import('./explore/explore-subjects.component').then(
         (m) => m.ExploreSubjectsComponent,
       ),
   },
   {
-    path: 'explore/:schoolId/:examTypeId/:subjectId',
+    path: 'explore/:escuela/:examenId/:materiaId',
     loadComponent: () =>
       import('./explore/explore-units.component').then(
         (m) => m.ExploreUnitsComponent,
       ),
   },
   {
-    path: 'practice/topic/:topicId',
+    path: 'explore/:escuela/:examenId/:materiaId/:temaId',
     loadComponent: () =>
-      import('./topic-practice/topic-practice.component').then(
-        (m) => m.TopicPracticeComponent,
+      import('./explore/explore-subtemas.component').then(
+        (m) => m.ExploreSubtemasComponent,
       ),
   },
   {
-    path: 'practice',
+    path: 'practice/subtema/:materiaId/:temaId/:subtemaId',
     loadComponent: () =>
-      import('./practice/practice.component').then(
-        (m) => m.PracticeComponent,
+      import('./topic-practice/topic-practice.component').then(
+        (m) => m.TopicPracticeComponent,
       ),
   },
   {

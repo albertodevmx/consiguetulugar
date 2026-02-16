@@ -1,7 +1,7 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { SchoolService } from '../../core/services/school.service';
+import { ExamenService } from '../../core/services/examen.service';
 
 @Component({
   selector: 'app-explore-schools',
@@ -13,12 +13,12 @@ import { SchoolService } from '../../core/services/school.service';
       <p class="text-muted mb-4">Selecciona la institucion para la que te estas preparando.</p>
 
       <div class="row g-3">
-        @for (school of activeSchools(); track school.id) {
+        @for (escuela of escuelas(); track escuela) {
           <div class="col-sm-6 col-md-4 col-lg-3">
-            <a [routerLink]="['/explore', school.id]" class="card explore-card h-100 text-decoration-none">
+            <a [routerLink]="['/explore', escuela]" class="card explore-card h-100 text-decoration-none">
               <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
                 <i class="bi bi-bank2 fs-1 mb-2 text-primary"></i>
-                <h5 class="card-title mb-0">{{ school.name }}</h5>
+                <h5 class="card-title mb-0">{{ escuela }}</h5>
               </div>
             </a>
           </div>
@@ -38,17 +38,15 @@ import { SchoolService } from '../../core/services/school.service';
       transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
       cursor: pointer;
       min-height: 140px;
-      color: #1a1a2e;
     }
     .explore-card:hover {
-      border-color: #198754;
+      border-color: var(--bs-success);
       box-shadow: 0 4px 12px rgba(25, 135, 84, 0.15);
       transform: translateY(-2px);
     }
   `],
 })
 export class ExploreSchoolsComponent {
-  private schoolSvc = inject(SchoolService);
-  private schools = toSignal(this.schoolSvc.list(), { initialValue: [] });
-  activeSchools = computed(() => this.schools().filter((s) => s.active));
+  private examenSvc = inject(ExamenService);
+  escuelas = toSignal(this.examenSvc.getEscuelas(), { initialValue: [] });
 }

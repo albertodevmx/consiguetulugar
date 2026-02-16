@@ -1,10 +1,8 @@
 import { Component, inject, computed } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
-import { ExamTypeService } from '../../core/services/exam-type.service';
-import { ExamTypeSubjectService } from '../../core/services/exam-type-subject.service';
-import { SubjectService } from '../../core/services/subject.service';
+import { map, switchMap } from 'rxjs';
+import { ExamenService } from '../../core/services/examen.service';
 
 @Component({
   selector: 'app-explore-subjects',
@@ -12,29 +10,30 @@ import { SubjectService } from '../../core/services/subject.service';
   imports: [RouterLink],
   template: `
     <div class="container py-4">
-      <a [routerLink]="['/explore', schoolId()]" class="btn btn-warning btn-sm mb-3">
+      <a [routerLink]="['/explore', escuela()]" class="btn btn-warning btn-sm mb-3">
         <i class="bi bi-arrow-left me-1"></i> Tipos de examen
       </a>
 
-      @if (examType(); as et) {
-        <h2 class="mb-2"><i class="bi bi-journal-text me-2"></i>{{ et.name }}</h2>
+      @if (examen(); as ex) {
+        <h2 class="mb-2"><i class="bi bi-journal-text me-2"></i>{{ ex.nombre }}</h2>
         <p class="text-muted mb-4">Elige la materia que quieres estudiar.</p>
       }
 
       <div class="row g-3">
-        @for (subj of filteredSubjects(); track subj.id) {
+        @for (mat of materiasMapping(); track mat.id) {
           <div class="col-sm-6 col-md-4 col-lg-3">
-            <a [routerLink]="['/explore', schoolId(), examTypeId(), subj.id]" class="card explore-card h-100 text-decoration-none">
+            <a [routerLink]="['/explore', escuela(), examenId(), mat.materia_id]" class="card explore-card h-100 text-decoration-none">
               <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
                 <i class="bi bi-book fs-1 mb-2 text-info"></i>
-                <h5 class="card-title mb-0">{{ subj.name }}</h5>
+                <h5 class="card-title mb-1">{{ mat.nombre_en_guia }}</h5>
+                <small class="text-muted">{{ mat.num_reactivos }} reactivos</small>
               </div>
             </a>
           </div>
         } @empty {
           <div class="col-12 text-center text-muted py-5">
             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-            <p class="fs-5">No hay materias asignadas a este tipo de examen.</p>
+            <p class="fs-5">No hay materias asignadas a este examen.</p>
           </div>
         }
       </div>
@@ -47,10 +46,9 @@ import { SubjectService } from '../../core/services/subject.service';
       transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
       cursor: pointer;
       min-height: 140px;
-      color: #1a1a2e;
     }
     .explore-card:hover {
-      border-color: #198754;
+      border-color: var(--bs-success);
       box-shadow: 0 4px 12px rgba(25, 135, 84, 0.15);
       transform: translateY(-2px);
     }
@@ -58,25 +56,32 @@ import { SubjectService } from '../../core/services/subject.service';
 })
 export class ExploreSubjectsComponent {
   private route = inject(ActivatedRoute);
-  private examTypeSvc = inject(ExamTypeService);
-  private etsSvc = inject(ExamTypeSubjectService);
-  private subjectSvc = inject(SubjectService);
+  private examenSvc = inject(ExamenService);
 
-  schoolId = toSignal(this.route.paramMap.pipe(map((p) => p.get('schoolId')!)), { initialValue: '' });
-  examTypeId = toSignal(this.route.paramMap.pipe(map((p) => p.get('examTypeId')!)), { initialValue: '' });
+  escuela = toSignal(
+    this.route.paramMap.pipe(map((p) => p.get('escuela')!)),
+    { initialValue: '' },
+  );
+  examenId = toSignal(
+    this.route.paramMap.pipe(map((p) => p.get('examenId')!)),
+    { initialValue: '' },
+  );
 
-  private examTypes = toSignal(this.examTypeSvc.list(), { initialValue: [] });
-  private ets = toSignal(this.etsSvc.list(), { initialValue: [] });
-  private subjects = toSignal(this.subjectSvc.list(), { initialValue: [] });
+  private examenes = toSignal(
+    this.route.paramMap.pipe(
+      map((p) => p.get('escuela')!),
+      switchMap((esc) => this.examenSvc.listByEscuela(esc)),
+    ),
+    { initialValue: [] },
+  );
 
-  examType = computed(() => this.examTypes().find((et) => et.id === this.examTypeId()));
+  examen = computed(() => this.examenes().find((e) => e.id === this.examenId()));
 
-  filteredSubjects = computed(() => {
-    const subjectIds = new Set(
-      this.ets()
-        .filter((e) => e.examTypeId === this.examTypeId())
-        .map((e) => e.subjectId),
-    );
-    return this.subjects().filter((s) => subjectIds.has(s.id!) && s.active);
-  });
+  materiasMapping = toSignal(
+    this.route.paramMap.pipe(
+      map((p) => p.get('examenId')!),
+      switchMap((id) => this.examenSvc.listMateriasMapping(id)),
+    ),
+    { initialValue: [] },
+  );
 }

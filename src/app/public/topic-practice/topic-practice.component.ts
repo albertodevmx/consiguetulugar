@@ -1,11 +1,9 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap, take } from 'rxjs';
-import { QuestionService } from '../../core/services/question.service';
-import { TopicService } from '../../core/services/topic.service';
-import { Question } from '../../core/models';
+import { PreguntaService } from '../../core/services/pregunta.service';
+import { Pregunta } from '../../core/models';
 
 @Component({
   selector: 'app-topic-practice',
@@ -13,10 +11,6 @@ import { Question } from '../../core/models';
   imports: [NgClass],
   template: `
     <div class="container py-4">
-      @if (topicName(); as name) {
-        <h2 class="mb-4"><i class="bi bi-pencil-square me-2"></i>{{ name }}</h2>
-      }
-
       <!-- Loading -->
       @if (loading()) {
         <div class="text-center py-5">
@@ -32,7 +26,7 @@ import { Question } from '../../core/models';
         <div class="card text-center py-5">
           <div class="card-body">
             <i class="bi bi-question-circle fs-1 text-muted d-block mb-2"></i>
-            <h5 class="text-muted">No hay preguntas disponibles para este tema.</h5>
+            <h5 class="text-muted">No hay preguntas disponibles para este subtema.</h5>
             <button class="btn btn-warning mt-3" onclick="history.back()">
               <i class="bi bi-arrow-left me-1"></i> Volver
             </button>
@@ -77,23 +71,23 @@ import { Question } from '../../core/models';
                 }
               </div>
 
-              @if (q.imageUrl) {
+              @if (q.imagen_url) {
                 <div class="text-center mb-3">
-                  <img [src]="q.imageUrl" alt="Imagen" class="img-fluid rounded" style="max-height: 300px">
+                  <img [src]="q.imagen_url" [alt]="q.imagen_descripcion || 'Imagen'" class="img-fluid rounded" style="max-height: 300px">
                 </div>
               }
 
-              <h5 class="mb-4">{{ q.text }}</h5>
+              <h5 class="mb-4">{{ q.texto }}</h5>
 
               <div class="d-grid gap-2 mb-4">
-                @for (opt of q.options; track $index) {
+                @for (opt of q.opciones; track $index) {
                   <button
                     class="btn text-start py-2 px-3"
-                    [ngClass]="optionClass($index, q.correctOption)"
+                    [ngClass]="optionClass($index)"
                     (click)="selectOption($index)"
                     [disabled]="answered()"
                   >
-                    <strong>{{ optionLetter($index) }}.</strong> {{ opt.text }}
+                    <strong>{{ optionLetter($index) }}.</strong> {{ opt.texto }}
                   </button>
                 }
               </div>
@@ -103,14 +97,14 @@ import { Question } from '../../core/models';
                   <i class="bi bi-send me-1"></i> Responder
                 </button>
               } @else {
-                @if (selectedOption() === q.correctOption) {
+                @if (isCorrect()) {
                   <span class="text-success fw-bold fs-5"><i class="bi bi-check-circle-fill me-1"></i>Correcto!</span>
                 } @else {
-                  <span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Incorrecto. La respuesta es {{ optionLetter(q.correctOption) }}.</span>
+                  <span class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Incorrecto. La respuesta es {{ correctLetter() }}.</span>
                 }
-                @if (selectedFeedback()) {
-                  <div class="alert mt-3" [ngClass]="selectedOption() === q.correctOption ? 'alert-success' : 'alert-danger'">
-                    <i class="bi bi-info-circle me-1"></i> {{ selectedFeedback() }}
+                @if (selectedExplicacion()) {
+                  <div class="alert mt-3" [ngClass]="isCorrect() ? 'alert-success' : 'alert-danger'">
+                    <i class="bi bi-info-circle me-1"></i> {{ selectedExplicacion() }}
                   </div>
                 }
                 <div class="text-end mt-3">
@@ -128,18 +122,9 @@ import { Question } from '../../core/models';
 })
 export class TopicPracticeComponent {
   private route = inject(ActivatedRoute);
-  private questionSvc = inject(QuestionService);
-  private topicSvc = inject(TopicService);
+  private preguntaSvc = inject(PreguntaService);
 
-  private topicId = toSignal(
-    this.route.paramMap.pipe(map((p) => p.get('topicId')!)),
-    { initialValue: '' },
-  );
-
-  private topics = toSignal(this.topicSvc.list(), { initialValue: [] });
-  topicName = computed(() => this.topics().find((t) => t.id === this.topicId())?.name ?? '');
-
-  questions = signal<Question[]>([]);
+  questions = signal<Pregunta[]>([]);
   currentIndex = signal(0);
   selectedOption = signal<number | null>(null);
   answered = signal(false);
@@ -154,21 +139,37 @@ export class TopicPracticeComponent {
     return idx < qs.length ? qs[idx] : null;
   });
 
+  isCorrect = computed(() => {
+    const q = this.currentQuestion();
+    const idx = this.selectedOption();
+    if (!q || idx === null) return false;
+    return q.opciones[idx]?.es_correcta === true;
+  });
+
+  correctLetter = computed(() => {
+    const q = this.currentQuestion();
+    if (!q) return '';
+    const ci = q.opciones.findIndex((o) => o.es_correcta);
+    return String.fromCharCode(65 + ci);
+  });
+
+  selectedExplicacion = computed(() => {
+    const q = this.currentQuestion();
+    const idx = this.selectedOption();
+    if (!q || idx === null) return '';
+    return q.opciones[idx]?.explicacion ?? '';
+  });
+
   constructor() {
     this.route.paramMap
       .pipe(
-        map((p) => p.get('topicId')!),
-        switchMap((id) => {
-          this.resetQuiz();
-          this.loading.set(true);
-          return this.questionSvc.listByTopic(id).pipe(take(1));
-        }),
+        map((p) => p.get('subtemaId')!),
+        switchMap((id) => this.preguntaSvc.listBySubtema(id).pipe(take(1))),
       )
       .subscribe((qs) => {
-        const active = qs.filter((q) => q.active);
-        this.questions.set(this.shuffle(active));
+        this.questions.set(this.shuffle(qs));
         this.loading.set(false);
-        if (active.length === 0) this.sessionFinished.set(true);
+        if (qs.length === 0) this.sessionFinished.set(true);
       });
   }
 
@@ -180,10 +181,7 @@ export class TopicPracticeComponent {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
-    const q = this.currentQuestion();
-    if (q && this.selectedOption() === q.correctOption) {
-      this.correctCount.update((n) => n + 1);
-    }
+    if (this.isCorrect()) this.correctCount.update((n) => n + 1);
   }
 
   nextQuestion() {
@@ -207,35 +205,18 @@ export class TopicPracticeComponent {
     this.totalAnswered.set(0);
   }
 
-  selectedFeedback(): string {
-    const q = this.currentQuestion();
-    const idx = this.selectedOption();
-    if (!q || idx === null) return '';
-    return q.options[idx]?.feedback ?? '';
-  }
-
-  optionClass(idx: number, correctIdx: number): string {
+  optionClass(idx: number): string {
     if (!this.answered()) {
       return this.selectedOption() === idx ? 'btn-secondary' : 'btn-outline-secondary';
     }
-    if (idx === correctIdx) return 'btn-success';
+    const q = this.currentQuestion()!;
+    if (q.opciones[idx]?.es_correcta) return 'btn-success';
     if (this.selectedOption() === idx) return 'btn-danger';
     return 'btn-outline-secondary';
   }
 
   optionLetter(idx: number): string {
     return String.fromCharCode(65 + idx);
-  }
-
-  private resetQuiz() {
-    this.questions.set([]);
-    this.currentIndex.set(0);
-    this.selectedOption.set(null);
-    this.answered.set(false);
-    this.sessionFinished.set(false);
-    this.correctCount.set(0);
-    this.totalAnswered.set(0);
-    this.loading.set(false);
   }
 
   private shuffle<T>(arr: T[]): T[] {
