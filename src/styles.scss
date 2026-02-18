@@ -1,5 +1,5 @@
 // ============================================================
-// Estudiar Barato — Global Styles
+// Estudiar es barato — Global Styles
 // ============================================================
 
 // 1. Custom variables (MUST come before Bootstrap import)
@@ -18,9 +18,17 @@
 // 3. Bootstrap Icons
 @use 'bootstrap-icons/font/bootstrap-icons.css';
 
-// 4. App-level overrides
+// 4. App-level overrides (fonts loaded via index.html link tag)
 body {
   margin: 0;
+  font-family: "Quicksand", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Young Serif", serif;
+  font-weight: 400;
 }
