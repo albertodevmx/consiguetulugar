@@ -1,10 +1,31 @@
 <header class="site-header">
   <a routerLink="/" class="logo">
-    <img src="logo-white.png" alt="Estudiar Barato" class="navbar-logo">
-    Estudiar Barato
+    <img src="logo-white.png" alt="Estudiar es barato" class="navbar-logo">
+    <span class="brand-text">Estudiar es barato</span>
   </a>
-  <nav>
-    <a routerLink="/"><i class="bi bi-house-door"></i> Inicio</a>
-    <a routerLink="/explore"><i class="bi bi-mortarboard"></i> Practicar</a>
-  </nav>
+
+  <div class="header-actions">
+    <nav>
+      <a routerLink="/" class="nav-link"><i class="bi bi-house-door"></i><span class="nav-label"> Inicio</span></a>
+      <a routerLink="/explore" class="nav-link"><i class="bi bi-mortarboard"></i><span class="nav-label"> Practicar</span></a>
+    </nav>
+
+    @if (auth.isLoggedIn()) {
+      <div class="user-menu">
+        <a routerLink="/perfil" class="nav-link"><i class="bi bi-person-circle"></i><span class="nav-label"> Mi cuenta</span></a>
+        <button class="btn btn-sm btn-outline-light" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i><span class="nav-label"> Salir</span>
+        </button>
+      </div>
+    } @else {
+      <div class="auth-buttons">
+        <a routerLink="/login" class="btn btn-sm btn-outline-light">
+          <i class="bi bi-box-arrow-in-right"></i><span class="nav-label"> Entrar</span>
+        </a>
+        <a routerLink="/registro" class="btn btn-sm btn-warning">
+          <i class="bi bi-person-plus"></i><span class="nav-label"> Registro</span>
+        </a>
+      </div>
+    }
+  </div>
 </header>

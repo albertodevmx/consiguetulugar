@@ -48,4 +48,18 @@ export const publicRoutes: Routes = [
         (m) => m.QuickPracticeComponent,
       ),
   },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./login/login.component').then(
+        (m) => m.PublicLoginComponent,
+      ),
+  },
+  {
+    path: 'registro',
+    loadComponent: () =>
+      import('./register/register.component').then(
+        (m) => m.RegisterComponent,
+      ),
+  },
 ];
