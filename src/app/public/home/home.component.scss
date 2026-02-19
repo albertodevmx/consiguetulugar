@@ -35,3 +35,14 @@
     margin-bottom: 2rem;
   }
 }
+
+@media (max-width: 575.98px) {
+  .hero {
+    h1 {
+      font-size: 28px;
+    }
+    .description {
+      font-size: 12px;
+    }
+  }
+}
