@@ -9,5 +9,20 @@
     "firebase-admin": "^13.0.0",
     "firebase-functions": "^6.3.0",
     "stripe": "^17.0.0"
-  }
+  }, 
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true,
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
