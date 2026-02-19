@@ -62,4 +62,25 @@ export const publicRoutes: Routes = [
         (m) => m.RegisterComponent,
       ),
   },
+  {
+    path: 'suscripcion',
+    loadComponent: () =>
+      import('./subscription/subscribe.component').then(
+        (m) => m.SubscribeComponent,
+      ),
+  },
+  {
+    path: 'suscripcion/exito',
+    loadComponent: () =>
+      import('./subscription/success.component').then(
+        (m) => m.SubscriptionSuccessComponent,
+      ),
+  },
+  {
+    path: 'suscripcion/cancelado',
+    loadComponent: () =>
+      import('./subscription/cancel.component').then(
+        (m) => m.SubscriptionCancelComponent,
+      ),
+  },
 ];
