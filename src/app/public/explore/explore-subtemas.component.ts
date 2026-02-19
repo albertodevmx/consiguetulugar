@@ -22,24 +22,32 @@ import { Subtema } from '../../core/models';
         <p class="text-muted mb-4">Elige un subtema para practicar.</p>
       }
 
-      <div class="list-group">
-        @for (item of subtemasWithCount(); track item.subtema.id) {
-          <a
-            [routerLink]="['/practice/subtema', materiaId(), temaId(), item.subtema.id]"
-            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-          >
-            <span><i class="bi bi-journal-bookmark me-2"></i>{{ item.subtema.orden }}. {{ item.subtema.nombre_canonical }}</span>
-            <span class="badge bg-success rounded-pill">
-              <i class="bi bi-play-fill me-1"></i>{{ item.count }} preguntas
-            </span>
-          </a>
-        } @empty {
-          <div class="text-center text-muted py-5">
-            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-            <p class="fs-5">No hay subtemas disponibles.</p>
+      @if (subtemasWithCount() === undefined) {
+        <div class="d-flex justify-content-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
           </div>
-        }
-      </div>
+        </div>
+      } @else {
+        <div class="list-group">
+          @for (item of subtemasWithCount(); track item.subtema.id) {
+            <a
+              [routerLink]="['/practice/subtema', materiaId(), temaId(), item.subtema.id]"
+              class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            >
+              <span><i class="bi bi-journal-bookmark me-2"></i>{{ item.subtema.orden }}. {{ item.subtema.nombre_canonical }}</span>
+              <span class="badge bg-success rounded-pill">
+                <i class="bi bi-play-fill me-1"></i>{{ item.count }} preguntas
+              </span>
+            </a>
+          } @empty {
+            <div class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <p class="fs-5">No hay subtemas disponibles.</p>
+            </div>
+          }
+        </div>
+      }
     </div>
   `,
 })
@@ -83,6 +91,5 @@ export class ExploreSubtemasComponent {
         }));
       }),
     ),
-    { initialValue: [] as { subtema: Subtema; count: number }[] },
   );
 }

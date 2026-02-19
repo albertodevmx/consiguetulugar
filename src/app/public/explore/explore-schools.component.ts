@@ -12,23 +12,31 @@ import { ExamenService } from '../../core/services/examen.service';
       <h2 class="mb-2"><i class="bi bi-building me-2"></i>Elige tu escuela</h2>
       <p class="text-muted mb-4">Selecciona la institucion para la que te estas preparando.</p>
 
-      <div class="row g-3">
-        @for (escuela of escuelas(); track escuela) {
-          <div class="col-sm-6 col-md-4 col-lg-3">
-            <a [routerLink]="['/explore', escuela]" class="card explore-card h-100 text-decoration-none">
-              <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
-                <i class="bi bi-bank2 fs-1 mb-2 text-primary"></i>
-                <h5 class="card-title mb-0">{{ escuela }}</h5>
-              </div>
-            </a>
+      @if (escuelas() === undefined) {
+        <div class="d-flex justify-content-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
           </div>
-        } @empty {
-          <div class="col-12 text-center text-muted py-5">
-            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-            <p class="fs-5">No hay escuelas registradas aun.</p>
-          </div>
-        }
-      </div>
+        </div>
+      } @else {
+        <div class="row g-3">
+          @for (escuela of escuelas(); track escuela) {
+            <div class="col-sm-6 col-md-4 col-lg-3">
+              <a [routerLink]="['/explore', escuela]" class="card explore-card h-100 text-decoration-none">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
+                  <i class="bi bi-bank2 fs-1 mb-2 text-primary"></i>
+                  <h5 class="card-title mb-0">{{ escuela }}</h5>
+                </div>
+              </a>
+            </div>
+          } @empty {
+            <div class="col-12 text-center text-muted py-5">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <p class="fs-5">No hay escuelas registradas aun.</p>
+            </div>
+          }
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -48,5 +56,5 @@ import { ExamenService } from '../../core/services/examen.service';
 })
 export class ExploreSchoolsComponent {
   private examenSvc = inject(ExamenService);
-  escuelas = toSignal(this.examenSvc.getEscuelas(), { initialValue: [] });
+  escuelas = toSignal(this.examenSvc.getEscuelas());
 }

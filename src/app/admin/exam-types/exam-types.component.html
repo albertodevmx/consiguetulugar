@@ -29,45 +29,53 @@
   </div>
 </form>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Escuela</th>
-      <th>Nombre</th>
-      <th>Slug</th>
-      <th style="width: 180px">Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (item of examTypes(); track item.id) {
+@if (examTypes() === undefined) {
+  <div class="d-flex justify-content-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+} @else {
+  <table class="table table-striped">
+    <thead>
       <tr>
-        <td>{{ schoolName(item.schoolId) }}</td>
-        <td>
-          @if (editingId() === item.id) {
-            <input
-              type="text"
-              class="form-control form-control-sm"
-              [ngModel]="editingName()"
-              (ngModelChange)="editingName.set($event)"
-              [ngModelOptions]="{ standalone: true }"
-            />
-          } @else {
-            {{ item.name }}
-          }
-        </td>
-        <td>{{ item.slug }}</td>
-        <td>
-          @if (editingId() === item.id) {
-            <button class="btn btn-sm btn-success me-1" (click)="saveEdit(item.id!)">Guardar</button>
-            <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancelar</button>
-          } @else {
-            <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(item)">Editar</button>
-            <button class="btn btn-sm btn-outline-danger" (click)="remove(item.id!)">Eliminar</button>
-          }
-        </td>
+        <th>Escuela</th>
+        <th>Nombre</th>
+        <th>Slug</th>
+        <th style="width: 180px">Acciones</th>
       </tr>
-    } @empty {
-      <tr><td colspan="4" class="text-center text-muted">No hay tipos de examen registrados.</td></tr>
-    }
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      @for (item of examTypes()!; track item.id) {
+        <tr>
+          <td>{{ schoolName(item.schoolId) }}</td>
+          <td>
+            @if (editingId() === item.id) {
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [ngModel]="editingName()"
+                (ngModelChange)="editingName.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            } @else {
+              {{ item.name }}
+            }
+          </td>
+          <td>{{ item.slug }}</td>
+          <td>
+            @if (editingId() === item.id) {
+              <button class="btn btn-sm btn-success me-1" (click)="saveEdit(item.id!)">Guardar</button>
+              <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancelar</button>
+            } @else {
+              <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(item)">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="remove(item.id!)">Eliminar</button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="4" class="text-center text-muted">No hay tipos de examen registrados.</td></tr>
+      }
+    </tbody>
+  </table>
+}

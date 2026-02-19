@@ -15,30 +15,38 @@
 
 <!-- ============ LIST ============ -->
 @if (activeTab() === 'list') {
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Pregunta</th>
-        <th>Tema</th>
-        <th>Opciones</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (q of questions$ | async; track q.id) {
+  @if (questions$ | async; as questions) {
+    <table class="table table-striped">
+      <thead>
         <tr>
-          <td>{{ q.text | slice:0:80 }}{{ q.text.length > 80 ? '...' : '' }}</td>
-          <td>{{ topicName(q.topicId) }}</td>
-          <td>{{ q.options.length }}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-danger" (click)="removeQuestion(q.id!)">Eliminar</button>
-          </td>
+          <th>Pregunta</th>
+          <th>Tema</th>
+          <th>Opciones</th>
+          <th></th>
         </tr>
-      } @empty {
-        <tr><td colspan="4" class="text-center text-muted">No hay preguntas.</td></tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @for (q of questions; track q.id) {
+          <tr>
+            <td>{{ q.text | slice:0:80 }}{{ q.text.length > 80 ? '...' : '' }}</td>
+            <td>{{ topicName(q.topicId) }}</td>
+            <td>{{ q.options.length }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeQuestion(q.id!)">Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="text-center text-muted">No hay preguntas.</td></tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="d-flex justify-content-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
 }
 
 <!-- ============ NEW ============ -->

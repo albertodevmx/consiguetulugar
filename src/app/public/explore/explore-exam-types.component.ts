@@ -17,24 +17,32 @@ import { ExamenService } from '../../core/services/examen.service';
       <h2 class="mb-2"><i class="bi bi-clipboard-check me-2"></i>{{ escuela() }}</h2>
       <p class="text-muted mb-4">Elige el tipo de examen que vas a presentar.</p>
 
-      <div class="row g-3">
-        @for (ex of examenes(); track ex.id) {
-          <div class="col-sm-6 col-md-4">
-            <a [routerLink]="['/explore', escuela(), ex.id]" class="card explore-card h-100 text-decoration-none">
-              <div class="card-body text-center">
-                <i class="bi bi-file-earmark-text fs-1 mb-2 text-success"></i>
-                <h5 class="card-title">{{ ex.area }}</h5>
-                <p class="text-muted small mb-0">{{ ex.total_reactivos }} reactivos</p>
-              </div>
-            </a>
+      @if (examenes() === undefined) {
+        <div class="d-flex justify-content-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
           </div>
-        } @empty {
-          <div class="col-12 text-center text-muted py-5">
-            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-            <p class="fs-5">No hay examenes para esta escuela.</p>
-          </div>
-        }
-      </div>
+        </div>
+      } @else {
+        <div class="row g-3">
+          @for (ex of examenes(); track ex.id) {
+            <div class="col-sm-6 col-md-4">
+              <a [routerLink]="['/explore', escuela(), ex.id]" class="card explore-card h-100 text-decoration-none">
+                <div class="card-body text-center">
+                  <i class="bi bi-file-earmark-text fs-1 mb-2 text-success"></i>
+                  <h5 class="card-title">{{ ex.area }}</h5>
+                  <p class="text-muted small mb-0">{{ ex.total_reactivos }} reactivos</p>
+                </div>
+              </a>
+            </div>
+          } @empty {
+            <div class="col-12 text-center text-muted py-5">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <p class="fs-5">No hay examenes para esta escuela.</p>
+            </div>
+          }
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -75,6 +83,5 @@ export class ExploreExamTypesComponent {
         });
       }),
     ),
-    { initialValue: [] },
   );
 }

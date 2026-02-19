@@ -15,7 +15,7 @@ export class UnitsComponent {
   private readonly svc = inject(UnitService);
   private readonly subjectSvc = inject(SubjectService);
 
-  units = toSignal(this.svc.list(), { initialValue: [] });
+  units = toSignal(this.svc.list());
   subjects = toSignal(this.subjectSvc.list(), { initialValue: [] });
 
   name = '';

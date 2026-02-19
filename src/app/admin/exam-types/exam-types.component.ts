@@ -15,7 +15,7 @@ export class ExamTypesComponent {
   private readonly svc = inject(ExamTypeService);
   private readonly schoolSvc = inject(SchoolService);
 
-  examTypes = toSignal(this.svc.list(), { initialValue: [] });
+  examTypes = toSignal(this.svc.list());
   schools = toSignal(this.schoolSvc.list(), { initialValue: [] });
 
   name = '';

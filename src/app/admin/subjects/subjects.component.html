@@ -16,45 +16,53 @@
   </div>
 </form>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Nombre</th>
-      <th>Slug</th>
-      <th>Activa</th>
-      <th style="width: 180px">Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (subject of subjects$ | async; track subject.id) {
+@if (subjects$ | async; as subjects) {
+  <table class="table table-striped">
+    <thead>
       <tr>
-        <td>
-          @if (editingId() === subject.id) {
-            <input
-              type="text"
-              class="form-control form-control-sm"
-              [ngModel]="editingName()"
-              (ngModelChange)="editingName.set($event)"
-              [ngModelOptions]="{ standalone: true }"
-            />
-          } @else {
-            {{ subject.name }}
-          }
-        </td>
-        <td>{{ subject.slug }}</td>
-        <td>{{ subject.active ? 'Si' : 'No' }}</td>
-        <td>
-          @if (editingId() === subject.id) {
-            <button class="btn btn-sm btn-success me-1" (click)="saveEdit(subject.id!)">Guardar</button>
-            <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancelar</button>
-          } @else {
-            <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(subject)">Editar</button>
-            <button class="btn btn-sm btn-outline-danger" (click)="remove(subject.id!)">Eliminar</button>
-          }
-        </td>
+        <th>Nombre</th>
+        <th>Slug</th>
+        <th>Activa</th>
+        <th style="width: 180px">Acciones</th>
       </tr>
-    } @empty {
-      <tr><td colspan="4" class="text-center text-muted">No hay materias registradas.</td></tr>
-    }
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      @for (subject of subjects; track subject.id) {
+        <tr>
+          <td>
+            @if (editingId() === subject.id) {
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [ngModel]="editingName()"
+                (ngModelChange)="editingName.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            } @else {
+              {{ subject.name }}
+            }
+          </td>
+          <td>{{ subject.slug }}</td>
+          <td>{{ subject.active ? 'Si' : 'No' }}</td>
+          <td>
+            @if (editingId() === subject.id) {
+              <button class="btn btn-sm btn-success me-1" (click)="saveEdit(subject.id!)">Guardar</button>
+              <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancelar</button>
+            } @else {
+              <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(subject)">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="remove(subject.id!)">Eliminar</button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="4" class="text-center text-muted">No hay materias registradas.</td></tr>
+      }
+    </tbody>
+  </table>
+} @else {
+  <div class="d-flex justify-content-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+}

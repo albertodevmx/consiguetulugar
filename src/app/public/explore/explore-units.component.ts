@@ -23,55 +23,63 @@ import { Tema, Subtema } from '../../core/models';
         <p class="text-muted mb-4">Abre una unidad para ver sus subtemas o practica directamente.</p>
       }
 
-      <div class="accordion" id="temasAccordion">
-        @for (item of temasData(); track item.tema.id; let i = $index) {
-          <div class="accordion-item">
-            <h2 class="accordion-header d-flex align-items-center" [id]="'heading-' + i">
-              <button
-                class="accordion-button collapsed flex-grow-1"
-                type="button"
-                data-bs-toggle="collapse"
-                [attr.data-bs-target]="'#collapse-' + i"
-                [attr.aria-expanded]="false"
-                [attr.aria-controls]="'collapse-' + i"
+      @if (temasData() === undefined) {
+        <div class="d-flex justify-content-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      } @else {
+        <div class="accordion" id="temasAccordion">
+          @for (item of temasData(); track item.tema.id; let i = $index) {
+            <div class="accordion-item">
+              <h2 class="accordion-header d-flex align-items-center" [id]="'heading-' + i">
+                <button
+                  class="accordion-button collapsed flex-grow-1"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  [attr.data-bs-target]="'#collapse-' + i"
+                  [attr.aria-expanded]="false"
+                  [attr.aria-controls]="'collapse-' + i"
+                >
+                  <i class="bi bi-folder2-open me-2"></i>{{ item.tema.orden }}. {{ item.tema.nombre_canonical }}
+                  <span class="badge bg-secondary ms-2">{{ item.count }} preguntas</span>
+                </button>
+                <a
+                  [routerLink]="['/practice/tema', materiaId(), item.tema.id]"
+                  class="btn btn-success btn-sm me-3 text-nowrap"
+                  (click)="$event.stopPropagation()"
+                >
+                  <i class="bi bi-play-fill me-1"></i>Practicar unidad
+                </a>
+              </h2>
+              <div
+                [id]="'collapse-' + i"
+                class="accordion-collapse collapse"
+                [attr.aria-labelledby]="'heading-' + i"
+                data-bs-parent="#temasAccordion"
               >
-                <i class="bi bi-folder2-open me-2"></i>{{ item.tema.orden }}. {{ item.tema.nombre_canonical }}
-                <span class="badge bg-secondary ms-2">{{ item.count }} preguntas</span>
-              </button>
-              <a
-                [routerLink]="['/practice/tema', materiaId(), item.tema.id]"
-                class="btn btn-success btn-sm me-3 text-nowrap"
-                (click)="$event.stopPropagation()"
-              >
-                <i class="bi bi-play-fill me-1"></i>Practicar unidad
-              </a>
-            </h2>
-            <div
-              [id]="'collapse-' + i"
-              class="accordion-collapse collapse"
-              [attr.aria-labelledby]="'heading-' + i"
-              data-bs-parent="#temasAccordion"
-            >
-              <div class="accordion-body">
-                <ul class="list-unstyled mb-0">
-                  @for (sub of item.subtemas; track sub.id) {
-                    <li class="py-1">
-                      <i class="bi bi-bookmark me-2 text-muted"></i>{{ sub.nombre_canonical }}
-                    </li>
-                  } @empty {
-                    <li class="text-muted">No hay subtemas registrados.</li>
-                  }
-                </ul>
+                <div class="accordion-body">
+                  <ul class="list-unstyled mb-0">
+                    @for (sub of item.subtemas; track sub.id) {
+                      <li class="py-1">
+                        <i class="bi bi-bookmark me-2 text-muted"></i>{{ sub.nombre_canonical }}
+                      </li>
+                    } @empty {
+                      <li class="text-muted">No hay subtemas registrados.</li>
+                    }
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
-        } @empty {
-          <div class="text-center text-muted py-5">
-            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-            <p class="fs-5">No hay temas para esta materia.</p>
-          </div>
-        }
-      </div>
+          } @empty {
+            <div class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <p class="fs-5">No hay temas para esta materia.</p>
+            </div>
+          }
+        </div>
+      }
     </div>
   `,
 })
@@ -130,6 +138,5 @@ export class ExploreUnitsComponent {
         );
       }),
     ),
-    { initialValue: [] as { tema: Tema; subtemas: Subtema[]; count: number }[] },
   );
 }

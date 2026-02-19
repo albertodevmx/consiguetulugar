@@ -25,7 +25,7 @@ export class AssignmentsComponent {
   private readonly utSvc = inject(UnitTopicService);
 
   /* ── Catalogs ── */
-  schools = toSignal(this.schoolSvc.list(), { initialValue: [] });
+  schools = toSignal(this.schoolSvc.list());
   examTypes = toSignal(this.examTypeSvc.list(), { initialValue: [] });
   subjects = toSignal(this.subjectSvc.list(), { initialValue: [] });
   units = toSignal(this.unitSvc.list(), { initialValue: [] });
@@ -86,7 +86,7 @@ export class AssignmentsComponent {
 
   /* ── Name helpers ── */
   schoolName(id: string) {
-    return this.schools().find((s) => s.id === id)?.name ?? id;
+    return this.schools()?.find((s) => s.id === id)?.name ?? id;
   }
   examTypeName(id: string) {
     return this.examTypes().find((e) => e.id === id)?.name ?? id;

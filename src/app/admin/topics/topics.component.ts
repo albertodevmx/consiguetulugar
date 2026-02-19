@@ -17,7 +17,7 @@ export class TopicsComponent {
   private readonly unitSvc = inject(UnitService);
   private readonly utSvc = inject(UnitTopicService);
 
-  topics = toSignal(this.svc.list(), { initialValue: [] });
+  topics = toSignal(this.svc.list());
   units = toSignal(this.unitSvc.list(), { initialValue: [] });
   unitTopics = toSignal(this.utSvc.list(), { initialValue: [] });
 

@@ -2,22 +2,30 @@
 <p class="text-muted mb-4">Arma el arbol de navegacion: Escuela &rarr; Tipo de examen &rarr; Materia &rarr; Unidad &rarr; Tema</p>
 
 <!-- ========== NIVEL 1: Escuela ========== -->
-<div class="row mb-4">
-  <div class="col-md-4">
-    <label class="form-label fw-bold">1. Escuela</label>
-    <select
-      class="form-select"
-      [ngModel]="selSchoolId()"
-      (ngModelChange)="onSchoolChange($event)"
-      name="school"
-    >
-      <option value="">-- Seleccionar escuela --</option>
-      @for (s of schools(); track s.id) {
-        <option [value]="s.id">{{ s.name }}</option>
-      }
-    </select>
+@if (schools() === undefined) {
+  <div class="d-flex justify-content-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
   </div>
-</div>
+} @else {
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <label class="form-label fw-bold">1. Escuela</label>
+      <select
+        class="form-select"
+        [ngModel]="selSchoolId()"
+        (ngModelChange)="onSchoolChange($event)"
+        name="school"
+      >
+        <option value="">-- Seleccionar escuela --</option>
+        @for (s of schools()!; track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+}
 
 <!-- ========== NIVEL 2: Tipo de examen (filtrado por escuela) ========== -->
 @if (selSchoolId()) {
