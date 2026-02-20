@@ -53,21 +53,30 @@ export class AuthService {
       createUserWithEmailAndPassword(this.auth, data.email, data.password),
     );
 
-    await updateProfile(cred.user, { displayName: data.nombre });
+    // Auth user created — profile writes are best-effort
+    try {
+      await updateProfile(cred.user, { displayName: data.nombre });
+    } catch (e) {
+      console.warn('updateProfile failed:', e);
+    }
 
-    const userDoc: Omit<Usuario, 'id'> = {
-      nombre: data.nombre,
-      email: data.email,
-      telefono: data.telefono,
-      foto_url: null,
-      bio: null,
-      rol: 'usuario',
-      examen_activo: null,
-      plan: 'gratuito',
-      fecha_registro: serverTimestamp() as any,
-    };
+    try {
+      const userDoc: Omit<Usuario, 'id'> = {
+        nombre: data.nombre,
+        email: data.email,
+        telefono: data.telefono,
+        foto_url: null,
+        bio: null,
+        rol: 'usuario',
+        examen_activo: null,
+        plan: 'gratuito',
+        fecha_registro: serverTimestamp() as any,
+      };
+      await setDoc(doc(this.fs, 'usuarios', cred.user.uid), userDoc);
+    } catch (e) {
+      console.warn('Firestore profile write failed:', e);
+    }
 
-    await setDoc(doc(this.fs, 'usuarios', cred.user.uid), userDoc);
     return cred;
   }
 
