@@ -4,8 +4,9 @@ const { defineSecret } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
-const Stripe = require('stripe');
 const https = require('https');
+const querystring = require('querystring');
+const crypto = require('crypto');
 
 initializeApp();
 
@@ -13,8 +14,64 @@ const stripeSecret = defineSecret('STRIPE_SECRET');
 const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
 
 /**
+ * Raw HTTPS call to the Stripe API (no SDK).
+ * Returns the parsed JSON response.
+ */
+function stripeRequest(method, path, key, formData) {
+  const postBody = formData ? querystring.stringify(formData) : '';
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.stripe.com',
+      port: 443,
+      path,
+      method,
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postBody),
+      },
+    };
+
+    console.log(`Stripe raw HTTPS ${method} ${path}`);
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => (body += chunk));
+      res.on('end', () => {
+        console.log(`Stripe response status: ${res.statusCode}`);
+        try {
+          const parsed = JSON.parse(body);
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(parsed);
+          } else {
+            const msg = parsed.error?.message || `HTTP ${res.statusCode}`;
+            console.error('Stripe API error:', msg);
+            reject(new Error(msg));
+          }
+        } catch (e) {
+          reject(new Error(`Invalid JSON from Stripe: ${body.substring(0, 200)}`));
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      console.error('HTTPS request error:', e.message);
+      reject(e);
+    });
+
+    req.setTimeout(30000, () => {
+      req.destroy();
+      reject(new Error('Stripe request timeout after 30s'));
+    });
+
+    req.write(postBody);
+    req.end();
+  });
+}
+
+/**
  * Listens for new documents in usuarios/{uid}/checkout_sessions.
- * Creates a Stripe Checkout Session and writes the URL back.
+ * Creates a Stripe Checkout Session via raw HTTPS and writes the URL back.
  */
 exports.createCheckoutSession = onDocumentCreated(
   {
@@ -34,52 +91,80 @@ exports.createCheckoutSession = onDocumentCreated(
     const key = stripeSecret.value();
     console.log('Stripe key starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
 
-    const stripe = new Stripe(key, {
-      maxNetworkRetries: 3,
-      timeout: 30000,
-    });
-
     try {
       const userRecord = await getAuth().getUser(uid);
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await stripeRequest('POST', '/v1/checkout/sessions', key, {
         mode: 'subscription',
         customer_email: userRecord.email,
-        line_items: [{ price, quantity: 1 }],
+        'line_items[0][price]': price,
+        'line_items[0][quantity]': '1',
         success_url,
         cancel_url,
-        metadata: { firebaseUID: uid },
+        'metadata[firebaseUID]': uid,
       });
 
       console.log('Checkout session created:', session.id);
       await snap.ref.update({ url: session.url, sessionId: session.id });
     } catch (error) {
-      console.error('Stripe error:', error.type, error.message);
+      console.error('Checkout error:', error.message);
       await snap.ref.update({ error: { message: error.message } });
     }
   },
 );
 
 /**
+ * Verifies a Stripe webhook signature manually (no SDK needed).
+ */
+function verifyStripeSignature(payload, sigHeader, secret) {
+  const parts = sigHeader.split(',').reduce((acc, part) => {
+    const [k, v] = part.split('=');
+    acc[k] = v;
+    return acc;
+  }, {});
+
+  const timestamp = parts.t;
+  const signature = parts.v1;
+
+  if (!timestamp || !signature) {
+    throw new Error('Invalid Stripe signature header');
+  }
+
+  const signedPayload = `${timestamp}.${payload}`;
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(signedPayload)
+    .digest('hex');
+
+  if (expected !== signature) {
+    throw new Error('Webhook signature verification failed');
+  }
+
+  // Reject timestamps older than 5 minutes
+  const age = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10);
+  if (age > 300) {
+    throw new Error('Webhook timestamp too old');
+  }
+
+  return JSON.parse(payload);
+}
+
+/**
  * Stripe Webhook — handles subscription events.
+ * Uses manual signature verification (no outbound network needed).
  */
 exports.stripeWebhook = onRequest(
   { secrets: [stripeSecret, stripeWebhookSecret] },
   async (req, res) => {
-    const stripe = new Stripe(stripeSecret.value(), {
-      maxNetworkRetries: 3,
-      timeout: 30000,
-    });
-
     let event;
     try {
-      event = stripe.webhooks.constructEvent(
-        req.rawBody,
+      event = verifyStripeSignature(
+        req.rawBody.toString('utf8'),
         req.headers['stripe-signature'],
         stripeWebhookSecret.value(),
       );
     } catch (err) {
-      console.error('Webhook signature verification failed:', err.message);
+      console.error('Webhook verification failed:', err.message);
       res.status(400).send(`Webhook Error: ${err.message}`);
       return;
     }
@@ -121,7 +206,6 @@ exports.stripeWebhook = onRequest(
 
 /**
  * Diagnostic: test raw HTTPS connectivity to api.stripe.com.
- * Call this URL in the browser to check if Cloud Functions can reach Stripe.
  * DELETE this function once payments are working.
  */
 exports.testStripeConnectivity = onRequest(async (req, res) => {
@@ -162,8 +246,6 @@ exports.testStripeConnectivity = onRequest(async (req, res) => {
     results.dns = { success: false, error: e.message };
   }
 
-  // Test 3: Stripe SDK version info
-  results.stripeVersion = require('stripe/package.json').version;
   results.nodeVersion = process.version;
 
   res.json(results);
