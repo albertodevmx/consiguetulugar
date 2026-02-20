@@ -1,6 +1,9 @@
 {
   "firestore": {
-    "rules": "firestore.rules"
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "hosting": {
     "public": "dist/consiguetulugar/browser",
@@ -19,19 +22,7 @@
   "functions": [
     {
       "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "source": "functions"
-    },
-    {
-      "source": "stripe-functions",
-      "codebase": "stripe-functions",
-      "disallowLegacyRuntimeConfig": true,
+      "source": "functions",
       "ignore": [
         "node_modules",
         ".git",
@@ -41,12 +32,6 @@
       ]
     }
   ],
-  "firestore": {
-    "database": "(default)",
-    "location": "nam5",
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
   "storage": {
     "rules": "storage.rules"
   },

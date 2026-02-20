@@ -19,6 +19,7 @@ exports.createCheckoutSession = onDocumentCreated(
   {
     document: 'usuarios/{uid}/checkout_sessions/{sessionId}',
     secrets: [stripeSecret],
+    timeoutSeconds: 60,
   },
   async (event) => {
     const snap = event.data;
@@ -27,11 +28,19 @@ exports.createCheckoutSession = onDocumentCreated(
     const { uid } = event.params;
     const { price, success_url, cancel_url } = snap.data();
 
-    const stripe = new Stripe(stripeSecret.value());
+    console.log('Creating checkout session for user:', uid, 'price:', price);
 
-    const userRecord = await getAuth().getUser(uid);
+    const key = stripeSecret.value();
+    console.log('Stripe key starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
+
+    const stripe = new Stripe(key, {
+      maxNetworkRetries: 3,
+      timeout: 30000,
+    });
 
     try {
+      const userRecord = await getAuth().getUser(uid);
+
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         customer_email: userRecord.email,
@@ -41,8 +50,10 @@ exports.createCheckoutSession = onDocumentCreated(
         metadata: { firebaseUID: uid },
       });
 
+      console.log('Checkout session created:', session.id);
       await snap.ref.update({ url: session.url, sessionId: session.id });
     } catch (error) {
+      console.error('Stripe error:', error.type, error.message);
       await snap.ref.update({ error: { message: error.message } });
     }
   },
@@ -50,18 +61,14 @@ exports.createCheckoutSession = onDocumentCreated(
 
 /**
  * Stripe Webhook — handles subscription events.
- *
- * SETUP:
- * 1. firebase functions:secrets:set STRIPE_SECRET
- * 2. firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
- * 3. In Stripe Dashboard > Webhooks, add endpoint:
- *    https://createcheckoutsession-XXXXX.cloudfunctions.net/stripeWebhook
- *    Events: checkout.session.completed, customer.subscription.deleted
  */
 exports.stripeWebhook = onRequest(
   { secrets: [stripeSecret, stripeWebhookSecret] },
   async (req, res) => {
-    const stripe = new Stripe(stripeSecret.value());
+    const stripe = new Stripe(stripeSecret.value(), {
+      maxNetworkRetries: 3,
+      timeout: 30000,
+    });
 
     let event;
     try {
