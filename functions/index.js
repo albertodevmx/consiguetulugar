@@ -5,8 +5,13 @@ const { initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
 const Stripe = require('stripe');
+const https = require('https');
 
 initializeApp();
+
+// Reusable https agent — forces stripe to use Node's http module
+// instead of native fetch(), which can fail in Cloud Functions Gen 2.
+const agent = new https.Agent({ keepAlive: true });
 
 const stripeSecret = defineSecret('STRIPE_SECRET');
 const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
@@ -34,6 +39,7 @@ exports.createCheckoutSession = onDocumentCreated(
     console.log('Stripe key starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
 
     const stripe = new Stripe(key, {
+      httpAgent: agent,
       maxNetworkRetries: 3,
       timeout: 30000,
     });
@@ -66,6 +72,7 @@ exports.stripeWebhook = onRequest(
   { secrets: [stripeSecret, stripeWebhookSecret] },
   async (req, res) => {
     const stripe = new Stripe(stripeSecret.value(), {
+      httpAgent: agent,
       maxNetworkRetries: 3,
       timeout: 30000,
     });
