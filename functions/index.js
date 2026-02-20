@@ -1,4 +1,3 @@
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onRequest } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
@@ -15,101 +14,87 @@ const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
 
 /**
  * Raw HTTPS call to the Stripe API (no SDK).
- * Returns the parsed JSON response.
  */
 function stripeRequest(method, path, key, formData) {
   const postBody = formData ? querystring.stringify(formData) : '';
   return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'api.stripe.com',
-      port: 443,
-      path,
-      method,
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(postBody),
+    const req = https.request(
+      {
+        hostname: 'api.stripe.com',
+        port: 443,
+        path,
+        method,
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': Buffer.byteLength(postBody),
+        },
       },
-    };
-
-    console.log(`Stripe raw HTTPS ${method} ${path}`);
-
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => (body += chunk));
-      res.on('end', () => {
-        console.log(`Stripe response status: ${res.statusCode}`);
-        try {
-          const parsed = JSON.parse(body);
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed);
-          } else {
-            const msg = parsed.error?.message || `HTTP ${res.statusCode}`;
-            console.error('Stripe API error:', msg);
-            reject(new Error(msg));
+      (res) => {
+        let body = '';
+        res.on('data', (chunk) => (body += chunk));
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(body);
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve(parsed);
+            } else {
+              reject(new Error(parsed.error?.message || `HTTP ${res.statusCode}`));
+            }
+          } catch (e) {
+            reject(new Error(`Invalid JSON: ${body.substring(0, 200)}`));
           }
-        } catch (e) {
-          reject(new Error(`Invalid JSON from Stripe: ${body.substring(0, 200)}`));
-        }
-      });
-    });
-
-    req.on('error', (e) => {
-      console.error('HTTPS request error:', e.message);
-      reject(e);
-    });
-
+        });
+      },
+    );
+    req.on('error', reject);
     req.setTimeout(30000, () => {
       req.destroy();
-      reject(new Error('Stripe request timeout after 30s'));
+      reject(new Error('Stripe request timeout'));
     });
-
     req.write(postBody);
     req.end();
   });
 }
 
 /**
- * Listens for new documents in usuarios/{uid}/checkout_sessions.
- * Creates a Stripe Checkout Session via raw HTTPS and writes the URL back.
+ * Creates a Stripe Embedded Checkout session.
+ * Called directly from the frontend via HTTP POST.
  */
-exports.createCheckoutSession = onDocumentCreated(
-  {
-    document: 'usuarios/{uid}/checkout_sessions/{sessionId}',
-    secrets: [stripeSecret],
-    timeoutSeconds: 60,
-  },
-  async (event) => {
-    const snap = event.data;
-    if (!snap) return;
+exports.createEmbeddedCheckout = onRequest(
+  { secrets: [stripeSecret], cors: true },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
 
-    const { uid } = event.params;
-    const { price, success_url, cancel_url } = snap.data();
-
-    console.log('Creating checkout session for user:', uid, 'price:', price);
-
-    // Strip ALL non-printable / non-ASCII characters from the secret
-    const key = stripeSecret.value().replace(/[^\x20-\x7E]/g, '');
-    console.log('Stripe key length:', key.length, 'starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
+    const authHeader = req.headers.authorization || '';
+    const match = authHeader.match(/^Bearer (.+)$/);
+    if (!match) {
+      res.status(401).json({ error: 'Missing authentication' });
+      return;
+    }
 
     try {
-      const userRecord = await getAuth().getUser(uid);
+      const token = await getAuth().verifyIdToken(match[1]);
+      const key = stripeSecret.value().replace(/[^\x20-\x7E]/g, '');
+      const { priceId, returnUrl } = req.body;
 
       const session = await stripeRequest('POST', '/v1/checkout/sessions', key, {
+        ui_mode: 'embedded',
         mode: 'subscription',
-        customer_email: userRecord.email,
-        'line_items[0][price]': price,
+        customer_email: token.email,
+        'line_items[0][price]': priceId,
         'line_items[0][quantity]': '1',
-        success_url,
-        cancel_url,
-        'metadata[firebaseUID]': uid,
+        return_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
+        'metadata[firebaseUID]': token.uid,
       });
 
-      console.log('Checkout session created:', session.id);
-      await snap.ref.update({ url: session.url, sessionId: session.id });
+      res.json({ clientSecret: session.client_secret });
     } catch (error) {
-      console.error('Checkout error:', error.message);
-      await snap.ref.update({ error: { message: error.message } });
+      console.error('Embedded checkout error:', error.message);
+      res.status(500).json({ error: error.message });
     }
   },
 );
@@ -126,33 +111,23 @@ function verifyStripeSignature(payload, sigHeader, secret) {
 
   const timestamp = parts.t;
   const signature = parts.v1;
+  if (!timestamp || !signature) throw new Error('Invalid Stripe signature header');
 
-  if (!timestamp || !signature) {
-    throw new Error('Invalid Stripe signature header');
-  }
-
-  const signedPayload = `${timestamp}.${payload}`;
   const expected = crypto
     .createHmac('sha256', secret)
-    .update(signedPayload)
+    .update(`${timestamp}.${payload}`)
     .digest('hex');
 
-  if (expected !== signature) {
-    throw new Error('Webhook signature verification failed');
-  }
+  if (expected !== signature) throw new Error('Webhook signature verification failed');
 
-  // Reject timestamps older than 5 minutes
   const age = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10);
-  if (age > 300) {
-    throw new Error('Webhook timestamp too old');
-  }
+  if (age > 300) throw new Error('Webhook timestamp too old');
 
   return JSON.parse(payload);
 }
 
 /**
  * Stripe Webhook — handles subscription events.
- * Uses manual signature verification (no outbound network needed).
  */
 exports.stripeWebhook = onRequest(
   { secrets: [stripeSecret, stripeWebhookSecret] },
@@ -204,50 +179,3 @@ exports.stripeWebhook = onRequest(
     res.json({ received: true });
   },
 );
-
-/**
- * Diagnostic: test raw HTTPS connectivity to api.stripe.com.
- * DELETE this function once payments are working.
- */
-exports.testStripeConnectivity = onRequest(async (req, res) => {
-  const results = {};
-
-  // Test 1: raw HTTPS GET to api.stripe.com
-  try {
-    const raw = await new Promise((resolve, reject) => {
-      const r = https.get('https://api.stripe.com', (response) => {
-        let body = '';
-        response.on('data', (d) => (body += d));
-        response.on('end', () =>
-          resolve({ status: response.statusCode, body: body.substring(0, 200) }),
-        );
-      });
-      r.on('error', reject);
-      r.setTimeout(10000, () => {
-        r.destroy();
-        reject(new Error('Timeout after 10s'));
-      });
-    });
-    results.rawHttps = { success: true, ...raw };
-  } catch (e) {
-    results.rawHttps = { success: false, error: e.message };
-  }
-
-  // Test 2: DNS resolution
-  const dns = require('dns');
-  try {
-    const addresses = await new Promise((resolve, reject) => {
-      dns.resolve4('api.stripe.com', (err, addrs) => {
-        if (err) reject(err);
-        else resolve(addrs);
-      });
-    });
-    results.dns = { success: true, addresses };
-  } catch (e) {
-    results.dns = { success: false, error: e.message };
-  }
-
-  results.nodeVersion = process.version;
-
-  res.json(results);
-});
