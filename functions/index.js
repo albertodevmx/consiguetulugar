@@ -88,7 +88,7 @@ exports.createCheckoutSession = onDocumentCreated(
 
     console.log('Creating checkout session for user:', uid, 'price:', price);
 
-    const key = stripeSecret.value();
+    const key = stripeSecret.value().trim();
     console.log('Stripe key starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
 
     try {
@@ -161,7 +161,7 @@ exports.stripeWebhook = onRequest(
       event = verifyStripeSignature(
         req.rawBody.toString('utf8'),
         req.headers['stripe-signature'],
-        stripeWebhookSecret.value(),
+        stripeWebhookSecret.value().trim(),
       );
     } catch (err) {
       console.error('Webhook verification failed:', err.message);
