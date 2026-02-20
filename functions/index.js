@@ -88,8 +88,9 @@ exports.createCheckoutSession = onDocumentCreated(
 
     console.log('Creating checkout session for user:', uid, 'price:', price);
 
-    const key = stripeSecret.value().trim();
-    console.log('Stripe key starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
+    // Strip ALL non-printable / non-ASCII characters from the secret
+    const key = stripeSecret.value().replace(/[^\x20-\x7E]/g, '');
+    console.log('Stripe key length:', key.length, 'starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
 
     try {
       const userRecord = await getAuth().getUser(uid);
@@ -161,7 +162,7 @@ exports.stripeWebhook = onRequest(
       event = verifyStripeSignature(
         req.rawBody.toString('utf8'),
         req.headers['stripe-signature'],
-        stripeWebhookSecret.value().trim(),
+        stripeWebhookSecret.value().replace(/[^\x20-\x7E]/g, ''),
       );
     } catch (err) {
       console.error('Webhook verification failed:', err.message);
