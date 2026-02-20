@@ -9,10 +9,6 @@ const https = require('https');
 
 initializeApp();
 
-// Reusable https agent — forces stripe to use Node's http module
-// instead of native fetch(), which can fail in Cloud Functions Gen 2.
-const agent = new https.Agent({ keepAlive: true });
-
 const stripeSecret = defineSecret('STRIPE_SECRET');
 const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
 
@@ -39,7 +35,6 @@ exports.createCheckoutSession = onDocumentCreated(
     console.log('Stripe key starts with:', key ? key.substring(0, 7) + '...' : 'EMPTY');
 
     const stripe = new Stripe(key, {
-      httpAgent: agent,
       maxNetworkRetries: 3,
       timeout: 30000,
     });
@@ -72,7 +67,6 @@ exports.stripeWebhook = onRequest(
   { secrets: [stripeSecret, stripeWebhookSecret] },
   async (req, res) => {
     const stripe = new Stripe(stripeSecret.value(), {
-      httpAgent: agent,
       maxNetworkRetries: 3,
       timeout: 30000,
     });
@@ -124,3 +118,53 @@ exports.stripeWebhook = onRequest(
     res.json({ received: true });
   },
 );
+
+/**
+ * Diagnostic: test raw HTTPS connectivity to api.stripe.com.
+ * Call this URL in the browser to check if Cloud Functions can reach Stripe.
+ * DELETE this function once payments are working.
+ */
+exports.testStripeConnectivity = onRequest(async (req, res) => {
+  const results = {};
+
+  // Test 1: raw HTTPS GET to api.stripe.com
+  try {
+    const raw = await new Promise((resolve, reject) => {
+      const r = https.get('https://api.stripe.com', (response) => {
+        let body = '';
+        response.on('data', (d) => (body += d));
+        response.on('end', () =>
+          resolve({ status: response.statusCode, body: body.substring(0, 200) }),
+        );
+      });
+      r.on('error', reject);
+      r.setTimeout(10000, () => {
+        r.destroy();
+        reject(new Error('Timeout after 10s'));
+      });
+    });
+    results.rawHttps = { success: true, ...raw };
+  } catch (e) {
+    results.rawHttps = { success: false, error: e.message };
+  }
+
+  // Test 2: DNS resolution
+  const dns = require('dns');
+  try {
+    const addresses = await new Promise((resolve, reject) => {
+      dns.resolve4('api.stripe.com', (err, addrs) => {
+        if (err) reject(err);
+        else resolve(addrs);
+      });
+    });
+    results.dns = { success: true, addresses };
+  } catch (e) {
+    results.dns = { success: false, error: e.message };
+  }
+
+  // Test 3: Stripe SDK version info
+  results.stripeVersion = require('stripe/package.json').version;
+  results.nodeVersion = process.version;
+
+  res.json(results);
+});
