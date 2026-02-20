@@ -4,6 +4,7 @@ const { defineSecret } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
+const Stripe = require('stripe');
 
 initializeApp();
 
@@ -26,7 +27,7 @@ exports.createCheckoutSession = onDocumentCreated(
     const { uid } = event.params;
     const { price, success_url, cancel_url } = snap.data();
 
-    const stripe = require('stripe')(stripeSecret.value());
+    const stripe = new Stripe(stripeSecret.value());
 
     const userRecord = await getAuth().getUser(uid);
 
@@ -60,7 +61,7 @@ exports.createCheckoutSession = onDocumentCreated(
 exports.stripeWebhook = onRequest(
   { secrets: [stripeSecret, stripeWebhookSecret] },
   async (req, res) => {
-    const stripe = require('stripe')(stripeSecret.value());
+    const stripe = new Stripe(stripeSecret.value());
 
     let event;
     try {
