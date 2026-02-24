@@ -13,6 +13,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
   serverTimestamp,
 } from '@angular/fire/firestore';
 import { Usuario } from '../models';
@@ -70,6 +71,10 @@ export class AuthService {
         rol: 'usuario',
         examen_activo: null,
         plan: 'gratuito',
+        examenes_pagados: [],
+        preguntas_respondidas: 0,
+        preguntas_hoy: 0,
+        fecha_preguntas_hoy: null,
         fecha_registro: serverTimestamp() as any,
       };
       await setDoc(doc(this.fs, 'usuarios', cred.user.uid), userDoc);
@@ -90,10 +95,32 @@ export class AuthService {
     return this.ngZone.run(() => signOut(this.auth));
   }
 
+  /** Update the in-memory profile after Firestore changes */
+  refreshProfile() {
+    const uid = this._user()?.uid;
+    if (uid) this.loadProfile(uid);
+  }
+
+  /** Update specific fields on the user profile in Firestore and refresh */
+  async updateProfile(fields: Partial<Omit<Usuario, 'id'>>) {
+    const uid = this._user()?.uid;
+    if (!uid) return;
+    await updateDoc(doc(this.fs, 'usuarios', uid), fields as any);
+    await this.loadProfile(uid);
+  }
+
   private async loadProfile(uid: string) {
     const snap = await getDoc(doc(this.fs, 'usuarios', uid));
     if (snap.exists()) {
-      this._profile.set({ id: snap.id, ...snap.data() } as Usuario);
+      const data = snap.data() as Omit<Usuario, 'id'>;
+      this._profile.set({
+        ...data,
+        id: snap.id,
+        examenes_pagados: data.examenes_pagados ?? [],
+        preguntas_respondidas: data.preguntas_respondidas ?? 0,
+        preguntas_hoy: data.preguntas_hoy ?? 0,
+        fecha_preguntas_hoy: data.fecha_preguntas_hoy ?? null,
+      });
     }
   }
 }

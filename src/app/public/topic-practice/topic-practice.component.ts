@@ -1,14 +1,16 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap, take, map } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta } from '../../core/models';
 
 @Component({
   selector: 'app-topic-practice',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, RouterLink],
   template: `
     <div class="container py-4">
       <!-- Loading -->
@@ -18,6 +20,55 @@ import { Pregunta } from '../../core/models';
             <span class="visually-hidden">Cargando...</span>
           </div>
           <p class="text-muted mt-2">Cargando preguntas...</p>
+        </div>
+      }
+
+      <!-- Must register to answer -->
+      @if (!loading() && !auth.isLoggedIn() && questions().length > 0) {
+        <div class="card border-warning mb-4">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-lock fs-1 text-warning d-block mb-2"></i>
+            <h4>Registrate para practicar</h4>
+            <p class="text-muted">Crea una cuenta gratuita para responder preguntas. Tendras 30 preguntas de prueba gratis.</p>
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+              <a routerLink="/registro" class="btn btn-warning btn-lg">
+                <i class="bi bi-person-plus me-1"></i> Crear cuenta gratis
+              </a>
+              <a routerLink="/login" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Ya tengo cuenta
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Quota warning for free users -->
+      @if (auth.isLoggedIn() && quota.isFree() && quota.quotaMessage()) {
+        <div class="alert d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3"
+             [ngClass]="quota.remaining() > 5 ? 'alert-info' : quota.remaining() > 0 ? 'alert-warning' : 'alert-danger'">
+          <span>
+            <i class="bi bi-info-circle me-1"></i>{{ quota.quotaMessage() }}
+          </span>
+          <a routerLink="/suscripcion" class="btn btn-sm btn-primary text-nowrap">
+            <i class="bi bi-star-fill me-1"></i> Desbloquear Premium
+          </a>
+        </div>
+      }
+
+      <!-- Quota exceeded -->
+      @if (auth.isLoggedIn() && quotaExceeded()) {
+        <div class="card border-primary mb-4">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-star-fill fs-1 text-primary d-block mb-2"></i>
+            <h4>Has agotado tus preguntas gratuitas</h4>
+            <p class="text-muted mb-3">
+              Suscribete para practicar sin limites y prepararte al maximo para tu examen.
+            </p>
+            <a routerLink="/suscripcion" class="btn btn-primary btn-lg">
+              <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
+            </a>
+            <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
+          </div>
         </div>
       }
 
@@ -36,14 +87,14 @@ import { Pregunta } from '../../core/models';
 
       <!-- Session finished -->
       @if (sessionFinished() && totalAnswered() > 0) {
-        <div class="card text-center py-4">
+        <div class="card text-center py-4 mb-3">
           <div class="card-body">
             <i class="bi bi-trophy fs-1 text-warning d-block mb-2"></i>
             <h4>Has completado todas las preguntas</h4>
             <p class="fs-5 mt-3">
               Resultado: <span class="badge bg-success fs-5">{{ correctCount() }}</span> de <span class="badge bg-secondary fs-5">{{ totalAnswered() }}</span> correctas
             </p>
-            <div class="d-flex justify-content-center gap-3 mt-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-3">
               <button class="btn btn-success" (click)="restart()">
                 <i class="bi bi-arrow-repeat me-1"></i> Reiniciar
               </button>
@@ -53,11 +104,24 @@ import { Pregunta } from '../../core/models';
             </div>
           </div>
         </div>
+
+        <!-- Upsell after finishing -->
+        @if (quota.isFree()) {
+          <div class="card border-primary">
+            <div class="card-body text-center py-3">
+              <h5 class="text-primary mb-2"><i class="bi bi-star-fill me-1"></i> Quieres seguir practicando sin limites?</h5>
+              <p class="text-muted small mb-2">Con Premium tendras acceso ilimitado a miles de preguntas con explicaciones detalladas.</p>
+              <a routerLink="/suscripcion" class="btn btn-primary">
+                Suscribirme por $99 MXN/mes
+              </a>
+            </div>
+          </div>
+        }
       }
 
       <!-- Question card -->
       @if (currentQuestion(); as q) {
-        @if (!sessionFinished()) {
+        @if (!sessionFinished() && canShowQuestion()) {
           <div class="card">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
@@ -70,12 +134,6 @@ import { Pregunta } from '../../core/models';
                   </span>
                 }
               </div>
-
-              @if (q.imagen_url) {
-                <div class="text-center mb-3">
-                  <img [src]="q.imagen_url" [alt]="q.imagen_descripcion || 'Imagen'" class="img-fluid rounded" style="max-height: 300px">
-                </div>
-              }
 
               <h5 class="mb-4">{{ q.texto }}</h5>
 
@@ -123,6 +181,8 @@ import { Pregunta } from '../../core/models';
 export class TopicPracticeComponent {
   private route = inject(ActivatedRoute);
   private preguntaSvc = inject(PreguntaService);
+  auth = inject(AuthService);
+  quota = inject(QuotaService);
 
   questions = signal<Pregunta[]>([]);
   currentIndex = signal(0);
@@ -132,11 +192,23 @@ export class TopicPracticeComponent {
   sessionFinished = signal(false);
   correctCount = signal(0);
   totalAnswered = signal(0);
+  examenId = signal('');
 
   currentQuestion = computed(() => {
     const qs = this.questions();
     const idx = this.currentIndex();
     return idx < qs.length ? qs[idx] : null;
+  });
+
+  /** User can see the question card only if logged in and has quota */
+  canShowQuestion = computed(() => {
+    if (!this.auth.isLoggedIn()) return false;
+    if (this.quotaExceeded()) return false;
+    return true;
+  });
+
+  quotaExceeded = computed(() => {
+    return this.auth.isLoggedIn() && this.quota.isFree() && !this.quota.canAnswer();
   });
 
   isCorrect = computed(() => {
@@ -163,7 +235,10 @@ export class TopicPracticeComponent {
   constructor() {
     this.route.paramMap
       .pipe(
-        map((p) => p.get('temaId')!),
+        map((p) => {
+          this.examenId.set(p.get('examenId') ?? '');
+          return p.get('temaId')!;
+        }),
         switchMap((temaId) => this.preguntaSvc.listByTema(temaId).pipe(take(1))),
       )
       .subscribe((qs) => {
@@ -177,14 +252,21 @@ export class TopicPracticeComponent {
     if (!this.answered()) this.selectedOption.set(idx);
   }
 
-  submitAnswer() {
+  async submitAnswer() {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
     if (this.isCorrect()) this.correctCount.update((n) => n + 1);
+    // Record answer for quota tracking
+    await this.quota.recordAnswer();
   }
 
   nextQuestion() {
+    // Check quota before showing next question
+    if (this.quota.isFree() && !this.quota.canAnswer()) {
+      this.sessionFinished.set(true);
+      return;
+    }
     const next = this.currentIndex() + 1;
     if (next < this.questions().length) {
       this.currentIndex.set(next);
@@ -196,6 +278,7 @@ export class TopicPracticeComponent {
   }
 
   restart() {
+    if (this.quota.isFree() && !this.quota.canAnswer()) return;
     this.questions.set(this.shuffle(this.questions()));
     this.currentIndex.set(0);
     this.selectedOption.set(null);

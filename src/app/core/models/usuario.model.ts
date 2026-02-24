@@ -12,5 +12,9 @@ export interface Usuario {
   rol: RolUsuario;
   examen_activo: string | null;
   plan: 'gratuito' | 'premium';
+  examenes_pagados: string[];
+  preguntas_respondidas: number;
+  preguntas_hoy: number;
+  fecha_preguntas_hoy: string | null;
   fecha_registro: Timestamp;
 }

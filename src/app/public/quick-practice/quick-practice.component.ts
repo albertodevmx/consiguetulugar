@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { take } from 'rxjs';
 
 import { PreguntaService } from '../../core/services/pregunta.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta } from '../../core/models';
 
 @Component({
@@ -14,6 +16,8 @@ import { Pregunta } from '../../core/models';
 })
 export class QuickPracticeComponent {
   private preguntaSvc = inject(PreguntaService);
+  auth = inject(AuthService);
+  quota = inject(QuotaService);
 
   pool = signal<Pregunta[]>([]);
   currentIndex = signal(0);
@@ -27,6 +31,16 @@ export class QuickPracticeComponent {
     const p = this.pool();
     const idx = this.currentIndex();
     return idx < p.length ? p[idx] : null;
+  });
+
+  canShowQuestion = computed(() => {
+    if (!this.auth.isLoggedIn()) return false;
+    if (this.quotaExceeded()) return false;
+    return true;
+  });
+
+  quotaExceeded = computed(() => {
+    return this.auth.isLoggedIn() && this.quota.isFree() && !this.quota.canAnswer();
   });
 
   isCorrect = computed(() => {
@@ -69,14 +83,16 @@ export class QuickPracticeComponent {
     if (!this.answered()) this.selectedOption.set(idx);
   }
 
-  submitAnswer() {
+  async submitAnswer() {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
     if (this.isCorrect()) this.correctCount.update((n) => n + 1);
+    await this.quota.recordAnswer();
   }
 
   nextQuestion() {
+    if (this.quota.isFree() && !this.quota.canAnswer()) return;
     const next = this.currentIndex() + 1;
     if (next < this.pool().length) {
       this.currentIndex.set(next);

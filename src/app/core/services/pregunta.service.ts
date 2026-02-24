@@ -7,8 +7,13 @@ import {
   where,
   limit,
 } from '@angular/fire/firestore';
-import { Observable, of } from 'rxjs';
+import { Observable, of, map } from 'rxjs';
 import { Pregunta } from '../models';
+
+/** Exclude questions that have an image — those are incomplete/deficient */
+function sinImagenes(obs$: Observable<Pregunta[]>): Observable<Pregunta[]> {
+  return obs$.pipe(map((qs) => qs.filter((q) => !q.imagen_url)));
+}
 
 @Injectable({ providedIn: 'root' })
 export class PreguntaService {
@@ -21,10 +26,9 @@ export class PreguntaService {
       where('subtema_id', '==', subtemaId),
       limit(max),
     );
-    return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
+    return sinImagenes(collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>);
   }
 
-  /** Query preguntas whose subtema_id is in the given list (max 30 per Firestore 'in' limit) */
   listBySubtemaIds(subtemaIds: string[], max = 50): Observable<Pregunta[]> {
     if (subtemaIds.length === 0) return of([]);
     const q = query(
@@ -32,21 +36,21 @@ export class PreguntaService {
       where('subtema_id', 'in', subtemaIds),
       limit(max),
     );
-    return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
+    return sinImagenes(collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>);
   }
 
   listByTema(temaId: string): Observable<Pregunta[]> {
     const q = query(this.col, where('tema_id', '==', temaId));
-    return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
+    return sinImagenes(collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>);
   }
 
   listByMateria(materiaId: string): Observable<Pregunta[]> {
     const q = query(this.col, where('materia_id', '==', materiaId));
-    return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
+    return sinImagenes(collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>);
   }
 
   listAll(max = 50): Observable<Pregunta[]> {
     const q = query(this.col, limit(max));
-    return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
+    return sinImagenes(collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>);
   }
 }

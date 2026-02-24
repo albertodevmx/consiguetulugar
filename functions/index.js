@@ -2,7 +2,7 @@ const { onRequest } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const https = require('https');
 const querystring = require('querystring');
 const crypto = require('crypto');
@@ -79,7 +79,7 @@ exports.createEmbeddedCheckout = onRequest(
     try {
       const token = await getAuth().verifyIdToken(match[1]);
       const key = stripeSecret.value().replace(/[^\x20-\x7E]/g, '');
-      const { priceId, returnUrl } = req.body;
+      const { priceId, returnUrl, examenId, examenNombre } = req.body;
 
       const session = await stripeRequest('POST', '/v1/checkout/sessions', key, {
         ui_mode: 'embedded',
@@ -89,6 +89,8 @@ exports.createEmbeddedCheckout = onRequest(
         'line_items[0][quantity]': '1',
         return_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
         'metadata[firebaseUID]': token.uid,
+        'metadata[examenId]': examenId || '',
+        'metadata[examenNombre]': examenNombre || '',
       });
 
       res.json({ clientSecret: session.client_secret });
@@ -151,12 +153,21 @@ exports.stripeWebhook = onRequest(
       case 'checkout.session.completed': {
         const session = event.data.object;
         const uid = session.metadata.firebaseUID;
+        const examenId = session.metadata.examenId;
+
         if (uid) {
-          await db.doc(`usuarios/${uid}`).update({
+          const updateData = {
             plan: 'premium',
             stripe_customer_id: session.customer,
             stripe_subscription_id: session.subscription,
-          });
+          };
+
+          // Add the exam to the user's paid exams list
+          if (examenId) {
+            updateData.examenes_pagados = FieldValue.arrayUnion(examenId);
+          }
+
+          await db.doc(`usuarios/${uid}`).update(updateData);
         }
         break;
       }

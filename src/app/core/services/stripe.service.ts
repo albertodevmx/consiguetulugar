@@ -9,10 +9,17 @@ export class StripeService {
   /**
    * Calls the Cloud Function to create an embedded checkout session.
    * Returns the client_secret needed by Stripe.js to mount the form.
+   * @param priceId Stripe price ID
+   * @param examenId The exam the user is paying for
+   * @param examenNombre Human-readable name for the exam (shown in Stripe)
    */
-  async createEmbeddedCheckout(priceId: string): Promise<string> {
+  async createEmbeddedCheckout(
+    priceId: string,
+    examenId: string,
+    examenNombre: string,
+  ): Promise<string> {
     const user = this.auth.currentUser;
-    if (!user) throw new Error('Debes iniciar sesión primero.');
+    if (!user) throw new Error('Debes iniciar sesion primero.');
 
     const token = await user.getIdToken();
 
@@ -26,14 +33,16 @@ export class StripeService {
         },
         body: JSON.stringify({
           priceId,
+          examenId,
+          examenNombre,
           returnUrl: `${window.location.origin}/suscripcion/exito`,
         }),
       },
     );
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Error de conexión' }));
-      throw new Error(err.error || 'Error al crear sesión de pago');
+      const err = await response.json().catch(() => ({ error: 'Error de conexion' }));
+      throw new Error(err.error || 'Error al crear sesion de pago');
     }
 
     const { clientSecret } = await response.json();

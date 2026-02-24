@@ -6,6 +6,8 @@ import { MateriaService } from '../../core/services/materia.service';
 import { TemaService } from '../../core/services/tema.service';
 import { SubtemaService } from '../../core/services/subtema.service';
 import { PreguntaService } from '../../core/services/pregunta.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { QuotaService } from '../../core/services/quota.service';
 import { Tema, Subtema } from '../../core/models';
 
 @Component({
@@ -23,6 +25,26 @@ import { Tema, Subtema } from '../../core/models';
         <p class="text-muted mb-4">Abre una unidad para ver sus subtemas o practica directamente.</p>
       }
 
+      <!-- Upsell for non-logged-in users -->
+      @if (!auth.isLoggedIn()) {
+        <div class="alert alert-warning d-flex flex-column flex-sm-row align-items-sm-center gap-2 mb-3">
+          <span><i class="bi bi-lock me-1"></i>Registrate gratis para practicar. Obtendras 30 preguntas de prueba.</span>
+          <a routerLink="/registro" class="btn btn-sm btn-warning text-nowrap">
+            <i class="bi bi-person-plus me-1"></i> Crear cuenta
+          </a>
+        </div>
+      }
+
+      <!-- Upsell for free users -->
+      @if (auth.isLoggedIn() && quota.isFree()) {
+        <div class="alert alert-info d-flex flex-column flex-sm-row align-items-sm-center gap-2 mb-3">
+          <span><i class="bi bi-star me-1"></i>Suscribete para practicar este examen sin limites.</span>
+          <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-sm btn-primary text-nowrap">
+            <i class="bi bi-star-fill me-1"></i> Suscribirme
+          </a>
+        </div>
+      }
+
       @if (temasData() === undefined) {
         <div class="d-flex justify-content-center py-5">
           <div class="spinner-border text-primary" role="status">
@@ -33,7 +55,7 @@ import { Tema, Subtema } from '../../core/models';
         <div class="accordion" id="temasAccordion">
           @for (item of temasData(); track item.tema.id; let i = $index) {
             <div class="accordion-item">
-              <h2 class="accordion-header d-flex align-items-center" [id]="'heading-' + i">
+              <h2 class="accordion-header d-flex flex-column flex-sm-row align-items-sm-center" [id]="'heading-' + i">
                 <button
                   class="accordion-button collapsed flex-grow-1"
                   type="button"
@@ -42,15 +64,17 @@ import { Tema, Subtema } from '../../core/models';
                   [attr.aria-expanded]="false"
                   [attr.aria-controls]="'collapse-' + i"
                 >
-                  <i class="bi bi-folder2-open me-2"></i>{{ item.tema.orden }}. {{ item.tema.nombre_canonical }}
-                  <span class="badge bg-secondary ms-2">{{ item.count }} preguntas</span>
+                  <span class="me-2">
+                    <i class="bi bi-folder2-open me-1"></i>{{ item.tema.orden }}. {{ item.tema.nombre_canonical }}
+                  </span>
+                  <span class="badge bg-secondary">{{ item.count }} preguntas</span>
                 </button>
                 <a
-                  [routerLink]="['/practice/tema', materiaId(), item.tema.id]"
-                  class="btn btn-success btn-sm me-3 text-nowrap"
+                  [routerLink]="['/practice/tema', examenId(), materiaId(), item.tema.id]"
+                  class="btn btn-success btn-sm me-sm-3 mx-3 mx-sm-0 my-1 text-nowrap"
                   (click)="$event.stopPropagation()"
                 >
-                  <i class="bi bi-play-fill me-1"></i>Practicar unidad
+                  <i class="bi bi-play-fill me-1"></i>Practicar
                 </a>
               </h2>
               <div
@@ -89,6 +113,8 @@ export class ExploreUnitsComponent {
   private temaSvc = inject(TemaService);
   private subtemaSvc = inject(SubtemaService);
   private preguntaSvc = inject(PreguntaService);
+  auth = inject(AuthService);
+  quota = inject(QuotaService);
 
   escuela = toSignal(this.route.paramMap.pipe(map((p) => p.get('escuela')!)), { initialValue: '' });
   examenId = toSignal(this.route.paramMap.pipe(map((p) => p.get('examenId')!)), { initialValue: '' });
@@ -113,7 +139,6 @@ export class ExploreUnitsComponent {
           switchMap(([temas, preguntas]) => {
             if (temas.length === 0) return of([] as { tema: Tema; subtemas: Subtema[]; count: number }[]);
 
-            // Count preguntas per tema using tema_id directly
             const countByTema = new Map<string, number>();
             for (const q of preguntas) {
               if (q.tema_id) {
@@ -121,7 +146,6 @@ export class ExploreUnitsComponent {
               }
             }
 
-            // Fetch subtemas for each tema (for accordion display)
             const subtema$ = temas.map((t) =>
               this.subtemaSvc.listByTema(materiaId, t.id!),
             );
