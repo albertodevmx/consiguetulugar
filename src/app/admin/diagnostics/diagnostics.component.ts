@@ -3,12 +3,12 @@ import { RouterLink } from '@angular/router';
 import {
   Firestore,
   collection,
-  collectionData,
   getDocs,
   query,
   where,
+  doc,
+  updateDoc,
 } from '@angular/fire/firestore';
-import { take } from 'rxjs';
 import { Materia } from '../../core/models';
 
 interface DiagRow {
@@ -74,6 +74,36 @@ interface DiagRow {
           <p class="text-muted mt-2">Analizando datos de {{ progress() }} materias...</p>
         </div>
       } @else {
+
+        <!-- Fix button -->
+        @if (issueCount() > 0 && !fixing() && !fixDone()) {
+          <div class="alert alert-info d-flex align-items-center justify-content-between">
+            <div>
+              <i class="bi bi-wrench me-2"></i>
+              <strong>{{ fixableCount() }} materias</strong> pueden repararse autom\u00e1ticamente.
+              Los ex\u00e1menes apuntan a materias sin preguntas cuando existe otra materia con el mismo nombre que S\u00cd tiene preguntas.
+            </div>
+            <button class="btn btn-warning" (click)="fixData()">
+              <i class="bi bi-tools me-1"></i> Reparar datos
+            </button>
+          </div>
+        }
+
+        @if (fixing()) {
+          <div class="alert alert-info">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            Reparando... {{ fixProgress() }}
+          </div>
+        }
+
+        @if (fixDone()) {
+          <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>
+            <strong>Reparaci\u00f3n completada.</strong> Se actualizaron {{ fixedCount() }} referencias en materias_mapping.
+            Recarga la p\u00e1gina para ver el diagn\u00f3stico actualizado.
+          </div>
+        }
+
         <table class="table table-bordered table-hover">
           <thead class="table-dark">
             <tr>
@@ -110,7 +140,7 @@ interface DiagRow {
           </tbody>
         </table>
 
-        @if (issueCount() > 0) {
+        @if (issueCount() > 0 && !fixDone()) {
           <div class="alert alert-warning mt-3">
             <i class="bi bi-exclamation-triangle me-2"></i>
             <strong>{{ issueCount() }} materias</strong> no tienen preguntas en la colecci\u00f3n <code>preguntas</code>.
@@ -131,57 +161,58 @@ export class DiagnosticsComponent {
   totalPreguntas = signal(0);
   totalQuestionsEn = signal(0);
   issueCount = signal(0);
+  fixableCount = signal(0);
+
+  fixing = signal(false);
+  fixDone = signal(false);
+  fixProgress = signal('');
+  fixedCount = signal(0);
+
+  // Map: badMateriaId → goodMateriaId (for the fix)
+  private remapTable = new Map<string, string>();
 
   constructor() {
     this.runDiagnostic();
   }
 
   private async runDiagnostic() {
-    // 1. Get all materias
     const materiasSnap = await getDocs(collection(this.fs, 'materias'));
     const materias = materiasSnap.docs.map(
       (d) => ({ id: d.id, ...d.data() }) as Materia,
     );
     this.totalMaterias.set(materias.length);
 
-    // 2. Count total preguntas (Spanish collection)
     const preguntasSnap = await getDocs(collection(this.fs, 'preguntas'));
     this.totalPreguntas.set(preguntasSnap.size);
 
-    // 3. Count total questions (English collection)
     const questionsSnap = await getDocs(collection(this.fs, 'questions'));
     this.totalQuestionsEn.set(questionsSnap.size);
 
-    // 4. For each materia, check temas and preguntas
     const results: DiagRow[] = [];
     for (let i = 0; i < materias.length; i++) {
       const m = materias[i];
       this.progress.set(`${i + 1}/${materias.length}`);
 
-      // Count temas in subcollection
       const temasSnap = await getDocs(
         collection(this.fs, `materias/${m.id}/temas`),
       );
-      const temasCount = temasSnap.size;
 
-      // Count preguntas matching this materia_id
       const pregQ = query(
         collection(this.fs, 'preguntas'),
         where('materia_id', '==', m.id),
       );
       const pregSnap = await getDocs(pregQ);
-      const preguntasCount = pregSnap.size;
 
       let status: DiagRow['status'] = 'ok';
-      if (temasCount === 0 && preguntasCount === 0) status = 'empty';
-      else if (temasCount === 0) status = 'no-temas';
-      else if (preguntasCount === 0) status = 'no-preguntas';
+      if (temasSnap.size === 0 && pregSnap.size === 0) status = 'empty';
+      else if (temasSnap.size === 0) status = 'no-temas';
+      else if (pregSnap.size === 0) status = 'no-preguntas';
 
       results.push({
         materiaId: m.id!,
         nombre: m.nombre_canonical || m.id!,
-        temasCount,
-        preguntasCount,
+        temasCount: temasSnap.size,
+        preguntasCount: pregSnap.size,
         status,
       });
     }
@@ -189,6 +220,70 @@ export class DiagnosticsComponent {
     results.sort((a, b) => a.nombre.localeCompare(b.nombre));
     this.rows.set(results);
     this.issueCount.set(results.filter((r) => r.status !== 'ok').length);
+
+    // Build remap table: for each name, find the best materia (most preguntas)
+    const byName = new Map<string, DiagRow[]>();
+    for (const r of results) {
+      const list = byName.get(r.nombre) ?? [];
+      list.push(r);
+      byName.set(r.nombre, list);
+    }
+
+    this.remapTable.clear();
+    for (const [, group] of byName) {
+      const best = group
+        .filter((r) => r.preguntasCount > 0)
+        .sort((a, b) => b.preguntasCount - a.preguntasCount)[0];
+      if (!best) continue; // no materia with preguntas for this name
+      for (const r of group) {
+        if (r.materiaId !== best.materiaId && r.preguntasCount === 0) {
+          this.remapTable.set(r.materiaId, best.materiaId);
+        }
+      }
+    }
+    this.fixableCount.set(this.remapTable.size);
     this.loading.set(false);
+  }
+
+  async fixData() {
+    if (this.remapTable.size === 0) return;
+    this.fixing.set(true);
+    let updated = 0;
+
+    // Get all examenes
+    const examenesSnap = await getDocs(collection(this.fs, 'examenes'));
+    const total = examenesSnap.docs.length;
+
+    for (let i = 0; i < examenesSnap.docs.length; i++) {
+      const exDoc = examenesSnap.docs[i];
+      this.fixProgress.set(`Examen ${i + 1}/${total}`);
+
+      // Get materias_mapping for this exam
+      const mappingSnap = await getDocs(
+        collection(this.fs, `examenes/${exDoc.id}/materias_mapping`),
+      );
+
+      for (const mapDoc of mappingSnap.docs) {
+        const data = mapDoc.data();
+        const currentId = data['materia_id'] as string;
+        const goodId = this.remapTable.get(currentId);
+
+        if (goodId) {
+          // Update materia_id to point to the materia that has preguntas
+          await updateDoc(
+            doc(this.fs, `examenes/${exDoc.id}/materias_mapping/${mapDoc.id}`),
+            { materia_id: goodId },
+          );
+          updated++;
+          console.log(
+            `Fixed: exam ${exDoc.id} mapping ${mapDoc.id}: ${currentId} → ${goodId}`,
+          );
+        }
+      }
+    }
+
+    this.fixedCount.set(updated);
+    this.fixing.set(false);
+    this.fixDone.set(true);
   }
 }
