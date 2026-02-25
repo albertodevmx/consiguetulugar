@@ -9,46 +9,24 @@ export const adminRoutes: Routes = [
       ),
   },
   {
-    path: 'schools',
+    path: 'examenes',
     loadComponent: () =>
-      import('./schools/schools.component').then((m) => m.SchoolsComponent),
-  },
-  {
-    path: 'exam-types',
-    loadComponent: () =>
-      import('./exam-types/exam-types.component').then(
-        (m) => m.ExamTypesComponent,
+      import('./examenes/examenes.component').then(
+        (m) => m.ExamenesComponent,
       ),
   },
   {
-    path: 'subjects',
+    path: 'materias',
     loadComponent: () =>
-      import('./subjects/subjects.component').then(
-        (m) => m.SubjectsComponent,
+      import('./materias/materias.component').then(
+        (m) => m.MateriasComponent,
       ),
   },
   {
-    path: 'units',
+    path: 'preguntas',
     loadComponent: () =>
-      import('./units/units.component').then((m) => m.UnitsComponent),
-  },
-  {
-    path: 'topics',
-    loadComponent: () =>
-      import('./topics/topics.component').then((m) => m.TopicsComponent),
-  },
-  {
-    path: 'assignments',
-    loadComponent: () =>
-      import('./assignments/assignments.component').then(
-        (m) => m.AssignmentsComponent,
-      ),
-  },
-  {
-    path: 'questions',
-    loadComponent: () =>
-      import('./questions/questions.component').then(
-        (m) => m.QuestionsComponent,
+      import('./preguntas/preguntas.component').then(
+        (m) => m.PreguntasComponent,
       ),
   },
   {

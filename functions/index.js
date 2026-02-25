@@ -275,7 +275,7 @@ exports.generateQuestions = onRequest(
       }
       const { apiKey, model: aiModel } = configDoc.data();
 
-      const { topicId, topicName, count = 5, context = '' } = req.body;
+      const { topicId, topicName, count = 5, context = '', materiaId = '' } = req.body;
       if (!topicId || !topicName) {
         res.status(400).json({ error: 'topicId y topicName son requeridos' });
         return;
@@ -346,7 +346,7 @@ IMPORTANTE: Solo el JSON array, sin markdown, sin texto extra, sin bloques de co
             es_correcta: !!o.es_correcta,
           })),
           dificultad: q.dificultad || 2,
-          materia_id: '',
+          materia_id: materiaId || '',
           tema_id: topicId,
           subtema_id: '',
           imagen_url: null,

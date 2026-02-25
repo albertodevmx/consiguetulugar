@@ -12,42 +12,12 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Checkout sessions — el usuario puede crear y leer sus propias sesiones
+    // Checkout sessions
     match /usuarios/{uid}/checkout_sessions/{sessionId} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Escritura solo para admins autenticados
-    match /schools/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /examTypes/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /subjects/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /units/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /topics/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /schoolExamTypes/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /examTypeSubjects/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /subjectUnits/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /unitTopics/{docId} {
-      allow write: if request.auth != null;
-    }
-    match /questions/{docId} {
-      allow write: if request.auth != null;
-    }
+    // Colecciones de contenido — escritura para admins autenticados
     match /examenes/{docId} {
       allow write: if request.auth != null;
     }
@@ -55,6 +25,12 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
     match /materias/{docId} {
+      allow write: if request.auth != null;
+    }
+    match /materias/{materiaId}/temas/{temaId} {
+      allow write: if request.auth != null;
+    }
+    match /materias/{materiaId}/temas/{temaId}/subtemas/{subtemaId} {
       allow write: if request.auth != null;
     }
     match /preguntas/{docId} {

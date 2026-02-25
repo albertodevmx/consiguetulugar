@@ -3,9 +3,13 @@ import {
   Firestore,
   collection,
   collectionData,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
   query,
   where,
-  orderBy,
+  serverTimestamp,
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
 import { Examen, MateriaMapping } from '../models';
@@ -24,16 +28,26 @@ export class ExamenService {
     return collectionData(q, { idField: 'id' }) as Observable<Examen[]>;
   }
 
-  /** Get unique school names from examenes collection */
   getEscuelas(): Observable<string[]> {
     return this.list().pipe(
       map((examenes) => [...new Set(examenes.map((e) => e.escuela))].sort()),
     );
   }
 
-  /** Get materias_mapping subcollection for an exam */
   listMateriasMapping(examenId: string): Observable<MateriaMapping[]> {
     const subCol = collection(this.fs, `examenes/${examenId}/materias_mapping`);
     return collectionData(subCol, { idField: 'id' }) as Observable<MateriaMapping[]>;
+  }
+
+  add(data: Omit<Examen, 'id' | 'fecha_creacion'>) {
+    return addDoc(this.col, { ...data, fecha_creacion: serverTimestamp() });
+  }
+
+  update(id: string, data: Partial<Examen>) {
+    return updateDoc(doc(this.fs, 'examenes', id), data);
+  }
+
+  delete(id: string) {
+    return deleteDoc(doc(this.fs, 'examenes', id));
   }
 }

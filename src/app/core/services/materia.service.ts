@@ -5,6 +5,10 @@ import {
   collectionData,
   doc,
   getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
 } from '@angular/fire/firestore';
 import { Observable, from, map } from 'rxjs';
 import { Materia } from '../models';
@@ -25,5 +29,23 @@ export class MateriaService {
         snap.exists() ? ({ id: snap.id, ...snap.data() } as Materia) : undefined,
       ),
     );
+  }
+
+  add(data: Pick<Materia, 'nombre_canonical'>) {
+    return addDoc(this.col, {
+      ...data,
+      sinonimos: [],
+      icono: null,
+      color: null,
+      fecha_creacion: serverTimestamp(),
+    });
+  }
+
+  update(id: string, data: Partial<Materia>) {
+    return updateDoc(doc(this.fs, 'materias', id), data);
+  }
+
+  delete(id: string) {
+    return deleteDoc(doc(this.fs, 'materias', id));
   }
 }
