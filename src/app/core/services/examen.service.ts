@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
-import { Examen, MateriaMapping } from '../models';
+import { Examen, MateriaMapping, TemaMapping } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ExamenService {
@@ -49,5 +49,20 @@ export class ExamenService {
 
   delete(id: string) {
     return deleteDoc(doc(this.fs, 'examenes', id));
+  }
+
+  // --- materias_mapping CRUD ---
+
+  addMateriaMapping(examenId: string, data: Omit<MateriaMapping, 'id'>) {
+    const subCol = collection(this.fs, `examenes/${examenId}/materias_mapping`);
+    return addDoc(subCol, data);
+  }
+
+  updateMateriaMapping(examenId: string, mapId: string, data: Partial<MateriaMapping>) {
+    return updateDoc(doc(this.fs, `examenes/${examenId}/materias_mapping`, mapId), data);
+  }
+
+  deleteMateriaMapping(examenId: string, mapId: string) {
+    return deleteDoc(doc(this.fs, `examenes/${examenId}/materias_mapping`, mapId));
   }
 }
