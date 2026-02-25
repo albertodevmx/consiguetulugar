@@ -50,7 +50,7 @@
         <th>Unidad(es)</th>
         <th>Slug</th>
         <th>Activo</th>
-        <th style="width: 180px">Acciones</th>
+        <th style="width: 280px">Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -84,10 +84,76 @@
               <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancelar</button>
             } @else {
               <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(topic)">Editar</button>
-              <button class="btn btn-sm btn-outline-danger" (click)="remove(topic.id!)">Eliminar</button>
+              <button class="btn btn-sm btn-outline-danger me-1" (click)="remove(topic.id!)">Eliminar</button>
+              <button
+                class="btn btn-sm btn-outline-warning"
+                (click)="openGenerate(topic)"
+                [disabled]="generatingTopicId() !== null"
+                title="Generar preguntas con IA"
+              >
+                AI Preguntas
+              </button>
             }
           </td>
         </tr>
+
+        <!-- Inline AI generation panel -->
+        @if (generatingTopicId() === topic.id) {
+          <tr>
+            <td colspan="5">
+              <div class="card border-warning">
+                <div class="card-body">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="card-title mb-0">Generar preguntas para: <strong>{{ topic.name }}</strong></h6>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="closeGenerate()" [disabled]="generating()">
+                      Cerrar
+                    </button>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <label class="form-label mb-0 text-nowrap">Cantidad:</label>
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      style="width: 80px"
+                      [ngModel]="generateCount()"
+                      (ngModelChange)="generateCount.set($event)"
+                      [ngModelOptions]="{ standalone: true }"
+                      min="1"
+                      max="20"
+                      [disabled]="generating()"
+                    />
+                    <button
+                      class="btn btn-sm btn-warning"
+                      (click)="executeGenerate(topic.id!, topic.name)"
+                      [disabled]="generating()"
+                    >
+                      @if (generating()) {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Generando...
+                      } @else {
+                        Generar
+                      }
+                    </button>
+                  </div>
+
+                  <p class="text-muted small mb-0">
+                    Se generaran preguntas de opcion multiple usando OpenAI y se guardaran en la coleccion de preguntas.
+                    Maximo 20 por solicitud.
+                  </p>
+
+                  @if (generateMsg()) {
+                    <div class="alert mt-2 mb-0 py-2"
+                      [class.alert-success]="generateMsgType() === 'success'"
+                      [class.alert-danger]="generateMsgType() === 'error'">
+                      {{ generateMsg() }}
+                    </div>
+                  }
+                </div>
+              </div>
+            </td>
+          </tr>
+        }
       } @empty {
         <tr><td colspan="5" class="text-center text-muted">No hay temas registrados.</td></tr>
       }

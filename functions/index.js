@@ -190,3 +190,185 @@ exports.stripeWebhook = onRequest(
     res.json({ received: true });
   },
 );
+
+/**
+ * Raw HTTPS call to the OpenAI Chat Completions API (no SDK).
+ */
+function openaiRequest(apiKey, model, messages) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ model, messages, temperature: 0.7 });
+
+    const req = https.request(
+      {
+        hostname: 'api.openai.com',
+        port: 443,
+        path: '/v1/chat/completions',
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve(parsed);
+            } else {
+              reject(new Error(parsed.error?.message || `HTTP ${res.statusCode}`));
+            }
+          } catch (e) {
+            reject(new Error(`Invalid JSON from OpenAI: ${data.substring(0, 200)}`));
+          }
+        });
+      },
+    );
+    req.on('error', reject);
+    req.setTimeout(120000, () => {
+      req.destroy();
+      reject(new Error('OpenAI request timeout'));
+    });
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
+ * Generates exam questions using OpenAI and saves them to the preguntas collection.
+ * Admin-only endpoint.
+ */
+exports.generateQuestions = onRequest(
+  { cors: true, timeoutSeconds: 120 },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    const authHeader = req.headers.authorization || '';
+    const match = authHeader.match(/^Bearer (.+)$/);
+    if (!match) {
+      res.status(401).json({ error: 'Missing authentication' });
+      return;
+    }
+
+    try {
+      const token = await getAuth().verifyIdToken(match[1]);
+      const db = getFirestore();
+
+      // Verify admin role
+      const userDoc = await db.doc(`usuarios/${token.uid}`).get();
+      if (!userDoc.exists || userDoc.data().rol !== 'admin') {
+        res.status(403).json({ error: 'Solo administradores pueden generar preguntas' });
+        return;
+      }
+
+      // Read OpenAI config from Firestore
+      const configDoc = await db.doc('configuracion/openai').get();
+      if (!configDoc.exists || !configDoc.data().apiKey) {
+        res.status(400).json({ error: 'API Key de OpenAI no configurada. Ve a Configuracion en el dashboard.' });
+        return;
+      }
+      const { apiKey, model: aiModel } = configDoc.data();
+
+      const { topicId, topicName, count = 5, context = '' } = req.body;
+      if (!topicId || !topicName) {
+        res.status(400).json({ error: 'topicId y topicName son requeridos' });
+        return;
+      }
+
+      const numQuestions = Math.min(Math.max(1, parseInt(count)), 20);
+
+      const prompt = `Genera exactamente ${numQuestions} preguntas de opcion multiple para un examen de admision universitario sobre el tema "${topicName}"${context ? ` (area: ${context})` : ''}.
+
+Cada pregunta debe tener:
+- Un texto claro y preciso de la pregunta
+- Exactamente 4 opciones de respuesta
+- Solo una opcion correcta
+- Una explicacion breve para cada opcion
+- Un nivel de dificultad: 1 (facil), 2 (medio), o 3 (dificil)
+- Tags relevantes al tema
+
+Responde UNICAMENTE con un JSON array valido con este formato:
+[
+  {
+    "texto": "¿Pregunta aqui?",
+    "opciones": [
+      { "texto": "Opcion A", "explicacion": "Por que es o no correcta", "es_correcta": false },
+      { "texto": "Opcion B", "explicacion": "Por que es o no correcta", "es_correcta": true },
+      { "texto": "Opcion C", "explicacion": "Por que es o no correcta", "es_correcta": false },
+      { "texto": "Opcion D", "explicacion": "Por que es o no correcta", "es_correcta": false }
+    ],
+    "dificultad": 2,
+    "tags": ["tag1", "tag2"]
+  }
+]
+
+IMPORTANTE: Solo el JSON array, sin markdown, sin texto extra, sin bloques de codigo.`;
+
+      const openaiRes = await openaiRequest(apiKey, aiModel || 'gpt-4o-mini', [
+        {
+          role: 'system',
+          content: 'Eres un experto en crear preguntas de examen de admision universitario en Mexico. Genera preguntas precisas, variadas en dificultad, y con explicaciones educativas. Responde solo con JSON valido.',
+        },
+        { role: 'user', content: prompt },
+      ]);
+
+      // Parse the response
+      let questions;
+      try {
+        let content = openaiRes.choices[0].message.content.trim();
+        // Strip markdown code fences if present
+        content = content.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?\s*```$/, '');
+        questions = JSON.parse(content);
+        if (!Array.isArray(questions)) throw new Error('Not an array');
+      } catch (e) {
+        console.error('OpenAI parse error. Raw:', openaiRes.choices?.[0]?.message?.content?.substring(0, 500));
+        res.status(500).json({ error: 'Error al parsear la respuesta de OpenAI. Intenta de nuevo.' });
+        return;
+      }
+
+      // Save to preguntas collection
+      const batch = db.batch();
+      const col = db.collection('preguntas');
+
+      for (const q of questions) {
+        const ref = col.doc();
+        batch.set(ref, {
+          texto: q.texto,
+          opciones: (q.opciones || []).map((o) => ({
+            texto: o.texto || '',
+            explicacion: o.explicacion || '',
+            es_correcta: !!o.es_correcta,
+          })),
+          dificultad: q.dificultad || 2,
+          materia_id: '',
+          tema_id: topicId,
+          subtema_id: '',
+          imagen_url: null,
+          imagen_descripcion: null,
+          tags: q.tags || [],
+          stats: {
+            veces_respondida: 0,
+            veces_correcta: 0,
+            ratio_acierto: 0,
+            ratio_por_opcion: [0, 0, 0, 0],
+          },
+          creada_por: 'openai-auto',
+          revisada: false,
+          fecha_creacion: FieldValue.serverTimestamp(),
+        });
+      }
+
+      await batch.commit();
+      res.json({ generated: questions.length });
+    } catch (error) {
+      console.error('Generate questions error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);

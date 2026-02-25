@@ -58,4 +58,11 @@ export const adminRoutes: Routes = [
         (m) => m.DiagnosticsComponent,
       ),
   },
+  {
+    path: 'settings',
+    loadComponent: () =>
+      import('./settings/settings.component').then(
+        (m) => m.SettingsComponent,
+      ),
+  },
 ];
