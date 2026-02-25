@@ -1,4 +1,87 @@
 <section class="dashboard">
   <h1>Panel de Administracion</h1>
-  <p>Bienvenido al dashboard. Desde aqui podras gestionar preguntas, usuarios y configuraciones.</p>
+
+  <!-- Stat cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-4">
+      <div class="card text-bg-primary">
+        <div class="card-body">
+          <h5 class="card-title">Examenes</h5>
+          <p class="display-6 mb-1">{{ totalExamenes() }}</p>
+          <p class="card-text small mb-0">
+            @for (esc of escuelas(); track esc) {
+              <span class="badge text-bg-light me-1">{{ esc }}</span>
+            }
+          </p>
+        </div>
+        <a routerLink="/dashboard/examenes" class="card-footer text-white small text-decoration-none">
+          Ver examenes &rarr;
+        </a>
+      </div>
+    </div>
+
+    <div class="col-sm-4">
+      <div class="card text-bg-success">
+        <div class="card-body">
+          <h5 class="card-title">Materias</h5>
+          <p class="display-6 mb-1">{{ totalMaterias() }}</p>
+          <p class="card-text small mb-0">Catalogo de materias con temas</p>
+        </div>
+        <a routerLink="/dashboard/materias" class="card-footer text-white small text-decoration-none">
+          Ver materias &rarr;
+        </a>
+      </div>
+    </div>
+
+    <div class="col-sm-4">
+      <div class="card text-bg-warning">
+        <div class="card-body">
+          <h5 class="card-title">Preguntas</h5>
+          <p class="display-6 mb-1">{{ totalPreguntas() }}</p>
+          <p class="card-text small mb-0">
+            @if (preguntasAI() > 0) {
+              <span class="badge text-bg-light me-1">{{ preguntasAI() }} por AI</span>
+            }
+            @if (preguntasConImagen() > 0) {
+              <span class="badge text-bg-light me-1">{{ preguntasConImagen() }} con imagen</span>
+            }
+          </p>
+        </div>
+        <a routerLink="/dashboard/preguntas" class="card-footer text-dark small text-decoration-none">
+          Ver preguntas &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preguntas por materia -->
+  @if (preguntasPorMateria().length > 0) {
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Preguntas por materia</h5>
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Materia</th>
+              <th style="width:120px" class="text-end">Preguntas</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of preguntasPorMateria(); track item.nombre) {
+              <tr>
+                <td>{{ item.nombre }}</td>
+                <td class="text-end">{{ item.count }}</td>
+              </tr>
+            }
+            @if (preguntasSinMateria() > 0) {
+              <tr class="table-warning">
+                <td>Sin materia asignada</td>
+                <td class="text-end">{{ preguntasSinMateria() }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
 </section>
