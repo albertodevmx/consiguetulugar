@@ -1,15 +1,20 @@
 import { Injectable, inject, computed } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 
-const FIRST_TIME_LIMIT = 30;
-const DAILY_LIMIT = 10;
+const WEEKLY_LIMIT = 30;
 
 @Injectable({ providedIn: 'root' })
 export class QuotaService {
   private auth = inject(AuthService);
 
-  private today(): string {
-    return new Date().toISOString().slice(0, 10);
+  /** Monday of the current week as YYYY-MM-DD */
+  private currentWeekStart(): string {
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun, 1=Mon...
+    const diff = day === 0 ? 6 : day - 1; // days since Monday
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diff);
+    return monday.toISOString().slice(0, 10);
   }
 
   /** Whether the user is on a free plan */
@@ -26,27 +31,20 @@ export class QuotaService {
     return p.examenes_pagados?.includes(examenId) ?? false;
   }
 
-  /** Get remaining questions for free users */
+  /** Get remaining questions for free users this week */
   remaining = computed(() => {
+    // If profile hasn't loaded yet, allow answering (don't block on loading)
+    if (!this.auth.profileLoaded()) return WEEKLY_LIMIT;
     const p = this.auth.profile();
-    if (!p) return 0;
+    if (!p) return WEEKLY_LIMIT;
     if (!this.isFree()) return Infinity;
 
-    const total = p.preguntas_respondidas ?? 0;
-    const hoy = p.preguntas_hoy ?? 0;
-    const fechaHoy = p.fecha_preguntas_hoy ?? '';
+    const weekStart = this.currentWeekStart();
+    const usedThisWeek = (p.fecha_inicio_semana === weekStart)
+      ? (p.preguntas_semana ?? 0)
+      : 0; // New week → reset
 
-    // First 30 questions are free (lifetime)
-    if (total < FIRST_TIME_LIMIT) {
-      return FIRST_TIME_LIMIT - total;
-    }
-
-    // After that, 10 per day
-    if (fechaHoy !== this.today()) {
-      return DAILY_LIMIT; // New day, full quota
-    }
-
-    return Math.max(0, DAILY_LIMIT - hoy);
+    return Math.max(0, WEEKLY_LIMIT - usedThisWeek);
   });
 
   /** Whether the user can answer another question */
@@ -60,15 +58,14 @@ export class QuotaService {
   async recordAnswer(): Promise<void> {
     const p = this.auth.profile();
     if (!p || !this.auth.isLoggedIn()) return;
-    if (!this.isFree()) return; // Premium users don't need tracking
+    if (!this.isFree()) return;
 
-    const hoy = this.today();
-    const isNewDay = (p.fecha_preguntas_hoy ?? '') !== hoy;
+    const weekStart = this.currentWeekStart();
+    const isNewWeek = (p.fecha_inicio_semana ?? '') !== weekStart;
 
     await this.auth.updateProfile({
-      preguntas_respondidas: (p.preguntas_respondidas ?? 0) + 1,
-      preguntas_hoy: isNewDay ? 1 : (p.preguntas_hoy ?? 0) + 1,
-      fecha_preguntas_hoy: hoy,
+      preguntas_semana: isNewWeek ? 1 : (p.preguntas_semana ?? 0) + 1,
+      fecha_inicio_semana: weekStart,
     });
   }
 
@@ -78,15 +75,10 @@ export class QuotaService {
     if (!p) return '';
     if (!this.isFree()) return '';
 
-    const total = p.preguntas_respondidas ?? 0;
     const rem = this.remaining();
-
-    if (total < FIRST_TIME_LIMIT) {
-      return `Te quedan ${rem} preguntas de prueba gratuitas.`;
-    }
     if (rem > 0) {
-      return `Te quedan ${rem} preguntas gratuitas hoy.`;
+      return `Te quedan ${rem} preguntas gratuitas esta semana.`;
     }
-    return 'Has alcanzado tu limite diario de preguntas gratuitas.';
+    return 'Has alcanzado tu limite semanal de preguntas gratuitas.';
   });
 }

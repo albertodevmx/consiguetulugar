@@ -13,8 +13,7 @@ export interface Usuario {
   examen_activo: string | null;
   plan: 'gratuito' | 'premium';
   examenes_pagados: string[];
-  preguntas_respondidas: number;
-  preguntas_hoy: number;
-  fecha_preguntas_hoy: string | null;
+  preguntas_semana: number;
+  fecha_inicio_semana: string | null;
   fecha_registro: Timestamp;
 }

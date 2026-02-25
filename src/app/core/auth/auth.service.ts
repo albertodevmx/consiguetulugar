@@ -26,8 +26,10 @@ export class AuthService {
 
   private readonly _user = signal<User | null>(null);
   private readonly _profile = signal<Usuario | null>(null);
+  private readonly _profileLoaded = signal(false);
   readonly user = this._user.asReadonly();
   readonly profile = this._profile.asReadonly();
+  readonly profileLoaded = this._profileLoaded.asReadonly();
 
   readonly isLoggedIn = () => this._user() !== null;
 
@@ -36,9 +38,11 @@ export class AuthService {
       this.ngZone.run(() => {
         this._user.set(user);
         if (user) {
+          this._profileLoaded.set(false);
           this.loadProfile(user.uid);
         } else {
           this._profile.set(null);
+          this._profileLoaded.set(false);
         }
       });
     });
@@ -72,9 +76,8 @@ export class AuthService {
         examen_activo: null,
         plan: 'gratuito',
         examenes_pagados: [],
-        preguntas_respondidas: 0,
-        preguntas_hoy: 0,
-        fecha_preguntas_hoy: null,
+        preguntas_semana: 0,
+        fecha_inicio_semana: null,
         fecha_registro: serverTimestamp() as any,
       };
       await setDoc(doc(this.fs, 'usuarios', cred.user.uid), userDoc);
@@ -117,10 +120,10 @@ export class AuthService {
         ...data,
         id: snap.id,
         examenes_pagados: data.examenes_pagados ?? [],
-        preguntas_respondidas: data.preguntas_respondidas ?? 0,
-        preguntas_hoy: data.preguntas_hoy ?? 0,
-        fecha_preguntas_hoy: data.fecha_preguntas_hoy ?? null,
+        preguntas_semana: data.preguntas_semana ?? (data as any).preguntas_respondidas ?? 0,
+        fecha_inicio_semana: data.fecha_inicio_semana ?? (data as any).fecha_preguntas_hoy ?? null,
       });
     }
+    this._profileLoaded.set(true);
   }
 }
