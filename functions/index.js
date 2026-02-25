@@ -372,3 +372,111 @@ IMPORTANTE: Solo el JSON array, sin markdown, sin texto extra, sin bloques de co
     }
   },
 );
+
+/**
+ * Import questions via API key (callable from curl / CLI).
+ *
+ * POST body:
+ *   {
+ *     "key": "<admin import key stored in configuracion/import_key>",
+ *     "preguntas": [ { texto, opciones, dificultad, materia_id, tema_id, ... } ]
+ *   }
+ *
+ * Setup: create a Firestore doc  configuracion/import_key  with field  key: "your-secret"
+ *
+ * Example curl:
+ *   curl -X POST <FUNCTION_URL>/importPreguntas \
+ *     -H "Content-Type: application/json" \
+ *     -d '{"key":"your-secret","preguntas":[{...}]}'
+ */
+exports.importPreguntas = onRequest(
+  { cors: true, timeoutSeconds: 120 },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    const { key, preguntas } = req.body;
+    if (!key) {
+      res.status(401).json({ error: 'Missing key' });
+      return;
+    }
+
+    const db = getFirestore();
+
+    // Validate import key from Firestore
+    const keyDoc = await db.doc('configuracion/import_key').get();
+    if (!keyDoc.exists || keyDoc.data().key !== key) {
+      res.status(403).json({ error: 'Invalid key' });
+      return;
+    }
+
+    if (!Array.isArray(preguntas) || preguntas.length === 0) {
+      res.status(400).json({ error: 'preguntas must be a non-empty array' });
+      return;
+    }
+
+    if (preguntas.length > 500) {
+      res.status(400).json({ error: 'Max 500 preguntas per request' });
+      return;
+    }
+
+    try {
+      const col = db.collection('preguntas');
+      let inserted = 0;
+      const errors = [];
+
+      // Process in batches of 500 (Firestore limit)
+      const batchSize = 500;
+      for (let i = 0; i < preguntas.length; i += batchSize) {
+        const chunk = preguntas.slice(i, i + batchSize);
+        const batch = db.batch();
+
+        for (let j = 0; j < chunk.length; j++) {
+          const p = chunk[j];
+
+          // Validate required fields
+          if (!p.texto || !Array.isArray(p.opciones) || p.opciones.length < 2) {
+            errors.push({ index: i + j, error: 'Missing texto or opciones (min 2)' });
+            continue;
+          }
+
+          const ref = col.doc();
+          batch.set(ref, {
+            texto: p.texto,
+            opciones: p.opciones.map((o) => ({
+              texto: o.texto || '',
+              explicacion: o.explicacion || '',
+              es_correcta: !!o.es_correcta,
+            })),
+            dificultad: p.dificultad || 2,
+            materia_id: p.materia_id || '',
+            tema_id: p.tema_id || '',
+            subtema_id: p.subtema_id || '',
+            imagen_url: p.imagen_url || null,
+            imagen_descripcion: p.imagen_descripcion || null,
+            tags: p.tags || [],
+            stats: {
+              veces_respondida: 0,
+              veces_correcta: 0,
+              ratio_acierto: 0,
+              ratio_por_opcion: [0, 0, 0, 0],
+            },
+            creada_por: p.creada_por || 'import-api',
+            revisada: !!p.revisada,
+            fecha_creacion: FieldValue.serverTimestamp(),
+          });
+          inserted++;
+        }
+
+        await batch.commit();
+      }
+
+      res.json({ inserted, errors });
+    } catch (error) {
+      console.error('Import preguntas error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
