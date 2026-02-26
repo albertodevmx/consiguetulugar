@@ -368,6 +368,12 @@ IMPORTANTE: Solo el JSON array, sin markdown, sin texto extra, sin bloques de co
       }
 
       await batch.commit();
+
+      // Update total_preguntas on the tema document
+      await db.doc(`temas/${topicId}`).update({
+        total_preguntas: FieldValue.increment(questions.length),
+      });
+
       res.json({ generated: questions.length });
     } catch (error) {
       console.error('Generate questions error:', error.message);

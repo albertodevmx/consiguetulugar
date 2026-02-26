@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -9,4 +10,12 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
   templateUrl: './admin-layout.html',
   styleUrl: './admin-layout.scss',
 })
-export class AdminLayoutComponent {}
+export class AdminLayoutComponent {
+  auth = inject(AuthService);
+  private router = inject(Router);
+
+  async logout() {
+    await this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+}

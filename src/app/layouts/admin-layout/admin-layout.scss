@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'variables' as v;
+
 :host {
   display: block;
   min-height: 100vh;
@@ -8,7 +11,38 @@
   min-height: 100vh;
 }
 
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 2rem;
+  background-color: color.adjust(v.$primary, $lightness: -5%);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .user-name {
+      font-size: 0.875rem;
+      opacity: 0.85;
+    }
+  }
+}
+
 .admin-content {
   flex: 1;
   padding: 2rem;
+  overflow-x: auto;
 }

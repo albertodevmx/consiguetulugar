@@ -62,9 +62,17 @@ import { Materia, Tema } from '../../core/models';
                               {{ tema.nombre_canonical }}
                             }
                           </td>
-                          <td>
+                          <td style="max-width:200px">
                             @if (tema.subtemas?.length) {
-                              <small class="text-muted">{{ tema.subtemas.join(', ') }}</small>
+                              <small class="text-muted" style="cursor:pointer"
+                                (click)="toggleSubtemas(tema.id!)"
+                                [title]="expandedSubtemas().has(tema.id!) ? 'Clic para colapsar' : 'Clic para expandir'">
+                                @if (expandedSubtemas().has(tema.id!)) {
+                                  {{ tema.subtemas.join(', ') }}
+                                } @else {
+                                  <span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ tema.subtemas.join(', ') }}</span>
+                                }
+                              </small>
                             } @else {
                               <small class="text-muted">—</small>
                             }
@@ -218,11 +226,25 @@ export class MateriasComponent {
   lessonMsg = signal('');
   lessonOk = signal(true);
 
+  // Subtemas expand/collapse
+  expandedSubtemas = signal(new Set<string>());
+
   toggleMateria(id: string) {
     this.selectedMateriaId.set(this.selectedMateriaId() === id ? null : id);
     this.editingTemaId.set(null);
     this.closeGenerate();
     this.lessonMsg.set('');
+  }
+
+  toggleSubtemas(temaId: string) {
+    const current = this.expandedSubtemas();
+    const next = new Set(current);
+    if (next.has(temaId)) {
+      next.delete(temaId);
+    } else {
+      next.add(temaId);
+    }
+    this.expandedSubtemas.set(next);
   }
 
   async addMateria() {
@@ -253,16 +275,26 @@ export class MateriasComponent {
       const docRef = await this.temaSvc.add({ nombre_canonical: name, materia_id: materiaId, subtemas });
       this.newTemaName = '';
       this.newSubtemas = '';
-      // Auto-generate lesson for the new tema
+      this.addingTema.set(false);
+      // Fire off lesson generation in background (don't block the button)
       this.lessonMsg.set('Tema creado. Generando leccion...');
       this.lessonOk.set(true);
-      await this.callGenerateLesson(docRef.id, name, materiaName, subtemas);
-      this.lessonMsg.set('Tema creado y leccion generada.');
-      this.lessonOk.set(true);
+      this.generatingLessonId.set(docRef.id);
+      this.callGenerateLesson(docRef.id, name, materiaName, subtemas)
+        .then(() => {
+          this.lessonMsg.set('Tema creado y leccion generada.');
+          this.lessonOk.set(true);
+        })
+        .catch((e) => {
+          this.lessonMsg.set('Tema creado, pero error al generar leccion: ' + (e as Error).message);
+          this.lessonOk.set(false);
+        })
+        .finally(() => {
+          this.generatingLessonId.set(null);
+        });
     } catch (e) {
-      this.lessonMsg.set('Tema creado, pero error al generar leccion: ' + (e as Error).message);
+      this.lessonMsg.set('Error al crear tema: ' + (e as Error).message);
       this.lessonOk.set(false);
-    } finally {
       this.addingTema.set(false);
     }
   }
