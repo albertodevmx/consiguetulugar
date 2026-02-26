@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, of } from 'rxjs';
+import { switchMap, of, map } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MateriaService } from '../../core/services/materia.service';
 import { TemaService } from '../../core/services/tema.service';
+import { PreguntaService } from '../../core/services/pregunta.service';
 import { Auth } from '@angular/fire/auth';
 import { environment } from '../../../environments/environment';
 import { Materia, Tema } from '../../core/models';
@@ -78,7 +79,7 @@ import { Materia, Tema } from '../../core/models';
                             }
                           </td>
                           <td><small class="text-muted font-monospace">{{ tema.id }}</small></td>
-                          <td>{{ tema.total_preguntas }}</td>
+                          <td>{{ preguntaCountMap()?.[tema.id!] ?? 0 }}</td>
                           <td>
                             @if (tema.leccion_html) {
                               <span class="badge bg-success">Si</span>
@@ -190,6 +191,7 @@ import { Materia, Tema } from '../../core/models';
 export class MateriasComponent {
   private readonly materiaSvc = inject(MateriaService);
   private readonly temaSvc = inject(TemaService);
+  private readonly preguntaSvc = inject(PreguntaService);
   private readonly auth = inject(Auth);
 
   materias = toSignal(this.materiaSvc.list());
@@ -199,6 +201,25 @@ export class MateriasComponent {
   temas = toSignal(
     toObservable(this.selectedMateriaId).pipe(
       switchMap((id) => (id ? this.temaSvc.listByMateria(id) : of(undefined))),
+    ),
+  );
+
+  // Real-time pregunta count per tema for the selected materia
+  preguntaCountMap = toSignal(
+    toObservable(this.selectedMateriaId).pipe(
+      switchMap((id) =>
+        id
+          ? this.preguntaSvc.adminListByMateria(id, 5000).pipe(
+              map((preguntas) => {
+                const counts: Record<string, number> = {};
+                for (const p of preguntas) {
+                  counts[p.tema_id] = (counts[p.tema_id] || 0) + 1;
+                }
+                return counts;
+              }),
+            )
+          : of({} as Record<string, number>),
+      ),
     ),
   );
 
