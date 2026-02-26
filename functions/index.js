@@ -228,7 +228,7 @@ function openaiRequest(apiKey, model, messages) {
       },
     );
     req.on('error', reject);
-    req.setTimeout(120000, () => {
+    req.setTimeout(280000, () => {
       req.destroy();
       reject(new Error('OpenAI request timeout'));
     });
@@ -242,7 +242,7 @@ function openaiRequest(apiKey, model, messages) {
  * Admin-only endpoint.
  */
 exports.generateQuestions = onRequest(
-  { cors: true, timeoutSeconds: 120, invoker: 'public' },
+  { cors: true, timeoutSeconds: 300, memory: '512MiB', invoker: 'public' },
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -377,7 +377,7 @@ IMPORTANTE: Solo el JSON array, sin markdown, sin texto extra, sin bloques de co
  * Admin-only endpoint.
  */
 exports.generateLesson = onRequest(
-  { cors: true, timeoutSeconds: 120, invoker: 'public' },
+  { cors: true, timeoutSeconds: 300, memory: '512MiB', invoker: 'public' },
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
