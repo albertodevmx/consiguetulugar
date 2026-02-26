@@ -28,7 +28,7 @@ export class TemaService {
     return collectionData(q, { idField: 'id' }) as Observable<Tema[]>;
   }
 
-  add(data: Pick<Tema, 'nombre_canonical' | 'materia_id'>) {
+  add(data: Pick<Tema, 'nombre_canonical' | 'materia_id' | 'subtemas'>) {
     return addDoc(this.col, {
       ...data,
       tags: [],

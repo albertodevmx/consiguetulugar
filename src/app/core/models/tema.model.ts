@@ -4,6 +4,7 @@ export interface Tema {
   id?: string;
   nombre_canonical: string;
   materia_id: string;
+  subtemas: string[];
   tags: string[];
   total_preguntas: number;
   leccion_html: string | null;

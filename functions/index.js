@@ -275,7 +275,7 @@ exports.generateQuestions = onRequest(
       }
       const { apiKey, model: aiModel } = configDoc.data();
 
-      const { topicId, topicName, count = 5, context = '', materiaId = '' } = req.body;
+      const { topicId, topicName, count = 5, context = '', materiaId = '', subtemas = [] } = req.body;
       if (!topicId || !topicName) {
         res.status(400).json({ error: 'topicId y topicName son requeridos' });
         return;
@@ -283,7 +283,11 @@ exports.generateQuestions = onRequest(
 
       const numQuestions = Math.min(Math.max(1, parseInt(count)), 50);
 
-      const prompt = `Genera exactamente ${numQuestions} preguntas de opcion multiple para un examen de admision universitario sobre el tema "${topicName}"${context ? ` (area: ${context})` : ''}.
+      const subtemasText = Array.isArray(subtemas) && subtemas.length > 0
+        ? `\n\nLos subtemas que deben cubrirse son:\n${subtemas.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\nDistribuye las preguntas de manera equilibrada entre todos los subtemas.`
+        : '';
+
+      const prompt = `Genera exactamente ${numQuestions} preguntas de opcion multiple para un examen de admision universitario sobre el tema "${topicName}"${context ? ` (area: ${context})` : ''}.${subtemasText}
 
 Cada pregunta debe tener:
 - Un texto claro y preciso de la pregunta
@@ -410,19 +414,23 @@ exports.generateLesson = onRequest(
       }
       const { apiKey, model: aiModel } = configDoc.data();
 
-      const { temaId, temaName, context = '' } = req.body;
+      const { temaId, temaName, context = '', subtemas = [] } = req.body;
       if (!temaId || !temaName) {
         res.status(400).json({ error: 'temaId y temaName son requeridos' });
         return;
       }
 
-      const prompt = `Crea una leccion educativa completa y bien estructurada sobre el tema "${temaName}"${context ? ` (materia: ${context})` : ''} para estudiantes que se preparan para un examen de admision universitario en Mexico.
+      const subtemasText = Array.isArray(subtemas) && subtemas.length > 0
+        ? `\n\nLos subtemas que DEBE cubrir la leccion son:\n${subtemas.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\nAsegurate de dedicar una seccion (con su propio <h3>) a cada subtema listado.`
+        : '';
+
+      const prompt = `Crea una leccion educativa completa y bien estructurada sobre el tema "${temaName}"${context ? ` (materia: ${context})` : ''} para estudiantes que se preparan para un examen de admision universitario en Mexico.${subtemasText}
 
 La leccion debe:
-- Cubrir todos los conceptos clave del tema
+- Cubrir todos los conceptos clave del tema${subtemas.length > 0 ? ' siguiendo los subtemas indicados' : ''}
 - Usar explicaciones claras con ejemplos concretos
 - Incluir datos, formulas o reglas importantes cuando aplique
-- Ser concisa pero completa (entre 800 y 1500 palabras)
+- Ser concisa pero completa (entre ${subtemas.length > 5 ? '1500 y 3000' : '800 y 1500'} palabras)
 
 Responde UNICAMENTE con HTML valido usando estas etiquetas:
 - <h2> para el titulo principal

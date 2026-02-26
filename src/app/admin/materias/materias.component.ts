@@ -49,7 +49,7 @@ import { Materia, Tema } from '../../core/models';
                 } @else {
                   <table class="table table-sm mb-3">
                     <thead>
-                      <tr><th>Tema</th><th>ID</th><th>Preguntas</th><th>Leccion</th><th style="width:380px">Acciones</th></tr>
+                      <tr><th>Tema</th><th>Subtemas</th><th>ID</th><th>Preguntas</th><th>Leccion</th><th style="width:380px">Acciones</th></tr>
                     </thead>
                     <tbody>
                       @for (tema of temas()!; track tema.id) {
@@ -60,6 +60,13 @@ import { Materia, Tema } from '../../core/models';
                                 (ngModelChange)="editTemaName.set($event)" [ngModelOptions]="{standalone:true}" />
                             } @else {
                               {{ tema.nombre_canonical }}
+                            }
+                          </td>
+                          <td>
+                            @if (tema.subtemas?.length) {
+                              <small class="text-muted">{{ tema.subtemas.join(', ') }}</small>
+                            } @else {
+                              <small class="text-muted">—</small>
                             }
                           </td>
                           <td><small class="text-muted font-monospace">{{ tema.id }}</small></td>
@@ -84,7 +91,7 @@ import { Materia, Tema } from '../../core/models';
                                 AI Preguntas
                               </button>
                               <button class="btn btn-sm btn-outline-info"
-                                (click)="executeGenerateLesson(tema.id!, tema.nombre_canonical, mat.nombre_canonical)"
+                                (click)="executeGenerateLesson(tema.id!, tema.nombre_canonical, mat.nombre_canonical, tema.subtemas)"
                                 [disabled]="generatingLessonId() !== null" title="Generar leccion con IA">
                                 @if (generatingLessonId() === tema.id) {
                                   <span class="spinner-border spinner-border-sm me-1"></span>
@@ -98,7 +105,7 @@ import { Materia, Tema } from '../../core/models';
                         <!-- AI Generation panel -->
                         @if (generatingTemaId() === tema.id) {
                           <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                               <div class="card border-warning">
                                 <div class="card-body py-2">
                                   <div class="d-flex align-items-center justify-content-between mb-2">
@@ -110,7 +117,7 @@ import { Materia, Tema } from '../../core/models';
                                     <input type="number" class="form-control form-control-sm" style="width:80px"
                                       [ngModel]="generateCount()" (ngModelChange)="generateCount.set($event)"
                                       [ngModelOptions]="{standalone:true}" min="1" max="50" [disabled]="generating()" />
-                                    <button class="btn btn-sm btn-warning" (click)="executeGenerate(mat.id!, tema.id!, tema.nombre_canonical, mat.nombre_canonical)" [disabled]="generating()">
+                                    <button class="btn btn-sm btn-warning" (click)="executeGenerate(mat.id!, tema.id!, tema.nombre_canonical, mat.nombre_canonical, tema.subtemas)" [disabled]="generating()">
                                       @if (generating()) {
                                         <span class="spinner-border spinner-border-sm me-1"></span>Generando...
                                       } @else { Generar }
@@ -128,16 +135,22 @@ import { Materia, Tema } from '../../core/models';
                           </tr>
                         }
                       } @empty {
-                        <tr><td colspan="5" class="text-muted">Sin temas.</td></tr>
+                        <tr><td colspan="6" class="text-muted">Sin temas.</td></tr>
                       }
                     </tbody>
                   </table>
 
                   <!-- Add tema -->
-                  <div class="row g-2">
+                  <div class="row g-2 align-items-end">
                     <div class="col-auto">
+                      <label class="form-label mb-0 small">Nombre del tema</label>
                       <input class="form-control form-control-sm" [(ngModel)]="newTemaName"
-                        name="temaName" placeholder="Nombre del tema" />
+                        name="temaName" placeholder="ej: Calculo Diferencial" />
+                    </div>
+                    <div class="col">
+                      <label class="form-label mb-0 small">Subtemas (separados por coma)</label>
+                      <input class="form-control form-control-sm" [(ngModel)]="newSubtemas"
+                        name="subtemas" placeholder="ej: Limites, Derivadas, Integrales, Series de Taylor" />
                     </div>
                     <div class="col-auto">
                       <button class="btn btn-sm btn-primary" (click)="addTema(mat.id!, mat.nombre_canonical)"
@@ -186,6 +199,7 @@ export class MateriasComponent {
 
   // Tema add
   newTemaName = '';
+  newSubtemas = '';
   addingTema = signal(false);
 
   // Tema edit
@@ -225,18 +239,24 @@ export class MateriasComponent {
     }
   }
 
+  private parseSubtemas(raw: string): string[] {
+    return raw.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+  }
+
   async addTema(materiaId: string, materiaName: string) {
     const name = this.newTemaName.trim();
     if (!name) return;
+    const subtemas = this.parseSubtemas(this.newSubtemas);
     this.addingTema.set(true);
     this.lessonMsg.set('');
     try {
-      const docRef = await this.temaSvc.add({ nombre_canonical: name, materia_id: materiaId });
+      const docRef = await this.temaSvc.add({ nombre_canonical: name, materia_id: materiaId, subtemas });
       this.newTemaName = '';
+      this.newSubtemas = '';
       // Auto-generate lesson for the new tema
       this.lessonMsg.set('Tema creado. Generando leccion...');
       this.lessonOk.set(true);
-      await this.callGenerateLesson(docRef.id, name, materiaName);
+      await this.callGenerateLesson(docRef.id, name, materiaName, subtemas);
       this.lessonMsg.set('Tema creado y leccion generada.');
       this.lessonOk.set(true);
     } catch (e) {
@@ -275,7 +295,7 @@ export class MateriasComponent {
     this.generateMsg.set('');
   }
 
-  async executeGenerate(materiaId: string, temaId: string, temaName: string, materiaName: string) {
+  async executeGenerate(materiaId: string, temaId: string, temaName: string, materiaName: string, subtemas?: string[]) {
     const count = this.generateCount();
     if (count < 1 || count > 50) return;
     this.generating.set(true);
@@ -287,7 +307,7 @@ export class MateriasComponent {
       const response = await fetch(`${environment.functionsUrl}/generateQuestions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ topicId: temaId, topicName: temaName, count, context: materiaName, materiaId }),
+        body: JSON.stringify({ topicId: temaId, topicName: temaName, count, context: materiaName, materiaId, subtemas: subtemas ?? [] }),
       });
       if (!response.ok) {
         const err = await response.json().catch(() => ({ error: 'Error de conexion' }));
@@ -305,11 +325,11 @@ export class MateriasComponent {
   }
 
   // --- Lesson Generation ---
-  async executeGenerateLesson(temaId: string, temaName: string, materiaName: string) {
+  async executeGenerateLesson(temaId: string, temaName: string, materiaName: string, subtemas?: string[]) {
     this.generatingLessonId.set(temaId);
     this.lessonMsg.set('');
     try {
-      await this.callGenerateLesson(temaId, temaName, materiaName);
+      await this.callGenerateLesson(temaId, temaName, materiaName, subtemas);
       this.lessonMsg.set('Leccion generada correctamente.');
       this.lessonOk.set(true);
     } catch (e) {
@@ -320,14 +340,14 @@ export class MateriasComponent {
     }
   }
 
-  private async callGenerateLesson(temaId: string, temaName: string, context: string) {
+  private async callGenerateLesson(temaId: string, temaName: string, context: string, subtemas?: string[]) {
     const user = this.auth.currentUser;
     if (!user) throw new Error('No has iniciado sesion.');
     const token = await user.getIdToken();
     const response = await fetch(`${environment.functionsUrl}/generateLesson`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ temaId, temaName, context }),
+      body: JSON.stringify({ temaId, temaName, context, subtemas: subtemas ?? [] }),
     });
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: 'Error de conexion' }));
