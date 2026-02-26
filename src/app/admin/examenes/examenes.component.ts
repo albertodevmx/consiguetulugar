@@ -68,6 +68,7 @@ import { Examen, MateriaMapping } from '../../core/models';
       <table class="table table-striped">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Escuela</th>
             <th>Nombre</th>
             <th>Area</th>
@@ -79,6 +80,7 @@ import { Examen, MateriaMapping } from '../../core/models';
         <tbody>
           @for (ex of filtered(); track ex.id) {
             <tr [class.table-active]="selectedExamenId() === ex.id">
+              <td><small class="text-muted font-monospace">{{ ex.id }}</small></td>
               <td>{{ ex.escuela }}</td>
               <td>
                 @if (editingId() === ex.id) {

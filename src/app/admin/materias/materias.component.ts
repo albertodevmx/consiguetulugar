@@ -39,7 +39,7 @@ import { Materia, Tema } from '../../core/models';
             <h2 class="accordion-header">
               <button class="accordion-button" [class.collapsed]="selectedMateriaId() !== mat.id"
                 type="button" (click)="toggleMateria(mat.id!)">
-                <span class="me-auto">{{ mat.nombre_canonical }}</span>
+                <span class="me-auto">{{ mat.nombre_canonical }} <small class="text-muted font-monospace ms-2">{{ mat.id }}</small></span>
                 <button class="btn btn-sm btn-outline-danger me-2" (click)="removeMateria(mat.id!); $event.stopPropagation()">Eliminar</button>
               </button>
             </h2>
@@ -51,7 +51,7 @@ import { Materia, Tema } from '../../core/models';
                 } @else {
                   <table class="table table-sm mb-3">
                     <thead>
-                      <tr><th>Orden</th><th>Tema</th><th style="width:320px">Acciones</th></tr>
+                      <tr><th>Orden</th><th>Tema</th><th>ID</th><th style="width:320px">Acciones</th></tr>
                     </thead>
                     <tbody>
                       @for (tema of temas()!; track tema.id) {
@@ -65,6 +65,7 @@ import { Materia, Tema } from '../../core/models';
                               {{ tema.nombre_canonical }}
                             }
                           </td>
+                          <td><small class="text-muted font-monospace">{{ tema.id }}</small></td>
                           <td>
                             @if (editingTemaId() === tema.id) {
                               <button class="btn btn-sm btn-success me-1" (click)="saveTemaEdit(mat.id!, tema.id!)">Guardar</button>
@@ -84,7 +85,7 @@ import { Materia, Tema } from '../../core/models';
                         <!-- AI Generation panel -->
                         @if (generatingTemaId() === tema.id) {
                           <tr>
-                            <td colspan="3">
+                            <td colspan="4">
                               <div class="card border-warning">
                                 <div class="card-body py-2">
                                   <div class="d-flex align-items-center justify-content-between mb-2">
@@ -114,7 +115,7 @@ import { Materia, Tema } from '../../core/models';
                           </tr>
                         }
                       } @empty {
-                        <tr><td colspan="3" class="text-muted">Sin temas.</td></tr>
+                        <tr><td colspan="4" class="text-muted">Sin temas.</td></tr>
                       }
                     </tbody>
                   </table>
