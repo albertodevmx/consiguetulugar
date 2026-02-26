@@ -6,5 +6,5 @@ export const environment = {
   },
   // In development, routed through Angular dev server proxy (see proxy.conf.json)
   // In production, replaced by environment.production.ts with full Cloud Functions URL
-  functionsUrl: '/api',
+  functionsUrl: '',
 };

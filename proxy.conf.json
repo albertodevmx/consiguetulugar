@@ -1,10 +1,17 @@
 {
-  "/api": {
+  "/generateQuestions": {
     "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
     "secure": true,
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api": ""
-    }
+    "changeOrigin": true
+  },
+  "/createEmbeddedCheckout": {
+    "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
+    "secure": true,
+    "changeOrigin": true
+  },
+  "/importPreguntas": {
+    "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
+    "secure": true,
+    "changeOrigin": true
   }
 }
