@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap } from 'rxjs';
@@ -6,6 +6,49 @@ import { ExamenService } from '../../core/services/examen.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { TemaConfig } from '../../core/models';
+
+const SECCION_ICONS: Record<string, string> = {
+  matematicas: 'bi-calculator',
+  matemáticas: 'bi-calculator',
+  español: 'bi-chat-text',
+  espanol: 'bi-chat-text',
+  biologia: 'bi-tree',
+  biología: 'bi-tree',
+  quimica: 'bi-droplet-half',
+  química: 'bi-droplet-half',
+  fisica: 'bi-lightning-charge',
+  física: 'bi-lightning-charge',
+  historia: 'bi-hourglass-split',
+  geografia: 'bi-globe-americas',
+  geografía: 'bi-globe-americas',
+  ingles: 'bi-translate',
+  inglés: 'bi-translate',
+  filosofia: 'bi-lightbulb',
+  filosofía: 'bi-lightbulb',
+  literatura: 'bi-journal-text',
+  economia: 'bi-graph-up-arrow',
+  economía: 'bi-graph-up-arrow',
+  derecho: 'bi-bank',
+  civica: 'bi-people',
+  cívica: 'bi-people',
+  etica: 'bi-shield-check',
+  ética: 'bi-shield-check',
+  arte: 'bi-palette',
+  artes: 'bi-palette',
+  computacion: 'bi-cpu',
+  computación: 'bi-cpu',
+  informatica: 'bi-cpu',
+  informática: 'bi-cpu',
+  psicologia: 'bi-brain',
+  psicología: 'bi-brain',
+  sociologia: 'bi-diagram-3',
+  sociología: 'bi-diagram-3',
+  estadistica: 'bi-bar-chart-line',
+  estadística: 'bi-bar-chart-line',
+  contabilidad: 'bi-cash-stack',
+  administracion: 'bi-briefcase',
+  administración: 'bi-briefcase',
+};
 
 @Component({
   selector: 'app-explore-subjects',
@@ -55,44 +98,70 @@ import { TemaConfig } from '../../core/models';
           </div>
         </div>
       } @else {
-        @for (group of groupedBySections(); track group.seccion) {
-          <h5 class="mt-4 mb-3"><i class="bi bi-folder2-open me-2"></i>{{ group.seccion || 'General' }}</h5>
-          <div class="row g-3 mb-3">
-            @for (tc of group.temas; track tc.id) {
-              <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card explore-card h-100">
-                  <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
-                    <i class="bi bi-book fs-1 mb-2 text-info"></i>
-                    <h6 class="card-title mb-1">{{ tc.nombre_mostrar }}</h6>
-                    <small class="text-muted mb-2">{{ tc.num_reactivos }} reactivos</small>
-                    <div class="mb-1">
-                      @for (d of tc.dificultades; track d) {
-                        @switch (d) {
-                          @case (1) { <span class="badge bg-success me-1">F</span> }
-                          @case (2) { <span class="badge bg-warning text-dark me-1">M</span> }
-                          @case (3) { <span class="badge bg-danger me-1">D</span> }
-                        }
+        <div class="accordion" id="subjectsAccordion">
+          @for (group of groupedBySections(); track group.seccion; let i = $index) {
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button"
+                  [class.collapsed]="!expandedSections().has(group.seccion)"
+                  (click)="toggleSection(group.seccion)">
+                  <i class="bi me-2" [class]="sectionIcon(group.seccion)"></i>
+                  {{ group.seccion || 'General' }}
+                  <span class="badge bg-secondary ms-2">{{ group.temas.length }}</span>
+                </button>
+              </h2>
+              @if (expandedSections().has(group.seccion)) {
+                <div class="accordion-body p-3">
+                  <!-- Desktop: cards -->
+                  <div class="d-none d-md-block">
+                    <div class="row g-3">
+                      @for (tc of group.temas; track tc.id) {
+                        <div class="col-md-4 col-lg-3">
+                          <div class="card explore-card h-100">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
+                              <i class="bi fs-1 mb-2 text-info" [class]="sectionIcon(group.seccion)"></i>
+                              <h6 class="card-title mb-3">{{ tc.nombre_mostrar }}</h6>
+                              <div class="d-flex gap-2 mt-auto">
+                                <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info">
+                                  <i class="bi bi-journal-richtext me-1"></i>Leccion
+                                </a>
+                                <a [routerLink]="['/practice/tema', tc.tema_id]" class="btn btn-success">
+                                  <i class="bi bi-play-fill me-1"></i>Practicar
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       }
                     </div>
-                    <div class="d-flex gap-2 mt-2">
-                      <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info btn-sm">
-                        <i class="bi bi-journal-richtext me-1"></i>Leccion
-                      </a>
-                      <a [routerLink]="['/practice/tema', tc.tema_id]" class="btn btn-success btn-sm">
-                        <i class="bi bi-play-fill me-1"></i>Practicar
-                      </a>
+                  </div>
+                  <!-- Mobile: compact list -->
+                  <div class="d-md-none">
+                    <div class="list-group list-group-flush">
+                      @for (tc of group.temas; track tc.id) {
+                        <div class="list-group-item d-flex align-items-center gap-2 px-0">
+                          <i class="bi text-info" [class]="sectionIcon(group.seccion)"></i>
+                          <span class="flex-grow-1 small">{{ tc.nombre_mostrar }}</span>
+                          <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info btn-sm py-0 px-2">
+                            <i class="bi bi-journal-richtext"></i>
+                          </a>
+                          <a [routerLink]="['/practice/tema', tc.tema_id]" class="btn btn-success btn-sm py-0 px-2">
+                            <i class="bi bi-play-fill"></i>
+                          </a>
+                        </div>
+                      }
                     </div>
                   </div>
                 </div>
-              </div>
-            }
-          </div>
-        } @empty {
-          <div class="text-center text-muted py-5">
-            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-            <p class="fs-5">No hay temas asignados a este examen.</p>
-          </div>
-        }
+              }
+            </div>
+          } @empty {
+            <div class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              <p class="fs-5">No hay temas asignados a este examen.</p>
+            </div>
+          }
+        </div>
       }
     </div>
   `,
@@ -107,6 +176,15 @@ import { TemaConfig } from '../../core/models';
       border-color: var(--bs-success);
       box-shadow: 0 4px 12px rgba(25, 135, 84, 0.15);
       transform: translateY(-2px);
+    }
+    .accordion-button:not(.collapsed) {
+      background-color: rgba(13, 202, 240, 0.08);
+      color: inherit;
+      box-shadow: none;
+    }
+    .list-group-item {
+      border-left: 0;
+      border-right: 0;
     }
   `],
 })
@@ -152,4 +230,29 @@ export class ExploreSubjectsComponent {
     }
     return [...groups.entries()].map(([seccion, temas]) => ({ seccion, temas }));
   });
+
+  // All sections expanded by default
+  expandedSections = computed(() => {
+    const groups = this.groupedBySections();
+    const set = this._expandedOverrides();
+    if (set !== null) return set;
+    return new Set(groups.map((g) => g.seccion));
+  });
+
+  private _expandedOverrides = signal<Set<string> | null>(null);
+
+  toggleSection(seccion: string) {
+    const current = new Set(this.expandedSections());
+    if (current.has(seccion)) {
+      current.delete(seccion);
+    } else {
+      current.add(seccion);
+    }
+    this._expandedOverrides.set(current);
+  }
+
+  sectionIcon(seccion: string): string {
+    const key = (seccion || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return SECCION_ICONS[key] ?? 'bi-book';
+  }
 }
