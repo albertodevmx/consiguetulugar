@@ -281,7 +281,7 @@ exports.generateQuestions = onRequest(
         return;
       }
 
-      const numQuestions = Math.min(Math.max(1, parseInt(count)), 20);
+      const numQuestions = Math.min(Math.max(1, parseInt(count)), 50);
 
       const prompt = `Genera exactamente ${numQuestions} preguntas de opcion multiple para un examen de admision universitario sobre el tema "${topicName}"${context ? ` (area: ${context})` : ''}.
 
@@ -367,6 +367,95 @@ IMPORTANTE: Solo el JSON array, sin markdown, sin texto extra, sin bloques de co
       res.json({ generated: questions.length });
     } catch (error) {
       console.error('Generate questions error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+/**
+ * Generates a structured HTML lesson for a topic using OpenAI and saves it to the tema document.
+ * Admin-only endpoint.
+ */
+exports.generateLesson = onRequest(
+  { cors: true, timeoutSeconds: 120, invoker: 'public' },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    const authHeader = req.headers.authorization || '';
+    const match = authHeader.match(/^Bearer (.+)$/);
+    if (!match) {
+      res.status(401).json({ error: 'Missing authentication' });
+      return;
+    }
+
+    try {
+      const token = await getAuth().verifyIdToken(match[1]);
+      const db = getFirestore();
+
+      // Verify admin role
+      const userDoc = await db.doc(`usuarios/${token.uid}`).get();
+      if (!userDoc.exists || userDoc.data().rol !== 'admin') {
+        res.status(403).json({ error: 'Solo administradores pueden generar lecciones' });
+        return;
+      }
+
+      // Read OpenAI config from Firestore
+      const configDoc = await db.doc('configuracion/openai').get();
+      if (!configDoc.exists || !configDoc.data().apiKey) {
+        res.status(400).json({ error: 'API Key de OpenAI no configurada.' });
+        return;
+      }
+      const { apiKey, model: aiModel } = configDoc.data();
+
+      const { temaId, temaName, context = '' } = req.body;
+      if (!temaId || !temaName) {
+        res.status(400).json({ error: 'temaId y temaName son requeridos' });
+        return;
+      }
+
+      const prompt = `Crea una leccion educativa completa y bien estructurada sobre el tema "${temaName}"${context ? ` (materia: ${context})` : ''} para estudiantes que se preparan para un examen de admision universitario en Mexico.
+
+La leccion debe:
+- Cubrir todos los conceptos clave del tema
+- Usar explicaciones claras con ejemplos concretos
+- Incluir datos, formulas o reglas importantes cuando aplique
+- Ser concisa pero completa (entre 800 y 1500 palabras)
+
+Responde UNICAMENTE con HTML valido usando estas etiquetas:
+- <h2> para el titulo principal
+- <h3> para subtemas
+- <h4> para sub-secciones
+- <p> para parrafos
+- <ul>/<ol> y <li> para listas
+- <strong> para conceptos clave
+- <em> para enfasis
+- <blockquote> para datos importantes o tips
+- <table>, <thead>, <tbody>, <tr>, <th>, <td> para tablas comparativas si aplica
+
+NO uses <html>, <head>, <body>, <style>, <script>, ni clases CSS. Solo el contenido HTML directo.
+NO incluyas bloques de codigo markdown. Solo HTML puro.`;
+
+      const openaiRes = await openaiRequest(apiKey, aiModel || 'gpt-4.1-mini', [
+        {
+          role: 'system',
+          content: 'Eres un profesor experto en preparacion para examenes de admision universitario en Mexico. Creas lecciones educativas claras, estructuradas y faciles de entender. Respondes solo con HTML valido.',
+        },
+        { role: 'user', content: prompt },
+      ]);
+
+      let html = openaiRes.choices[0].message.content.trim();
+      // Strip markdown code fences if present
+      html = html.replace(/^```(?:html)?\s*\n?/, '').replace(/\n?\s*```$/, '');
+
+      // Save to tema document
+      await db.doc(`temas/${temaId}`).update({ leccion_html: html });
+
+      res.json({ success: true, length: html.length });
+    } catch (error) {
+      console.error('Generate lesson error:', error.message);
       res.status(500).json({ error: error.message });
     }
   },

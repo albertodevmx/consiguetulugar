@@ -28,6 +28,13 @@ export const publicRoutes: Routes = [
       ),
   },
   {
+    path: 'lesson/:temaId',
+    loadComponent: () =>
+      import('./topic-lesson/topic-lesson.component').then(
+        (m) => m.TopicLessonComponent,
+      ),
+  },
+  {
     path: 'practice/tema/:temaId',
     loadComponent: () =>
       import('./topic-practice/topic-practice.component').then(

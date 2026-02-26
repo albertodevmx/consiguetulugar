@@ -74,9 +74,14 @@ import { TemaConfig } from '../../core/models';
                         }
                       }
                     </div>
-                    <a [routerLink]="['/practice/tema', tc.tema_id]" class="btn btn-success btn-sm mt-2">
-                      <i class="bi bi-play-fill me-1"></i>Practicar
-                    </a>
+                    <div class="d-flex gap-2 mt-2">
+                      <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-journal-richtext me-1"></i>Leccion
+                      </a>
+                      <a [routerLink]="['/practice/tema', tc.tema_id]" class="btn btn-success btn-sm">
+                        <i class="bi bi-play-fill me-1"></i>Practicar
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>

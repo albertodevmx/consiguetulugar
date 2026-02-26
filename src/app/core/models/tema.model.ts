@@ -6,5 +6,6 @@ export interface Tema {
   materia_id: string;
   tags: string[];
   total_preguntas: number;
+  leccion_html: string | null;
   fecha_creacion: Timestamp;
 }

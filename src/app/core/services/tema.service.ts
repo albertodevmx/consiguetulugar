@@ -33,6 +33,7 @@ export class TemaService {
       ...data,
       tags: [],
       total_preguntas: 0,
+      leccion_html: null,
       fecha_creacion: serverTimestamp(),
     });
   }

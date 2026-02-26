@@ -49,7 +49,7 @@ import { Materia, Tema } from '../../core/models';
                 } @else {
                   <table class="table table-sm mb-3">
                     <thead>
-                      <tr><th>Tema</th><th>ID</th><th>Preguntas</th><th style="width:320px">Acciones</th></tr>
+                      <tr><th>Tema</th><th>ID</th><th>Preguntas</th><th>Leccion</th><th style="width:380px">Acciones</th></tr>
                     </thead>
                     <tbody>
                       @for (tema of temas()!; track tema.id) {
@@ -65,16 +65,31 @@ import { Materia, Tema } from '../../core/models';
                           <td><small class="text-muted font-monospace">{{ tema.id }}</small></td>
                           <td>{{ tema.total_preguntas }}</td>
                           <td>
+                            @if (tema.leccion_html) {
+                              <span class="badge bg-success">Si</span>
+                            } @else {
+                              <span class="badge bg-secondary">No</span>
+                            }
+                          </td>
+                          <td>
                             @if (editingTemaId() === tema.id) {
                               <button class="btn btn-sm btn-success me-1" (click)="saveTemaEdit(tema.id!)">Guardar</button>
                               <button class="btn btn-sm btn-secondary" (click)="editingTemaId.set(null)">Cancelar</button>
                             } @else {
                               <button class="btn btn-sm btn-outline-primary me-1" (click)="startTemaEdit(tema)">Editar</button>
                               <button class="btn btn-sm btn-outline-danger me-1" (click)="removeTema(tema.id!)">Eliminar</button>
-                              <button class="btn btn-sm btn-outline-warning"
+                              <button class="btn btn-sm btn-outline-warning me-1"
                                 (click)="openGenerate(mat, tema)"
                                 [disabled]="generatingTemaId() !== null" title="Generar preguntas con IA">
                                 AI Preguntas
+                              </button>
+                              <button class="btn btn-sm btn-outline-info"
+                                (click)="executeGenerateLesson(tema.id!, tema.nombre_canonical, mat.nombre_canonical)"
+                                [disabled]="generatingLessonId() !== null" title="Generar leccion con IA">
+                                @if (generatingLessonId() === tema.id) {
+                                  <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                {{ tema.leccion_html ? 'Regenerar Leccion' : 'AI Leccion' }}
                               </button>
                             }
                           </td>
@@ -83,7 +98,7 @@ import { Materia, Tema } from '../../core/models';
                         <!-- AI Generation panel -->
                         @if (generatingTemaId() === tema.id) {
                           <tr>
-                            <td colspan="4">
+                            <td colspan="5">
                               <div class="card border-warning">
                                 <div class="card-body py-2">
                                   <div class="d-flex align-items-center justify-content-between mb-2">
@@ -94,7 +109,7 @@ import { Materia, Tema } from '../../core/models';
                                     <label class="form-label mb-0">Cantidad:</label>
                                     <input type="number" class="form-control form-control-sm" style="width:80px"
                                       [ngModel]="generateCount()" (ngModelChange)="generateCount.set($event)"
-                                      [ngModelOptions]="{standalone:true}" min="1" max="20" [disabled]="generating()" />
+                                      [ngModelOptions]="{standalone:true}" min="1" max="50" [disabled]="generating()" />
                                     <button class="btn btn-sm btn-warning" (click)="executeGenerate(mat.id!, tema.id!, tema.nombre_canonical, mat.nombre_canonical)" [disabled]="generating()">
                                       @if (generating()) {
                                         <span class="spinner-border spinner-border-sm me-1"></span>Generando...
@@ -113,7 +128,7 @@ import { Materia, Tema } from '../../core/models';
                           </tr>
                         }
                       } @empty {
-                        <tr><td colspan="4" class="text-muted">Sin temas.</td></tr>
+                        <tr><td colspan="5" class="text-muted">Sin temas.</td></tr>
                       }
                     </tbody>
                   </table>
@@ -125,10 +140,21 @@ import { Materia, Tema } from '../../core/models';
                         name="temaName" placeholder="Nombre del tema" />
                     </div>
                     <div class="col-auto">
-                      <button class="btn btn-sm btn-primary" (click)="addTema(mat.id!)"
-                        [disabled]="!newTemaName.trim()">Agregar tema</button>
+                      <button class="btn btn-sm btn-primary" (click)="addTema(mat.id!, mat.nombre_canonical)"
+                        [disabled]="!newTemaName.trim() || addingTema()">
+                        @if (addingTema()) {
+                          <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Agregar tema
+                      </button>
                     </div>
                   </div>
+                  @if (lessonMsg()) {
+                    <div class="alert mt-2 py-1"
+                      [class.alert-success]="lessonOk()" [class.alert-danger]="!lessonOk()">
+                      {{ lessonMsg() }}
+                    </div>
+                  }
                 }
               </div>
             }
@@ -160,6 +186,7 @@ export class MateriasComponent {
 
   // Tema add
   newTemaName = '';
+  addingTema = signal(false);
 
   // Tema edit
   editingTemaId = signal<string | null>(null);
@@ -172,10 +199,16 @@ export class MateriasComponent {
   generateMsg = signal('');
   generateOk = signal(true);
 
+  // Lesson generation
+  generatingLessonId = signal<string | null>(null);
+  lessonMsg = signal('');
+  lessonOk = signal(true);
+
   toggleMateria(id: string) {
     this.selectedMateriaId.set(this.selectedMateriaId() === id ? null : id);
     this.editingTemaId.set(null);
     this.closeGenerate();
+    this.lessonMsg.set('');
   }
 
   async addMateria() {
@@ -192,11 +225,26 @@ export class MateriasComponent {
     }
   }
 
-  async addTema(materiaId: string) {
+  async addTema(materiaId: string, materiaName: string) {
     const name = this.newTemaName.trim();
     if (!name) return;
-    await this.temaSvc.add({ nombre_canonical: name, materia_id: materiaId });
-    this.newTemaName = '';
+    this.addingTema.set(true);
+    this.lessonMsg.set('');
+    try {
+      const docRef = await this.temaSvc.add({ nombre_canonical: name, materia_id: materiaId });
+      this.newTemaName = '';
+      // Auto-generate lesson for the new tema
+      this.lessonMsg.set('Tema creado. Generando leccion...');
+      this.lessonOk.set(true);
+      await this.callGenerateLesson(docRef.id, name, materiaName);
+      this.lessonMsg.set('Tema creado y leccion generada.');
+      this.lessonOk.set(true);
+    } catch (e) {
+      this.lessonMsg.set('Tema creado, pero error al generar leccion: ' + (e as Error).message);
+      this.lessonOk.set(false);
+    } finally {
+      this.addingTema.set(false);
+    }
   }
 
   startTemaEdit(tema: Tema) {
@@ -215,7 +263,7 @@ export class MateriasComponent {
     }
   }
 
-  // --- AI Generation ---
+  // --- AI Questions Generation ---
   openGenerate(mat: Materia, tema: Tema) {
     this.generatingTemaId.set(tema.id!);
     this.generateCount.set(10);
@@ -229,7 +277,7 @@ export class MateriasComponent {
 
   async executeGenerate(materiaId: string, temaId: string, temaName: string, materiaName: string) {
     const count = this.generateCount();
-    if (count < 1 || count > 20) return;
+    if (count < 1 || count > 50) return;
     this.generating.set(true);
     this.generateMsg.set('');
     try {
@@ -254,5 +302,37 @@ export class MateriasComponent {
     } finally {
       this.generating.set(false);
     }
+  }
+
+  // --- Lesson Generation ---
+  async executeGenerateLesson(temaId: string, temaName: string, materiaName: string) {
+    this.generatingLessonId.set(temaId);
+    this.lessonMsg.set('');
+    try {
+      await this.callGenerateLesson(temaId, temaName, materiaName);
+      this.lessonMsg.set('Leccion generada correctamente.');
+      this.lessonOk.set(true);
+    } catch (e) {
+      this.lessonMsg.set((e as Error).message);
+      this.lessonOk.set(false);
+    } finally {
+      this.generatingLessonId.set(null);
+    }
+  }
+
+  private async callGenerateLesson(temaId: string, temaName: string, context: string) {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('No has iniciado sesion.');
+    const token = await user.getIdToken();
+    const response = await fetch(`${environment.functionsUrl}/generateLesson`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ temaId, temaName, context }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Error de conexion' }));
+      throw new Error(err.error || 'Error al generar leccion');
+    }
+    return response.json();
   }
 }

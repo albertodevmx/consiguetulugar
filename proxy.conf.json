@@ -4,6 +4,11 @@
     "secure": false,
     "changeOrigin": true
   },
+  "/generateLesson": {
+    "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
+    "secure": false,
+    "changeOrigin": true
+  },
   "/createEmbeddedCheckout": {
     "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
     "secure": false,
