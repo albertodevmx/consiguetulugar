@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { NgClass, Location } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap, take, map } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
@@ -13,6 +13,10 @@ import { Pregunta } from '../../core/models';
   imports: [NgClass, RouterLink],
   template: `
     <div class="container py-4">
+      <button class="btn btn-warning btn-sm mb-3" (click)="goBack()">
+        <i class="bi bi-arrow-left me-1"></i> Volver
+      </button>
+
       <!-- Loading -->
       @if (loading()) {
         <div class="text-center py-5">
@@ -180,6 +184,7 @@ import { Pregunta } from '../../core/models';
 })
 export class TopicPracticeComponent {
   private route = inject(ActivatedRoute);
+  private location = inject(Location);
   private preguntaSvc = inject(PreguntaService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
@@ -293,6 +298,10 @@ export class TopicPracticeComponent {
 
   optionLetter(idx: number): string {
     return String.fromCharCode(65 + idx);
+  }
+
+  goBack() {
+    this.location.back();
   }
 
   private shuffle<T>(arr: T[]): T[] {

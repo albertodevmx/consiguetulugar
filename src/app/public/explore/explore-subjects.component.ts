@@ -62,10 +62,9 @@ const SECCION_ICONS: Record<string, string> = {
 
       @if (examen(); as ex) {
         <h2 class="mb-2"><i class="bi bi-journal-text me-2"></i>{{ ex.nombre }}</h2>
-        <p class="text-muted mb-1">{{ ex.total_reactivos }} reactivos | {{ ex.tiempo_limite_minutos }} minutos</p>
-        <div class="d-flex gap-2 mb-4">
-          <p class="text-muted mb-0">Elige un tema para practicar o inicia un examen simulacion.</p>
-          <a [routerLink]="['/exam-simulation', examenId()]" class="btn btn-primary btn-sm text-nowrap">
+        <p class="text-muted mb-1">Elige un tema para practicar o inicia un examen simulacion.</p>
+        <div class="mb-4">
+          <a [routerLink]="['/exam-simulation', examenId()]" class="btn btn-primary d-block d-sm-inline-block">
             <i class="bi bi-clock me-1"></i> Examen Simulacion
           </a>
         </div>
