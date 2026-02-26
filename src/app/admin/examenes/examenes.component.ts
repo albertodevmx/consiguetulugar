@@ -208,7 +208,10 @@ import { Examen, TemaConfig } from '../../core/models';
                         {{ tc.seccion }}
                       }
                     </td>
-                    <td><small class="text-muted font-monospace">{{ temaName(tc.tema_id) }}</small></td>
+                    <td>
+                      <small class="font-monospace">{{ tc.tema_id }}</small>
+                      <br><small class="text-success">{{ temaName(tc.tema_id) }}</small>
+                    </td>
                     <td>
                       @if (editingCfgId() === tc.id) {
                         <input type="number" class="form-control form-control-sm" [ngModel]="editCfgReactivos()"
