@@ -35,12 +35,20 @@ import { Examen, TemaConfig } from '../../core/models';
               name="newEsc" placeholder="Escuela (ej: UNAM)" />
           </div>
           <div class="col-auto">
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="newEscuelaOrden"
+              name="newEscOrd" placeholder="Ord. Esc." style="width:80px" title="Orden escuela" />
+          </div>
+          <div class="col-auto">
             <input class="form-control form-control-sm" [(ngModel)]="newNombre"
               name="newNom" placeholder="Nombre del examen" />
           </div>
           <div class="col-auto">
             <input class="form-control form-control-sm" [(ngModel)]="newArea"
               name="newArea" placeholder="Area (ej: Area 2)" />
+          </div>
+          <div class="col-auto">
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="newOrden"
+              name="newOrd" placeholder="Ord. Ex." style="width:80px" title="Orden examen" />
           </div>
           <div class="col-auto">
             <input type="number" class="form-control form-control-sm" [(ngModel)]="newAnio"
@@ -73,8 +81,10 @@ import { Examen, TemaConfig } from '../../core/models';
         <thead>
           <tr>
             <th>Escuela</th>
+            <th>Ord. Esc.</th>
             <th>Nombre</th>
             <th>Area</th>
+            <th>Ord.</th>
             <th>Reactivos</th>
             <th>Tiempo</th>
             <th style="width:280px">Acciones</th>
@@ -84,6 +94,14 @@ import { Examen, TemaConfig } from '../../core/models';
           @for (ex of filtered(); track ex.id) {
             <tr [class.table-active]="selectedExamenId() === ex.id">
               <td>{{ ex.escuela }}</td>
+              <td>
+                @if (editingId() === ex.id) {
+                  <input type="number" class="form-control form-control-sm" [ngModel]="editEscuelaOrden()"
+                    (ngModelChange)="editEscuelaOrden.set($event)" [ngModelOptions]="{standalone:true}" style="width:60px" />
+                } @else {
+                  {{ ex.escuela_orden ?? '-' }}
+                }
+              </td>
               <td>
                 @if (editingId() === ex.id) {
                   <input class="form-control form-control-sm" [ngModel]="editNombre()"
@@ -98,6 +116,14 @@ import { Examen, TemaConfig } from '../../core/models';
                     (ngModelChange)="editArea.set($event)" [ngModelOptions]="{standalone:true}" />
                 } @else {
                   {{ ex.area }}
+                }
+              </td>
+              <td>
+                @if (editingId() === ex.id) {
+                  <input type="number" class="form-control form-control-sm" [ngModel]="editOrden()"
+                    (ngModelChange)="editOrden.set($event)" [ngModelOptions]="{standalone:true}" style="width:60px" />
+                } @else {
+                  {{ ex.orden ?? '-' }}
                 }
               </td>
               <td>{{ ex.total_reactivos }}</td>
@@ -267,13 +293,16 @@ export class ExamenesComponent {
   filtered = computed(() => {
     const all = this.examenes() ?? [];
     const esc = this.filterEscuela();
-    return esc ? all.filter((e) => e.escuela === esc) : all;
+    const list = esc ? all.filter((e) => e.escuela === esc) : all;
+    return list.sort((a, b) => (a.escuela_orden ?? 99) - (b.escuela_orden ?? 99) || (a.orden ?? 99) - (b.orden ?? 99));
   });
 
   // Add form
   newEscuela = '';
+  newEscuelaOrden = 1;
   newNombre = '';
   newArea = '';
+  newOrden = 1;
   newAnio = new Date().getFullYear();
   newTotal = 120;
   newTiempo = 180;
@@ -282,6 +311,8 @@ export class ExamenesComponent {
   editingId = signal<string | null>(null);
   editNombre = signal('');
   editArea = signal('');
+  editOrden = signal(1);
+  editEscuelaOrden = signal(1);
 
   // --- temas_config ---
   selectedExamenId = signal<string | null>(null);
@@ -313,8 +344,10 @@ export class ExamenesComponent {
     if (!this.newEscuela.trim() || !this.newNombre.trim()) return;
     await this.svc.add({
       escuela: this.newEscuela.trim(),
+      escuela_orden: this.newEscuelaOrden,
       nombre: this.newNombre.trim(),
       area: this.newArea.trim(),
+      orden: this.newOrden,
       año: this.newAnio,
       total_reactivos: this.newTotal,
       tiempo_limite_minutos: this.newTiempo,
@@ -327,12 +360,16 @@ export class ExamenesComponent {
     this.editingId.set(ex.id!);
     this.editNombre.set(ex.nombre);
     this.editArea.set(ex.area);
+    this.editOrden.set(ex.orden ?? 1);
+    this.editEscuelaOrden.set(ex.escuela_orden ?? 1);
   }
 
   async saveEdit(id: string) {
     await this.svc.update(id, {
       nombre: this.editNombre().trim(),
       area: this.editArea().trim(),
+      orden: this.editOrden(),
+      escuela_orden: this.editEscuelaOrden(),
     });
     this.editingId.set(null);
   }

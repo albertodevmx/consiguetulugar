@@ -26,12 +26,24 @@ export class ExamenService {
 
   listByEscuela(escuela: string): Observable<Examen[]> {
     const q = query(this.col, where('escuela', '==', escuela));
-    return collectionData(q, { idField: 'id' }) as Observable<Examen[]>;
+    return (collectionData(q, { idField: 'id' }) as Observable<Examen[]>).pipe(
+      map((exams) => exams.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))),
+    );
   }
 
-  getEscuelas(): Observable<string[]> {
+  getEscuelas(): Observable<{ nombre: string; orden: number }[]> {
     return this.list().pipe(
-      map((examenes) => [...new Set(examenes.map((e) => e.escuela))].sort()),
+      map((examenes) => {
+        const map = new Map<string, number>();
+        for (const e of examenes) {
+          if (!map.has(e.escuela) || (e.escuela_orden ?? 99) < map.get(e.escuela)!) {
+            map.set(e.escuela, e.escuela_orden ?? 99);
+          }
+        }
+        return [...map.entries()]
+          .map(([nombre, orden]) => ({ nombre, orden }))
+          .sort((a, b) => a.orden - b.orden);
+      }),
     );
   }
 

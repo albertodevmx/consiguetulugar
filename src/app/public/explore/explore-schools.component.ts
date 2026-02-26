@@ -20,12 +20,12 @@ import { ExamenService } from '../../core/services/examen.service';
         </div>
       } @else {
         <div class="row g-3">
-          @for (escuela of escuelas(); track escuela) {
+          @for (esc of escuelas(); track esc.nombre) {
             <div class="col-sm-6 col-md-4 col-lg-3">
-              <a [routerLink]="['/explore', escuela]" class="card explore-card h-100 text-decoration-none">
+              <a [routerLink]="['/explore', esc.nombre]" class="card explore-card h-100 text-decoration-none">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
                   <i class="bi bi-bank2 fs-1 mb-2 text-primary"></i>
-                  <h5 class="card-title mb-0">{{ escuela }}</h5>
+                  <h5 class="card-title mb-0">{{ esc.nombre }}</h5>
                 </div>
               </a>
             </div>
