@@ -5,7 +5,7 @@ import { switchMap, of } from 'rxjs';
 import { ExamenService } from '../../core/services/examen.service';
 import { TemaService } from '../../core/services/tema.service';
 import { MateriaService } from '../../core/services/materia.service';
-import { Examen, TemaConfig } from '../../core/models';
+import { Examen, TemaConfig, Tema } from '../../core/models';
 
 @Component({
   selector: 'app-examenes',
@@ -158,43 +158,93 @@ import { Examen, TemaConfig } from '../../core/models';
         </div>
         <div class="card-body">
 
-          <!-- Agregar tema config -->
-          <div class="row g-2 mb-3 align-items-end">
-            <div class="col-auto">
-              <label class="form-label mb-0 small">Tema</label>
-              <select class="form-select form-select-sm" [(ngModel)]="newCfgTemaId" name="newCfgTema">
-                <option value="">-- Seleccionar tema --</option>
-                @for (t of allTemas(); track t.id) {
-                  <option [value]="t.id">{{ t.nombre_canonical }} ({{ materiaName(t.materia_id) }})</option>
-                }
-              </select>
-            </div>
-            <div class="col-auto">
-              <label class="form-label mb-0 small">Nombre a mostrar</label>
-              <input class="form-control form-control-sm" [(ngModel)]="newCfgNombre"
-                name="newCfgNom" placeholder="ej: Calculo para inteligentes" />
-            </div>
-            <div class="col-auto">
-              <label class="form-label mb-0 small">Seccion</label>
-              <input class="form-control form-control-sm" [(ngModel)]="newCfgSeccion"
-                name="newCfgSec" placeholder="ej: Matematicas" />
-            </div>
-            <div class="col-auto">
-              <label class="form-label mb-0 small">Reactivos</label>
-              <input type="number" class="form-control form-control-sm" [(ngModel)]="newCfgReactivos"
-                name="newCfgReact" style="width:80px" />
-            </div>
-            <div class="col-auto">
-              <label class="form-label mb-0 small">Orden</label>
-              <input type="number" class="form-control form-control-sm" [(ngModel)]="newCfgOrden"
-                name="newCfgOrden" style="width:70px" />
-            </div>
-            <div class="col-auto">
-              <button class="btn btn-sm btn-primary" (click)="addTemaConfig()"
-                [disabled]="!newCfgTemaId || !newCfgNombre.trim()">Agregar</button>
+          <!-- Agregar temas en lote -->
+          <div class="card border-secondary mb-3">
+            <div class="card-body py-2">
+              <h6 class="mb-2">Agregar temas</h6>
+              <div class="row g-2 mb-2 align-items-end">
+                <!-- Filtro materia -->
+                <div class="col-auto">
+                  <label class="form-label mb-0 small">Filtrar por materia</label>
+                  <select class="form-select form-select-sm" [ngModel]="cfgFilterMateria()"
+                    (ngModelChange)="cfgFilterMateria.set($event)" name="cfgFilterMat">
+                    <option value="">-- Todas --</option>
+                    @for (m of allMaterias(); track m.id) {
+                      <option [value]="m.id">{{ m.nombre_canonical }}</option>
+                    }
+                  </select>
+                </div>
+                <!-- Seccion predictiva -->
+                <div class="col-auto">
+                  <label class="form-label mb-0 small">Seccion</label>
+                  <input class="form-control form-control-sm" [(ngModel)]="batchSeccion"
+                    name="batchSec" placeholder="ej: Matematicas"
+                    list="seccionSuggestions" autocomplete="off" />
+                  <datalist id="seccionSuggestions">
+                    @for (s of existingSecciones(); track s) {
+                      <option [value]="s"></option>
+                    }
+                  </datalist>
+                </div>
+                <!-- Reactivos por defecto -->
+                <div class="col-auto">
+                  <label class="form-label mb-0 small">Reactivos c/u</label>
+                  <input type="number" class="form-control form-control-sm" [(ngModel)]="batchReactivos"
+                    name="batchReact" style="width:80px" min="1" />
+                </div>
+              </div>
+
+              <!-- Checkboxes de temas -->
+              @if (cfgFilterMateria()) {
+                <div class="border rounded p-2 mb-2" style="max-height:220px;overflow-y:auto">
+                  @for (t of filteredTemasForCfg(); track t.id) {
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox"
+                        [id]="'tema-chk-' + t.id"
+                        [checked]="selectedTemaIds().includes(t.id!)"
+                        [disabled]="alreadyAddedIds().has(t.id!)"
+                        (change)="toggleTemaSelection(t)" />
+                      <label class="form-check-label" [for]="'tema-chk-' + t.id"
+                        [class.text-muted]="alreadyAddedIds().has(t.id!)">
+                        {{ t.nombre_canonical }}
+                        @if (alreadyAddedIds().has(t.id!)) {
+                          <span class="badge bg-secondary ms-1">ya agregado</span>
+                        }
+                        @if (selectedTemaIds().includes(t.id!) && !alreadyAddedIds().has(t.id!)) {
+                          <span class="badge bg-info ms-1">#{{ selectedTemaIds().indexOf(t.id!) + 1 }}</span>
+                        }
+                      </label>
+                    </div>
+                  } @empty {
+                    <p class="text-muted mb-0 small">No hay temas para esta materia.</p>
+                  }
+                </div>
+              } @else {
+                <p class="text-muted small mb-2">Selecciona una materia para ver los temas disponibles.</p>
+              }
+
+              <!-- Resumen y boton agregar -->
+              @if (selectedTemaIds().length > 0) {
+                <div class="alert alert-info py-1 mb-2 small">
+                  Se agregaran <strong>{{ selectedTemaIds().length }}</strong> tema(s)
+                  @if (batchSeccion.trim()) {
+                    a la seccion <strong>"{{ batchSeccion.trim() }}"</strong>
+                  }
+                  con <strong>{{ batchReactivos }}</strong> reactivos c/u.
+                  Orden inicial: <strong>{{ nextOrden() }}</strong>.
+                </div>
+                <button class="btn btn-sm btn-primary" (click)="addBatchTemaConfig()"
+                  [disabled]="addingBatch()">
+                  @if (addingBatch()) {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                  }
+                  Agregar {{ selectedTemaIds().length }} tema(s)
+                </button>
+              }
             </div>
           </div>
 
+          <!-- Tabla de temas ya configurados -->
           @if (temasConfig() === undefined) {
             <div class="text-center py-3">
               <div class="spinner-border spinner-border-sm text-info"></div>
@@ -325,12 +375,39 @@ export class ExamenesComponent {
     { initialValue: undefined },
   );
 
-  // Add config form
-  newCfgTemaId = '';
-  newCfgNombre = '';
-  newCfgSeccion = '';
-  newCfgReactivos = 10;
-  newCfgOrden = 1;
+  // Batch add config
+  cfgFilterMateria = signal('');
+  batchSeccion = '';
+  batchReactivos = 10;
+  selectedTemaIds = signal<string[]>([]);
+  selectedTemasData = signal<Tema[]>([]);
+  addingBatch = signal(false);
+
+  // IDs of temas already in this exam's config
+  alreadyAddedIds = computed(() => {
+    const configs = this.temasConfig() ?? [];
+    return new Set(configs.map((tc) => tc.tema_id));
+  });
+
+  // Temas filtered by selected materia
+  filteredTemasForCfg = computed(() => {
+    const matId = this.cfgFilterMateria();
+    if (!matId) return [];
+    return this.allTemas().filter((t) => t.materia_id === matId);
+  });
+
+  // Existing secciones in current exam for autocomplete
+  existingSecciones = computed(() => {
+    const configs = this.temasConfig() ?? [];
+    return [...new Set(configs.map((tc) => tc.seccion).filter((s) => s.length > 0))];
+  });
+
+  // Next orden value based on existing configs
+  nextOrden = computed(() => {
+    const configs = this.temasConfig() ?? [];
+    if (configs.length === 0) return 1;
+    return Math.max(...configs.map((tc) => tc.orden)) + 1;
+  });
 
   // Edit config
   editingCfgId = signal<string | null>(null);
@@ -389,6 +466,7 @@ export class ExamenesComponent {
     } else {
       this.selectedExamenId.set(ex.id!);
       this.selectedExamenNombre.set(`${ex.escuela} – ${ex.nombre} (${ex.area})`);
+      this.resetBatchForm();
     }
   }
 
@@ -400,22 +478,58 @@ export class ExamenesComponent {
     return this.allTemas().find((t) => t.id === id)?.nombre_canonical ?? id;
   }
 
-  async addTemaConfig() {
+  // Toggle tema checkbox selection - order = click sequence
+  toggleTemaSelection(tema: Tema) {
+    const ids = [...this.selectedTemaIds()];
+    const data = [...this.selectedTemasData()];
+    const idx = ids.indexOf(tema.id!);
+    if (idx >= 0) {
+      ids.splice(idx, 1);
+      data.splice(idx, 1);
+    } else {
+      ids.push(tema.id!);
+      data.push(tema);
+    }
+    this.selectedTemaIds.set(ids);
+    this.selectedTemasData.set(data);
+  }
+
+  // Add all selected temas as temas_config in one batch
+  async addBatchTemaConfig() {
     const exId = this.selectedExamenId();
-    if (!exId || !this.newCfgTemaId || !this.newCfgNombre.trim()) return;
-    await this.svc.addTemaConfig(exId, {
-      tema_id: this.newCfgTemaId,
-      nombre_mostrar: this.newCfgNombre.trim(),
-      seccion: this.newCfgSeccion.trim(),
-      orden: this.newCfgOrden,
-      num_reactivos: this.newCfgReactivos,
-      dificultades: [1, 2, 3],
-    });
-    this.newCfgTemaId = '';
-    this.newCfgNombre = '';
-    this.newCfgSeccion = '';
-    this.newCfgReactivos = 10;
-    this.newCfgOrden = (this.temasConfig()?.length ?? 0) + 1;
+    if (!exId) return;
+    const ids = this.selectedTemaIds();
+    const data = this.selectedTemasData();
+    if (ids.length === 0) return;
+
+    this.addingBatch.set(true);
+    try {
+      const baseOrden = this.nextOrden();
+      const seccion = this.batchSeccion.trim();
+      const reactivos = this.batchReactivos;
+
+      for (let i = 0; i < ids.length; i++) {
+        await this.svc.addTemaConfig(exId, {
+          tema_id: ids[i],
+          nombre_mostrar: data[i].nombre_canonical,
+          seccion,
+          orden: baseOrden + i,
+          num_reactivos: reactivos,
+          dificultades: [1, 2, 3],
+        });
+      }
+      this.resetBatchForm();
+    } finally {
+      this.addingBatch.set(false);
+    }
+  }
+
+  private resetBatchForm() {
+    this.selectedTemaIds.set([]);
+    this.selectedTemasData.set([]);
+    this.cfgFilterMateria.set('');
+    this.batchSeccion = '';
+    this.batchReactivos = 10;
   }
 
   startEditConfig(tc: TemaConfig) {
