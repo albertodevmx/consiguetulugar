@@ -62,7 +62,7 @@ function stripeRequest(method, path, key, formData) {
  * Called directly from the frontend via HTTP POST.
  */
 exports.createEmbeddedCheckout = onRequest(
-  { secrets: [stripeSecret], cors: true },
+  { secrets: [stripeSecret], cors: true, invoker: 'public' },
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -132,7 +132,7 @@ function verifyStripeSignature(payload, sigHeader, secret) {
  * Stripe Webhook — handles subscription events.
  */
 exports.stripeWebhook = onRequest(
-  { secrets: [stripeSecret, stripeWebhookSecret] },
+  { secrets: [stripeSecret, stripeWebhookSecret], invoker: 'public' },
   async (req, res) => {
     let event;
     try {
@@ -242,7 +242,7 @@ function openaiRequest(apiKey, model, messages) {
  * Admin-only endpoint.
  */
 exports.generateQuestions = onRequest(
-  { cors: true, timeoutSeconds: 120 },
+  { cors: true, timeoutSeconds: 120, invoker: 'public' },
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -389,7 +389,7 @@ IMPORTANTE: Solo el JSON array, sin markdown, sin texto extra, sin bloques de co
  *     -d '{"key":"your-secret","preguntas":[{...}]}'
  */
 exports.importPreguntas = onRequest(
-  { cors: true, timeoutSeconds: 120 },
+  { cors: true, timeoutSeconds: 120, invoker: 'public' },
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
