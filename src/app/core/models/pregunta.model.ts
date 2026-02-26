@@ -18,9 +18,8 @@ export interface Pregunta {
   texto: string;
   opciones: OpcionPregunta[];
   dificultad: 1 | 2 | 3;
-  materia_id: string;
   tema_id: string;
-  subtema_id: string;
+  materia_id: string;
   imagen_url: string | null;
   imagen_descripcion: string | null;
   tags: string[];

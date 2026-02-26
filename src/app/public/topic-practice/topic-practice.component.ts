@@ -77,7 +77,7 @@ import { Pregunta } from '../../core/models';
         <div class="card text-center py-5">
           <div class="card-body">
             <i class="bi bi-question-circle fs-1 text-muted d-block mb-2"></i>
-            <h5 class="text-muted">No hay preguntas disponibles para esta unidad.</h5>
+            <h5 class="text-muted">No hay preguntas disponibles para este tema.</h5>
             <button class="btn btn-warning mt-3" onclick="history.back()">
               <i class="bi bi-arrow-left me-1"></i> Volver
             </button>
@@ -192,7 +192,6 @@ export class TopicPracticeComponent {
   sessionFinished = signal(false);
   correctCount = signal(0);
   totalAnswered = signal(0);
-  examenId = signal('');
 
   currentQuestion = computed(() => {
     const qs = this.questions();
@@ -200,7 +199,6 @@ export class TopicPracticeComponent {
     return idx < qs.length ? qs[idx] : null;
   });
 
-  /** User can see the question card only if logged in and has quota */
   canShowQuestion = computed(() => {
     if (!this.auth.isLoggedIn()) return false;
     if (this.quotaExceeded()) return false;
@@ -235,10 +233,7 @@ export class TopicPracticeComponent {
   constructor() {
     this.route.paramMap
       .pipe(
-        map((p) => {
-          this.examenId.set(p.get('examenId') ?? '');
-          return p.get('temaId')!;
-        }),
+        map((p) => p.get('temaId')!),
         switchMap((temaId) => this.preguntaSvc.listByTema(temaId).pipe(take(1))),
       )
       .subscribe((qs) => {
@@ -257,12 +252,10 @@ export class TopicPracticeComponent {
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
     if (this.isCorrect()) this.correctCount.update((n) => n + 1);
-    // Record answer for quota tracking
     await this.quota.recordAnswer();
   }
 
   nextQuestion() {
-    // Check quota before showing next question
     if (this.quota.isFree() && !this.quota.canAnswer()) {
       this.sessionFinished.set(true);
       return;

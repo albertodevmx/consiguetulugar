@@ -27,35 +27,25 @@ export class PreguntaService {
 
   /* ── Public queries (practice) ── */
 
-  listBySubtema(subtemaId: string, max = 30): Observable<Pregunta[]> {
-    const q = query(
-      this.col,
-      where('subtema_id', '==', subtemaId),
-      limit(max),
-    );
+  listByTema(temaId: string, max = 200): Observable<Pregunta[]> {
+    const q = query(this.col, where('tema_id', '==', temaId), limit(max));
     return sinImagenes(collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>);
   }
 
-  listBySubtemaIds(subtemaIds: string[], max = 50): Observable<Pregunta[]> {
-    if (subtemaIds.length === 0) return of([]);
-    // Firestore IN limit = 30; batch if needed
+  listByTemaIds(temaIds: string[], max = 500): Observable<Pregunta[]> {
+    if (temaIds.length === 0) return of([]);
     const chunks: string[][] = [];
-    for (let i = 0; i < subtemaIds.length; i += 30) {
-      chunks.push(subtemaIds.slice(i, i + 30));
+    for (let i = 0; i < temaIds.length; i += 30) {
+      chunks.push(temaIds.slice(i, i + 30));
     }
     const queries = chunks.map((ids) => {
-      const q = query(this.col, where('subtema_id', 'in', ids), limit(max));
+      const q = query(this.col, where('tema_id', 'in', ids), limit(max));
       return collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>;
     });
     return combineLatest(queries).pipe(
       map((results) => results.flat()),
       map((qs) => qs.filter((q) => !q.imagen_url)),
     );
-  }
-
-  listByTema(temaId: string, max = 200): Observable<Pregunta[]> {
-    const q = query(this.col, where('tema_id', '==', temaId), limit(max));
-    return sinImagenes(collectionData(q, { idField: 'id' }) as Observable<Pregunta[]>);
   }
 
   listByMateria(materiaId: string, max = 200): Observable<Pregunta[]> {

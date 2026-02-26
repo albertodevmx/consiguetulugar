@@ -1,16 +1,13 @@
 import { Timestamp } from '@angular/fire/firestore';
 
-export interface TemaMapping {
-  tema_id: string;
-  nombre_en_guia: string;
-}
-
-export interface MateriaMapping {
+export interface TemaConfig {
   id?: string;
-  materia_id: string;
-  nombre_en_guia: string;
+  tema_id: string;
+  nombre_mostrar: string;
+  seccion: string;
+  orden: number;
   num_reactivos: number;
-  temas_mapping: TemaMapping[];
+  dificultades: number[];
 }
 
 export interface Examen {
@@ -20,7 +17,6 @@ export interface Examen {
   area: string;
   año: number;
   total_reactivos: number;
-  distribucion: Record<string, number>;
-  archivo_guia_url: string | null;
+  tiempo_limite_minutos: number;
   fecha_creacion: Timestamp;
 }

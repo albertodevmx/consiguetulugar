@@ -154,7 +154,6 @@ export class PreguntasComponent {
     { initialValue: [] },
   );
 
-  // Load preguntas based on filter
   preguntas = toSignal(
     toObservable(this.filterMateriaId).pipe(
       switchMap((matId) => {

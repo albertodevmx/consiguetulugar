@@ -9,10 +9,11 @@ import {
   deleteDoc,
   query,
   where,
+  orderBy,
   serverTimestamp,
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
-import { Examen, MateriaMapping, TemaMapping } from '../models';
+import { Examen, TemaConfig } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ExamenService {
@@ -34,10 +35,15 @@ export class ExamenService {
     );
   }
 
-  listMateriasMapping(examenId: string): Observable<MateriaMapping[]> {
-    const subCol = collection(this.fs, `examenes/${examenId}/materias_mapping`);
-    return collectionData(subCol, { idField: 'id' }) as Observable<MateriaMapping[]>;
+  /* ── temas_config subcollection ── */
+
+  listTemasConfig(examenId: string): Observable<TemaConfig[]> {
+    const subCol = collection(this.fs, `examenes/${examenId}/temas_config`);
+    const q = query(subCol, orderBy('orden'));
+    return collectionData(q, { idField: 'id' }) as Observable<TemaConfig[]>;
   }
+
+  /* ── Examen CRUD ── */
 
   add(data: Omit<Examen, 'id' | 'fecha_creacion'>) {
     return addDoc(this.col, { ...data, fecha_creacion: serverTimestamp() });
@@ -51,18 +57,18 @@ export class ExamenService {
     return deleteDoc(doc(this.fs, 'examenes', id));
   }
 
-  // --- materias_mapping CRUD ---
+  /* ── TemaConfig CRUD ── */
 
-  addMateriaMapping(examenId: string, data: Omit<MateriaMapping, 'id'>) {
-    const subCol = collection(this.fs, `examenes/${examenId}/materias_mapping`);
+  addTemaConfig(examenId: string, data: Omit<TemaConfig, 'id'>) {
+    const subCol = collection(this.fs, `examenes/${examenId}/temas_config`);
     return addDoc(subCol, data);
   }
 
-  updateMateriaMapping(examenId: string, mapId: string, data: Partial<MateriaMapping>) {
-    return updateDoc(doc(this.fs, `examenes/${examenId}/materias_mapping`, mapId), data);
+  updateTemaConfig(examenId: string, configId: string, data: Partial<TemaConfig>) {
+    return updateDoc(doc(this.fs, `examenes/${examenId}/temas_config`, configId), data);
   }
 
-  deleteMateriaMapping(examenId: string, mapId: string) {
-    return deleteDoc(doc(this.fs, `examenes/${examenId}/materias_mapping`, mapId));
+  deleteTemaConfig(examenId: string, configId: string) {
+    return deleteDoc(doc(this.fs, `examenes/${examenId}/temas_config`, configId));
   }
 }

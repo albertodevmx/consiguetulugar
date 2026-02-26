@@ -28,17 +28,17 @@ export const publicRoutes: Routes = [
       ),
   },
   {
-    path: 'explore/:escuela/:examenId/:materiaId',
-    loadComponent: () =>
-      import('./explore/explore-units.component').then(
-        (m) => m.ExploreUnitsComponent,
-      ),
-  },
-  {
-    path: 'practice/tema/:examenId/:materiaId/:temaId',
+    path: 'practice/tema/:temaId',
     loadComponent: () =>
       import('./topic-practice/topic-practice.component').then(
         (m) => m.TopicPracticeComponent,
+      ),
+  },
+  {
+    path: 'exam-simulation/:examenId',
+    loadComponent: () =>
+      import('./exam-simulation/exam-simulation.component').then(
+        (m) => m.ExamSimulationComponent,
       ),
   },
   {

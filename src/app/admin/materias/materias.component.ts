@@ -5,7 +5,6 @@ import { switchMap, of } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MateriaService } from '../../core/services/materia.service';
 import { TemaService } from '../../core/services/tema.service';
-import { PreguntaService } from '../../core/services/pregunta.service';
 import { Auth } from '@angular/fire/auth';
 import { environment } from '../../../environments/environment';
 import { Materia, Tema } from '../../core/models';
@@ -45,18 +44,16 @@ import { Materia, Tema } from '../../core/models';
             </h2>
             @if (selectedMateriaId() === mat.id) {
               <div class="accordion-body p-3">
-                <!-- Temas for this materia -->
                 @if (temas() === undefined) {
                   <div class="spinner-border spinner-border-sm text-primary"></div>
                 } @else {
                   <table class="table table-sm mb-3">
                     <thead>
-                      <tr><th>Orden</th><th>Tema</th><th>ID</th><th style="width:320px">Acciones</th></tr>
+                      <tr><th>Tema</th><th>ID</th><th>Preguntas</th><th style="width:320px">Acciones</th></tr>
                     </thead>
                     <tbody>
                       @for (tema of temas()!; track tema.id) {
                         <tr>
-                          <td>{{ tema.orden }}</td>
                           <td>
                             @if (editingTemaId() === tema.id) {
                               <input class="form-control form-control-sm" [ngModel]="editTemaName()"
@@ -66,13 +63,14 @@ import { Materia, Tema } from '../../core/models';
                             }
                           </td>
                           <td><small class="text-muted font-monospace">{{ tema.id }}</small></td>
+                          <td>{{ tema.total_preguntas }}</td>
                           <td>
                             @if (editingTemaId() === tema.id) {
-                              <button class="btn btn-sm btn-success me-1" (click)="saveTemaEdit(mat.id!, tema.id!)">Guardar</button>
+                              <button class="btn btn-sm btn-success me-1" (click)="saveTemaEdit(tema.id!)">Guardar</button>
                               <button class="btn btn-sm btn-secondary" (click)="editingTemaId.set(null)">Cancelar</button>
                             } @else {
                               <button class="btn btn-sm btn-outline-primary me-1" (click)="startTemaEdit(tema)">Editar</button>
-                              <button class="btn btn-sm btn-outline-danger me-1" (click)="removeTema(mat.id!, tema.id!)">Eliminar</button>
+                              <button class="btn btn-sm btn-outline-danger me-1" (click)="removeTema(tema.id!)">Eliminar</button>
                               <button class="btn btn-sm btn-outline-warning"
                                 (click)="openGenerate(mat, tema)"
                                 [disabled]="generatingTemaId() !== null" title="Generar preguntas con IA">
@@ -127,10 +125,6 @@ import { Materia, Tema } from '../../core/models';
                         name="temaName" placeholder="Nombre del tema" />
                     </div>
                     <div class="col-auto">
-                      <input type="number" class="form-control form-control-sm" [(ngModel)]="newTemaOrden"
-                        name="temaOrden" placeholder="Orden" style="width:80px" />
-                    </div>
-                    <div class="col-auto">
                       <button class="btn btn-sm btn-primary" (click)="addTema(mat.id!)"
                         [disabled]="!newTemaName.trim()">Agregar tema</button>
                     </div>
@@ -166,7 +160,6 @@ export class MateriasComponent {
 
   // Tema add
   newTemaName = '';
-  newTemaOrden = 1;
 
   // Tema edit
   editingTemaId = signal<string | null>(null);
@@ -193,7 +186,7 @@ export class MateriasComponent {
   }
 
   async removeMateria(id: string) {
-    if (confirm('Eliminar esta materia y todos sus temas?')) {
+    if (confirm('Eliminar esta materia?')) {
       await this.materiaSvc.delete(id);
       if (this.selectedMateriaId() === id) this.selectedMateriaId.set(null);
     }
@@ -202,9 +195,8 @@ export class MateriasComponent {
   async addTema(materiaId: string) {
     const name = this.newTemaName.trim();
     if (!name) return;
-    await this.temaSvc.add(materiaId, { nombre_canonical: name, orden: this.newTemaOrden });
+    await this.temaSvc.add({ nombre_canonical: name, materia_id: materiaId });
     this.newTemaName = '';
-    this.newTemaOrden = (this.temas()?.length ?? 0) + 1;
   }
 
   startTemaEdit(tema: Tema) {
@@ -212,14 +204,14 @@ export class MateriasComponent {
     this.editTemaName.set(tema.nombre_canonical);
   }
 
-  async saveTemaEdit(materiaId: string, temaId: string) {
-    await this.temaSvc.update(materiaId, temaId, { nombre_canonical: this.editTemaName().trim() });
+  async saveTemaEdit(temaId: string) {
+    await this.temaSvc.update(temaId, { nombre_canonical: this.editTemaName().trim() });
     this.editingTemaId.set(null);
   }
 
-  async removeTema(materiaId: string, temaId: string) {
+  async removeTema(temaId: string) {
     if (confirm('Eliminar este tema?')) {
-      await this.temaSvc.delete(materiaId, temaId);
+      await this.temaSvc.delete(temaId);
     }
   }
 

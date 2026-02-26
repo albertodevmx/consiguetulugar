@@ -8,7 +8,7 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  orderBy,
+  where,
   serverTimestamp,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
@@ -17,28 +17,31 @@ import { Tema } from '../models';
 @Injectable({ providedIn: 'root' })
 export class TemaService {
   private readonly fs = inject(Firestore);
+  private readonly col = collection(this.fs, 'temas');
+
+  list(): Observable<Tema[]> {
+    return collectionData(this.col, { idField: 'id' }) as Observable<Tema[]>;
+  }
 
   listByMateria(materiaId: string): Observable<Tema[]> {
-    const subCol = collection(this.fs, `materias/${materiaId}/temas`);
-    const q = query(subCol, orderBy('orden'));
+    const q = query(this.col, where('materia_id', '==', materiaId));
     return collectionData(q, { idField: 'id' }) as Observable<Tema[]>;
   }
 
-  add(materiaId: string, data: Pick<Tema, 'nombre_canonical' | 'orden'>) {
-    const subCol = collection(this.fs, `materias/${materiaId}/temas`);
-    return addDoc(subCol, {
+  add(data: Pick<Tema, 'nombre_canonical' | 'materia_id'>) {
+    return addDoc(this.col, {
       ...data,
-      materia_id: materiaId,
-      sinonimos: [],
+      tags: [],
+      total_preguntas: 0,
       fecha_creacion: serverTimestamp(),
     });
   }
 
-  update(materiaId: string, temaId: string, data: Partial<Tema>) {
-    return updateDoc(doc(this.fs, `materias/${materiaId}/temas`, temaId), data);
+  update(temaId: string, data: Partial<Tema>) {
+    return updateDoc(doc(this.fs, 'temas', temaId), data);
   }
 
-  delete(materiaId: string, temaId: string) {
-    return deleteDoc(doc(this.fs, `materias/${materiaId}/temas`, temaId));
+  delete(temaId: string) {
+    return deleteDoc(doc(this.fs, 'temas', temaId));
   }
 }

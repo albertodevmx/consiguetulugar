@@ -3,9 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { switchMap, of } from 'rxjs';
 import { ExamenService } from '../../core/services/examen.service';
-import { MateriaService } from '../../core/services/materia.service';
 import { TemaService } from '../../core/services/tema.service';
-import { Examen, MateriaMapping } from '../../core/models';
+import { MateriaService } from '../../core/services/materia.service';
+import { Examen, TemaConfig } from '../../core/models';
 
 @Component({
   selector: 'app-examenes',
@@ -44,11 +44,15 @@ import { Examen, MateriaMapping } from '../../core/models';
           </div>
           <div class="col-auto">
             <input type="number" class="form-control form-control-sm" [(ngModel)]="newAnio"
-              name="newAnio" placeholder="Año" style="width:90px" />
+              name="newAnio" placeholder="Ano" style="width:90px" />
           </div>
           <div class="col-auto">
             <input type="number" class="form-control form-control-sm" [(ngModel)]="newTotal"
               name="newTotal" placeholder="Reactivos" style="width:100px" />
+          </div>
+          <div class="col-auto">
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="newTiempo"
+              name="newTiempo" placeholder="Min." style="width:90px" />
           </div>
           <div class="col-auto">
             <button class="btn btn-sm btn-primary" (click)="addExamen()"
@@ -68,19 +72,17 @@ import { Examen, MateriaMapping } from '../../core/models';
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Escuela</th>
             <th>Nombre</th>
             <th>Area</th>
-            <th>Año</th>
             <th>Reactivos</th>
+            <th>Tiempo</th>
             <th style="width:280px">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (ex of filtered(); track ex.id) {
             <tr [class.table-active]="selectedExamenId() === ex.id">
-              <td><small class="text-muted font-monospace">{{ ex.id }}</small></td>
               <td>{{ ex.escuela }}</td>
               <td>
                 @if (editingId() === ex.id) {
@@ -98,8 +100,8 @@ import { Examen, MateriaMapping } from '../../core/models';
                   {{ ex.area }}
                 }
               </td>
-              <td>{{ ex['año'] }}</td>
               <td>{{ ex.total_reactivos }}</td>
+              <td>{{ ex.tiempo_limite_minutos }} min</td>
               <td>
                 @if (editingId() === ex.id) {
                   <button class="btn btn-sm btn-success me-1" (click)="saveEdit(ex.id!)">Guardar</button>
@@ -109,7 +111,7 @@ import { Examen, MateriaMapping } from '../../core/models';
                     (click)="selectExamen(ex)"
                     [class.btn-info]="selectedExamenId() === ex.id"
                     [class.text-white]="selectedExamenId() === ex.id">
-                    Materias
+                    Temas
                   </button>
                   <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(ex)">Editar</button>
                   <button class="btn btn-sm btn-outline-danger" (click)="remove(ex.id!)">Eliminar</button>
@@ -121,145 +123,120 @@ import { Examen, MateriaMapping } from '../../core/models';
       </table>
     }
 
-    <!-- Panel de materias_mapping -->
+    <!-- Panel de temas_config -->
     @if (selectedExamenId()) {
       <div class="card mt-4 border-info">
         <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-link-45deg me-1"></i> Materias asignadas a: {{ selectedExamenNombre() }}</span>
+          <span><i class="bi bi-link-45deg me-1"></i> Temas de: {{ selectedExamenNombre() }}</span>
           <button class="btn btn-sm btn-light" (click)="selectedExamenId.set(null)">Cerrar</button>
         </div>
         <div class="card-body">
 
-          <!-- Agregar materia mapping -->
+          <!-- Agregar tema config -->
           <div class="row g-2 mb-3 align-items-end">
             <div class="col-auto">
-              <label class="form-label mb-0 small">Materia</label>
-              <select class="form-select form-select-sm" [(ngModel)]="newMapMateriaId" name="newMapMat">
-                <option value="">-- Seleccionar --</option>
-                @for (m of allMaterias(); track m.id) {
-                  <option [value]="m.id">{{ m.nombre_canonical }}</option>
+              <label class="form-label mb-0 small">Tema</label>
+              <select class="form-select form-select-sm" [(ngModel)]="newCfgTemaId" name="newCfgTema">
+                <option value="">-- Seleccionar tema --</option>
+                @for (t of allTemas(); track t.id) {
+                  <option [value]="t.id">{{ t.nombre_canonical }} ({{ materiaName(t.materia_id) }})</option>
                 }
               </select>
             </div>
             <div class="col-auto">
-              <label class="form-label mb-0 small">Nombre en guia</label>
-              <input class="form-control form-control-sm" [(ngModel)]="newMapNombreGuia"
-                name="newMapNom" placeholder="ej: Matematicas" />
+              <label class="form-label mb-0 small">Nombre a mostrar</label>
+              <input class="form-control form-control-sm" [(ngModel)]="newCfgNombre"
+                name="newCfgNom" placeholder="ej: Calculo para inteligentes" />
+            </div>
+            <div class="col-auto">
+              <label class="form-label mb-0 small">Seccion</label>
+              <input class="form-control form-control-sm" [(ngModel)]="newCfgSeccion"
+                name="newCfgSec" placeholder="ej: Matematicas" />
             </div>
             <div class="col-auto">
               <label class="form-label mb-0 small">Reactivos</label>
-              <input type="number" class="form-control form-control-sm" [(ngModel)]="newMapReactivos"
-                name="newMapReact" style="width:80px" />
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="newCfgReactivos"
+                name="newCfgReact" style="width:80px" />
             </div>
             <div class="col-auto">
-              <button class="btn btn-sm btn-primary" (click)="addMapping()"
-                [disabled]="!newMapMateriaId || !newMapNombreGuia.trim()">Agregar</button>
+              <label class="form-label mb-0 small">Orden</label>
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="newCfgOrden"
+                name="newCfgOrden" style="width:70px" />
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-sm btn-primary" (click)="addTemaConfig()"
+                [disabled]="!newCfgTemaId || !newCfgNombre.trim()">Agregar</button>
             </div>
           </div>
 
-          @if (mappings() === undefined) {
+          @if (temasConfig() === undefined) {
             <div class="text-center py-3">
               <div class="spinner-border spinner-border-sm text-info"></div>
             </div>
-          } @else if (mappings()!.length === 0) {
-            <p class="text-muted mb-0">No hay materias asignadas. Agrega una arriba.</p>
+          } @else if (temasConfig()!.length === 0) {
+            <p class="text-muted mb-0">No hay temas asignados. Agrega uno arriba.</p>
           } @else {
             <table class="table table-sm table-bordered mb-0">
               <thead>
                 <tr>
-                  <th>Materia (ID)</th>
-                  <th>Nombre en guia</th>
+                  <th>Orden</th>
+                  <th>Nombre mostrado</th>
+                  <th>Seccion</th>
+                  <th>Tema (ID)</th>
                   <th>Reactivos</th>
-                  <th>Temas vinculados</th>
+                  <th>Dificultades</th>
                   <th style="width:160px">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                @for (mm of mappings(); track mm.id) {
+                @for (tc of temasConfig(); track tc.id) {
                   <tr>
+                    <td>{{ tc.orden }}</td>
                     <td>
-                      <small class="text-muted">{{ materiaName(mm.materia_id) }}</small>
-                    </td>
-                    <td>
-                      @if (editingMapId() === mm.id) {
-                        <input class="form-control form-control-sm" [ngModel]="editMapNombre()"
-                          (ngModelChange)="editMapNombre.set($event)" [ngModelOptions]="{standalone:true}" />
+                      @if (editingCfgId() === tc.id) {
+                        <input class="form-control form-control-sm" [ngModel]="editCfgNombre()"
+                          (ngModelChange)="editCfgNombre.set($event)" [ngModelOptions]="{standalone:true}" />
                       } @else {
-                        {{ mm.nombre_en_guia }}
+                        {{ tc.nombre_mostrar }}
                       }
                     </td>
                     <td>
-                      @if (editingMapId() === mm.id) {
-                        <input type="number" class="form-control form-control-sm" [ngModel]="editMapReactivos()"
-                          (ngModelChange)="editMapReactivos.set($event)" [ngModelOptions]="{standalone:true}"
-                          style="width:80px" />
+                      @if (editingCfgId() === tc.id) {
+                        <input class="form-control form-control-sm" [ngModel]="editCfgSeccion()"
+                          (ngModelChange)="editCfgSeccion.set($event)" [ngModelOptions]="{standalone:true}" />
                       } @else {
-                        {{ mm.num_reactivos }}
+                        {{ tc.seccion }}
+                      }
+                    </td>
+                    <td><small class="text-muted font-monospace">{{ temaName(tc.tema_id) }}</small></td>
+                    <td>
+                      @if (editingCfgId() === tc.id) {
+                        <input type="number" class="form-control form-control-sm" [ngModel]="editCfgReactivos()"
+                          (ngModelChange)="editCfgReactivos.set($event)" [ngModelOptions]="{standalone:true}"
+                          style="width:70px" />
+                      } @else {
+                        {{ tc.num_reactivos }}
                       }
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-secondary"
-                        (click)="toggleTemasPanel(mm)"
-                        [class.btn-secondary]="temasMapId() === mm.id"
-                        [class.text-white]="temasMapId() === mm.id">
-                        {{ (mm.temas_mapping || []).length }} temas
-                      </button>
+                      @for (d of tc.dificultades; track d) {
+                        @switch (d) {
+                          @case (1) { <span class="badge bg-success me-1">F</span> }
+                          @case (2) { <span class="badge bg-warning text-dark me-1">M</span> }
+                          @case (3) { <span class="badge bg-danger me-1">D</span> }
+                        }
+                      }
                     </td>
                     <td>
-                      @if (editingMapId() === mm.id) {
-                        <button class="btn btn-sm btn-success me-1" (click)="saveMapping(mm.id!)">Guardar</button>
-                        <button class="btn btn-sm btn-secondary" (click)="editingMapId.set(null)">Cancelar</button>
+                      @if (editingCfgId() === tc.id) {
+                        <button class="btn btn-sm btn-success me-1" (click)="saveTemaConfig(tc.id!)">Guardar</button>
+                        <button class="btn btn-sm btn-secondary" (click)="editingCfgId.set(null)">Cancelar</button>
                       } @else {
-                        <button class="btn btn-sm btn-outline-primary me-1" (click)="startEditMapping(mm)">Editar</button>
-                        <button class="btn btn-sm btn-outline-danger" (click)="removeMapping(mm.id!)">Eliminar</button>
+                        <button class="btn btn-sm btn-outline-primary me-1" (click)="startEditConfig(tc)">Editar</button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="removeTemaConfig(tc.id!)">Eliminar</button>
                       }
                     </td>
                   </tr>
-
-                  <!-- Temas mapping sub-panel -->
-                  @if (temasMapId() === mm.id) {
-                    <tr>
-                      <td colspan="5" class="bg-light p-3">
-                        <strong class="d-block mb-2">Temas vinculados a "{{ mm.nombre_en_guia }}"</strong>
-
-                        <!-- Add tema mapping -->
-                        <div class="row g-2 mb-2 align-items-end">
-                          <div class="col-auto">
-                            <select class="form-select form-select-sm" [(ngModel)]="newTemaMappingId"
-                              [ngModelOptions]="{standalone:true}">
-                              <option value="">-- Tema --</option>
-                              @for (t of temasForMateria(); track t.id) {
-                                <option [value]="t.id">{{ t.nombre_canonical }}</option>
-                              }
-                            </select>
-                          </div>
-                          <div class="col-auto">
-                            <input class="form-control form-control-sm" [(ngModel)]="newTemaMappingNombre"
-                              [ngModelOptions]="{standalone:true}" placeholder="Nombre en guia" />
-                          </div>
-                          <div class="col-auto">
-                            <button class="btn btn-sm btn-primary" (click)="addTemaMapping(mm)"
-                              [disabled]="!newTemaMappingId || !newTemaMappingNombre.trim()">Agregar tema</button>
-                          </div>
-                        </div>
-
-                        @if ((mm.temas_mapping || []).length === 0) {
-                          <p class="text-muted small mb-0">Sin temas vinculados.</p>
-                        } @else {
-                          <ul class="list-group list-group-flush">
-                            @for (tm of mm.temas_mapping; track tm.tema_id) {
-                              <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
-                                <span><small class="text-muted me-2">{{ tm.tema_id }}</small> {{ tm.nombre_en_guia }}</span>
-                                <button class="btn btn-sm btn-outline-danger py-0" (click)="removeTemaMapping(mm, tm.tema_id)">
-                                  <i class="bi bi-x"></i>
-                                </button>
-                              </li>
-                            }
-                          </ul>
-                        }
-                      </td>
-                    </tr>
-                  }
                 }
               </tbody>
             </table>
@@ -271,10 +248,11 @@ import { Examen, MateriaMapping } from '../../core/models';
 })
 export class ExamenesComponent {
   private readonly svc = inject(ExamenService);
-  private readonly materiaSvc = inject(MateriaService);
   private readonly temaSvc = inject(TemaService);
+  private readonly materiaSvc = inject(MateriaService);
 
   examenes = toSignal(this.svc.list());
+  allTemas = toSignal(this.temaSvc.list(), { initialValue: [] });
   allMaterias = toSignal(this.materiaSvc.list(), { initialValue: [] });
   filterEscuela = signal('');
 
@@ -295,47 +273,36 @@ export class ExamenesComponent {
   newArea = '';
   newAnio = new Date().getFullYear();
   newTotal = 120;
+  newTiempo = 180;
 
   // Edit
   editingId = signal<string | null>(null);
   editNombre = signal('');
   editArea = signal('');
 
-  // --- materias_mapping ---
+  // --- temas_config ---
   selectedExamenId = signal<string | null>(null);
   selectedExamenNombre = signal('');
 
-  // Reactive mappings based on selectedExamenId
-  mappings = toSignal(
+  temasConfig = toSignal(
     toObservable(this.selectedExamenId).pipe(
-      switchMap((id) => (id ? this.svc.listMateriasMapping(id) : of([]))),
+      switchMap((id) => (id ? this.svc.listTemasConfig(id) : of([]))),
     ),
     { initialValue: undefined },
   );
 
-  // Add mapping form
-  newMapMateriaId = '';
-  newMapNombreGuia = '';
-  newMapReactivos = 10;
+  // Add config form
+  newCfgTemaId = '';
+  newCfgNombre = '';
+  newCfgSeccion = '';
+  newCfgReactivos = 10;
+  newCfgOrden = 1;
 
-  // Edit mapping
-  editingMapId = signal<string | null>(null);
-  editMapNombre = signal('');
-  editMapReactivos = signal(0);
-
-  // Temas mapping sub-panel
-  temasMapId = signal<string | null>(null);
-  temasMapMateriaId = signal('');
-  newTemaMappingId = '';
-  newTemaMappingNombre = '';
-
-  // Reactive temas for the selected materia (in temas panel)
-  temasForMateria = toSignal(
-    toObservable(this.temasMapMateriaId).pipe(
-      switchMap((id) => (id ? this.temaSvc.listByMateria(id) : of([]))),
-    ),
-    { initialValue: [] },
-  );
+  // Edit config
+  editingCfgId = signal<string | null>(null);
+  editCfgNombre = signal('');
+  editCfgSeccion = signal('');
+  editCfgReactivos = signal(0);
 
   // --- Examen CRUD ---
 
@@ -347,8 +314,7 @@ export class ExamenesComponent {
       area: this.newArea.trim(),
       año: this.newAnio,
       total_reactivos: this.newTotal,
-      distribucion: {},
-      archivo_guia_url: null,
+      tiempo_limite_minutos: this.newTiempo,
     });
     this.newNombre = '';
     this.newArea = '';
@@ -375,7 +341,7 @@ export class ExamenesComponent {
     }
   }
 
-  // --- Materias Mapping ---
+  // --- Temas Config ---
 
   selectExamen(ex: Examen) {
     if (this.selectedExamenId() === ex.id) {
@@ -383,7 +349,6 @@ export class ExamenesComponent {
     } else {
       this.selectedExamenId.set(ex.id!);
       this.selectedExamenNombre.set(`${ex.escuela} – ${ex.nombre} (${ex.area})`);
-      this.temasMapId.set(null);
     }
   }
 
@@ -391,71 +356,49 @@ export class ExamenesComponent {
     return this.allMaterias().find((m) => m.id === id)?.nombre_canonical ?? id;
   }
 
-  async addMapping() {
+  temaName(id: string): string {
+    return this.allTemas().find((t) => t.id === id)?.nombre_canonical ?? id;
+  }
+
+  async addTemaConfig() {
     const exId = this.selectedExamenId();
-    if (!exId || !this.newMapMateriaId || !this.newMapNombreGuia.trim()) return;
-    await this.svc.addMateriaMapping(exId, {
-      materia_id: this.newMapMateriaId,
-      nombre_en_guia: this.newMapNombreGuia.trim(),
-      num_reactivos: this.newMapReactivos,
-      temas_mapping: [],
+    if (!exId || !this.newCfgTemaId || !this.newCfgNombre.trim()) return;
+    await this.svc.addTemaConfig(exId, {
+      tema_id: this.newCfgTemaId,
+      nombre_mostrar: this.newCfgNombre.trim(),
+      seccion: this.newCfgSeccion.trim(),
+      orden: this.newCfgOrden,
+      num_reactivos: this.newCfgReactivos,
+      dificultades: [1, 2, 3],
     });
-    this.newMapMateriaId = '';
-    this.newMapNombreGuia = '';
-    this.newMapReactivos = 10;
+    this.newCfgTemaId = '';
+    this.newCfgNombre = '';
+    this.newCfgSeccion = '';
+    this.newCfgReactivos = 10;
+    this.newCfgOrden = (this.temasConfig()?.length ?? 0) + 1;
   }
 
-  startEditMapping(mm: MateriaMapping) {
-    this.editingMapId.set(mm.id!);
-    this.editMapNombre.set(mm.nombre_en_guia);
-    this.editMapReactivos.set(mm.num_reactivos);
+  startEditConfig(tc: TemaConfig) {
+    this.editingCfgId.set(tc.id!);
+    this.editCfgNombre.set(tc.nombre_mostrar);
+    this.editCfgSeccion.set(tc.seccion);
+    this.editCfgReactivos.set(tc.num_reactivos);
   }
 
-  async saveMapping(mapId: string) {
+  async saveTemaConfig(configId: string) {
     const exId = this.selectedExamenId();
     if (!exId) return;
-    await this.svc.updateMateriaMapping(exId, mapId, {
-      nombre_en_guia: this.editMapNombre().trim(),
-      num_reactivos: this.editMapReactivos(),
+    await this.svc.updateTemaConfig(exId, configId, {
+      nombre_mostrar: this.editCfgNombre().trim(),
+      seccion: this.editCfgSeccion().trim(),
+      num_reactivos: this.editCfgReactivos(),
     });
-    this.editingMapId.set(null);
+    this.editingCfgId.set(null);
   }
 
-  async removeMapping(mapId: string) {
+  async removeTemaConfig(configId: string) {
     const exId = this.selectedExamenId();
-    if (!exId || !confirm('Eliminar esta materia del examen?')) return;
-    await this.svc.deleteMateriaMapping(exId, mapId);
-    if (this.temasMapId() === mapId) this.temasMapId.set(null);
-  }
-
-  // --- Temas mapping inside a MateriaMapping ---
-
-  toggleTemasPanel(mm: MateriaMapping) {
-    if (this.temasMapId() === mm.id) {
-      this.temasMapId.set(null);
-    } else {
-      this.temasMapId.set(mm.id!);
-      this.temasMapMateriaId.set(mm.materia_id);
-      this.newTemaMappingId = '';
-      this.newTemaMappingNombre = '';
-    }
-  }
-
-  async addTemaMapping(mm: MateriaMapping) {
-    const exId = this.selectedExamenId();
-    if (!exId || !this.newTemaMappingId || !this.newTemaMappingNombre.trim()) return;
-    const existing = mm.temas_mapping || [];
-    if (existing.some((t) => t.tema_id === this.newTemaMappingId)) return;
-    const updated = [...existing, { tema_id: this.newTemaMappingId, nombre_en_guia: this.newTemaMappingNombre.trim() }];
-    await this.svc.updateMateriaMapping(exId, mm.id!, { temas_mapping: updated });
-    this.newTemaMappingId = '';
-    this.newTemaMappingNombre = '';
-  }
-
-  async removeTemaMapping(mm: MateriaMapping, temaId: string) {
-    const exId = this.selectedExamenId();
-    if (!exId) return;
-    const updated = (mm.temas_mapping || []).filter((t) => t.tema_id !== temaId);
-    await this.svc.updateMateriaMapping(exId, mm.id!, { temas_mapping: updated });
+    if (!exId || !confirm('Eliminar este tema del examen?')) return;
+    await this.svc.deleteTemaConfig(exId, configId);
   }
 }
