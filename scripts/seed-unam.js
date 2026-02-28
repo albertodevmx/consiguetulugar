@@ -16,13 +16,22 @@
  *   node scripts/seed-unam.js --only-lessons    # Solo genera lecciones faltantes
  *   node scripts/seed-unam.js --only-questions  # Solo genera preguntas faltantes
  *
+ * Auth (requerido para escritura en Firestore):
+ *   FIREBASE_EMAIL=admin@email.com FIREBASE_PASSWORD=pass node scripts/seed-unam.js
+ *   (o el script te pedirá las credenciales interactivamente)
+ *
  * El progreso se guarda en scripts/progreso.json para poder reiniciar.
  */
 
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const readline = require('readline');
 const { initializeApp } = require('firebase/app');
+const {
+  getAuth,
+  signInWithEmailAndPassword,
+} = require('firebase/auth');
 const {
   getFirestore,
   collection,
@@ -143,6 +152,33 @@ async function openaiWithRetry(apiKey, model, messages, maxRetries = 3) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ─── Authentication ──────────────────────────────────────────────────────────
+function prompt(question) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+async function authenticate() {
+  const auth = getAuth(app);
+
+  // Accept credentials from env vars or prompt
+  const email = process.env.FIREBASE_EMAIL || await prompt('Email de admin: ');
+  const password = process.env.FIREBASE_PASSWORD || await prompt('Contraseña: ');
+
+  if (!email || !password) {
+    throw new Error('Se necesitan credenciales. Usa env vars FIREBASE_EMAIL y FIREBASE_PASSWORD, o ingrésalas manualmente.');
+  }
+
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  console.log(`  ✓ Autenticado como: ${cred.user.email}`);
+  return cred.user;
 }
 
 // ─── Read OpenAI config from Firestore ───────────────────────────────────────
@@ -661,6 +697,11 @@ async function main() {
   if (SKIP_AI) console.log('\n⚡ Modo --skip-ai: No se llamará a OpenAI\n');
   if (ONLY_LESSONS) console.log('\n⚡ Modo --only-lessons: Solo lecciones\n');
   if (ONLY_QUESTIONS) console.log('\n⚡ Modo --only-questions: Solo preguntas\n');
+
+  // Authenticate first (Firestore rules require auth for writes)
+  console.log('\n🔐 Autenticación requerida (las reglas de Firestore requieren auth para escritura)');
+  console.log('   Puedes usar env vars: FIREBASE_EMAIL y FIREBASE_PASSWORD\n');
+  await authenticate();
 
   const progress = loadProgress();
 
