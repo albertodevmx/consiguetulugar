@@ -19,6 +19,8 @@ const SECCION_ICONS: Record<string, string> = {
   fisica: 'bi-lightning-charge',
   física: 'bi-lightning-charge',
   historia: 'bi-hourglass-split',
+  'historia universal': 'bi-hourglass-split',
+  'historia de mexico': 'bi-hourglass-split',
   geografia: 'bi-globe-americas',
   geografía: 'bi-globe-americas',
   ingles: 'bi-translate',
