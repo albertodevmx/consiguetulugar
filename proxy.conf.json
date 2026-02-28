@@ -18,5 +18,20 @@
     "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
     "secure": false,
     "changeOrigin": true
+  },
+  "/listAuthUsers": {
+    "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/syncAuthUser": {
+    "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/deleteAuthUser": {
+    "target": "https://us-central1-estudiarbarato.cloudfunctions.net",
+    "secure": false,
+    "changeOrigin": true
   }
 }

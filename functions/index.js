@@ -491,6 +491,214 @@ NO incluyas bloques de codigo markdown. Solo HTML puro.`;
  *     -H "Content-Type: application/json" \
  *     -d '{"key":"your-secret","preguntas":[{...}]}'
  */
+/**
+ * Lists all Firebase Auth users and detects which ones are NOT in Firestore.
+ * Admin-only endpoint.
+ *
+ * Returns: { users: [{ uid, email, displayName, creationTime, inFirestore }], total, unsynced }
+ */
+exports.listAuthUsers = onRequest(
+  { cors: true, timeoutSeconds: 60, invoker: 'public' },
+  async (req, res) => {
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    const authHeader = req.headers.authorization || '';
+    const match = authHeader.match(/^Bearer (.+)$/);
+    if (!match) {
+      res.status(401).json({ error: 'Missing authentication' });
+      return;
+    }
+
+    try {
+      const token = await getAuth().verifyIdToken(match[1]);
+      const db = getFirestore();
+
+      // Verify admin role
+      const userDoc = await db.doc(`usuarios/${token.uid}`).get();
+      if (!userDoc.exists || userDoc.data().rol !== 'admin') {
+        res.status(403).json({ error: 'Solo administradores pueden ver esta información' });
+        return;
+      }
+
+      // List all Firebase Auth users (paginated, up to 1000 at a time)
+      const authUsers = [];
+      let nextPageToken;
+      do {
+        const listResult = await getAuth().listUsers(1000, nextPageToken);
+        authUsers.push(...listResult.users);
+        nextPageToken = listResult.pageToken;
+      } while (nextPageToken);
+
+      // Get all Firestore user document IDs
+      const firestoreSnap = await db.collection('usuarios').select().get();
+      const firestoreUids = new Set(firestoreSnap.docs.map((d) => d.id));
+
+      // Build response with sync status
+      const users = authUsers.map((u) => ({
+        uid: u.uid,
+        email: u.email || null,
+        displayName: u.displayName || null,
+        creationTime: u.metadata.creationTime || null,
+        lastSignInTime: u.metadata.lastSignInTime || null,
+        inFirestore: firestoreUids.has(u.uid),
+      }));
+
+      // Sort: unsynced first, then by creation time desc
+      users.sort((a, b) => {
+        if (a.inFirestore !== b.inFirestore) return a.inFirestore ? 1 : -1;
+        return (b.creationTime || '').localeCompare(a.creationTime || '');
+      });
+
+      const unsynced = users.filter((u) => !u.inFirestore).length;
+      res.json({ users, total: users.length, unsynced });
+    } catch (error) {
+      console.error('List auth users error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+/**
+ * Creates a Firestore profile document for a Firebase Auth user that doesn't have one.
+ * Admin-only endpoint.
+ *
+ * POST body: { uid: string }
+ */
+exports.syncAuthUser = onRequest(
+  { cors: true, invoker: 'public' },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    const authHeader = req.headers.authorization || '';
+    const match = authHeader.match(/^Bearer (.+)$/);
+    if (!match) {
+      res.status(401).json({ error: 'Missing authentication' });
+      return;
+    }
+
+    try {
+      const token = await getAuth().verifyIdToken(match[1]);
+      const db = getFirestore();
+
+      // Verify admin role
+      const adminDoc = await db.doc(`usuarios/${token.uid}`).get();
+      if (!adminDoc.exists || adminDoc.data().rol !== 'admin') {
+        res.status(403).json({ error: 'Solo administradores pueden sincronizar usuarios' });
+        return;
+      }
+
+      const { uid } = req.body;
+      if (!uid) {
+        res.status(400).json({ error: 'uid es requerido' });
+        return;
+      }
+
+      // Check if Firestore doc already exists
+      const existingDoc = await db.doc(`usuarios/${uid}`).get();
+      if (existingDoc.exists) {
+        res.json({ synced: true, message: 'El usuario ya existe en Firestore' });
+        return;
+      }
+
+      // Get Firebase Auth user data
+      const authUser = await getAuth().getUser(uid);
+
+      // Create Firestore document with data from Auth
+      const userDoc = {
+        nombre: authUser.displayName || authUser.email?.split('@')[0] || 'Sin nombre',
+        email: authUser.email || '',
+        telefono: '',
+        foto_url: authUser.photoURL || null,
+        bio: null,
+        rol: 'usuario',
+        examen_activo: null,
+        plan: 'gratuito',
+        examenes_pagados: [],
+        preguntas_semana: 0,
+        fecha_inicio_semana: null,
+        fecha_registro: FieldValue.serverTimestamp(),
+      };
+
+      await db.doc(`usuarios/${uid}`).set(userDoc);
+
+      res.json({ synced: true, message: 'Usuario sincronizado exitosamente', user: userDoc });
+    } catch (error) {
+      console.error('Sync auth user error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+/**
+ * Deletes a Firebase Auth user. Admin-only endpoint.
+ * Optionally also deletes the Firestore profile document.
+ *
+ * POST body: { uid: string, deleteFirestore?: boolean }
+ */
+exports.deleteAuthUser = onRequest(
+  { cors: true, invoker: 'public' },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    const authHeader = req.headers.authorization || '';
+    const match = authHeader.match(/^Bearer (.+)$/);
+    if (!match) {
+      res.status(401).json({ error: 'Missing authentication' });
+      return;
+    }
+
+    try {
+      const token = await getAuth().verifyIdToken(match[1]);
+      const db = getFirestore();
+
+      // Verify admin role
+      const adminDoc = await db.doc(`usuarios/${token.uid}`).get();
+      if (!adminDoc.exists || adminDoc.data().rol !== 'admin') {
+        res.status(403).json({ error: 'Solo administradores pueden eliminar usuarios' });
+        return;
+      }
+
+      const { uid, deleteFirestore } = req.body;
+      if (!uid) {
+        res.status(400).json({ error: 'uid es requerido' });
+        return;
+      }
+
+      // Prevent self-deletion
+      if (uid === token.uid) {
+        res.status(400).json({ error: 'No puedes eliminar tu propia cuenta' });
+        return;
+      }
+
+      // Delete from Firebase Auth
+      await getAuth().deleteUser(uid);
+
+      // Optionally delete Firestore document
+      if (deleteFirestore) {
+        const docRef = db.doc(`usuarios/${uid}`);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+          await docRef.delete();
+        }
+      }
+
+      res.json({ deleted: true, message: 'Usuario eliminado exitosamente' });
+    } catch (error) {
+      console.error('Delete auth user error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
 exports.importPreguntas = onRequest(
   { cors: true, timeoutSeconds: 120, invoker: 'public' },
   async (req, res) => {

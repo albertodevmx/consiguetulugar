@@ -37,6 +37,13 @@ export const adminRoutes: Routes = [
       ),
   },
   {
+    path: 'sync',
+    loadComponent: () =>
+      import('./sync/sync.component').then(
+        (m) => m.SyncComponent,
+      ),
+  },
+  {
     path: 'diagnostics',
     loadComponent: () =>
       import('./diagnostics/diagnostics.component').then(
