@@ -30,6 +30,13 @@ export const adminRoutes: Routes = [
       ),
   },
   {
+    path: 'usuarios',
+    loadComponent: () =>
+      import('./usuarios/usuarios.component').then(
+        (m) => m.UsuariosComponent,
+      ),
+  },
+  {
     path: 'diagnostics',
     loadComponent: () =>
       import('./diagnostics/diagnostics.component').then(

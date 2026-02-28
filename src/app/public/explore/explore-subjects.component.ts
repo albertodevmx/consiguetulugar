@@ -64,12 +64,16 @@ const SECCION_ICONS: Record<string, string> = {
 
       @if (examen(); as ex) {
         <h2 class="mb-2"><i class="bi bi-journal-text me-2"></i>{{ ex.nombre }}</h2>
-        <p class="text-muted mb-1">Elige un tema para practicar o inicia un examen simulacion.</p>
-        <div class="mb-4">
-          <a [routerLink]="['/exam-simulation', examenId()]" class="btn btn-primary d-block d-sm-inline-block">
-            <i class="bi bi-clock me-1"></i> Examen Simulacion
-          </a>
-        </div>
+        @if (hasAccess()) {
+          <p class="text-muted mb-1">Elige un tema para practicar o inicia un examen simulacion.</p>
+          <div class="mb-4">
+            <a [routerLink]="['/exam-simulation', examenId()]" class="btn btn-primary d-block d-sm-inline-block">
+              <i class="bi bi-clock me-1"></i> Examen Simulacion
+            </a>
+          </div>
+        } @else {
+          <p class="text-muted mb-1">Revisa los temas de este examen. Suscribete para practicar.</p>
+        }
       }
 
       <!-- Upsell for non-logged-in users -->
@@ -82,10 +86,10 @@ const SECCION_ICONS: Record<string, string> = {
         </div>
       }
 
-      <!-- Upsell for free users -->
-      @if (auth.isLoggedIn() && quota.isFree()) {
+      <!-- Upsell for users without access to this exam -->
+      @if (auth.isLoggedIn() && !hasAccess()) {
         <div class="alert alert-info d-flex flex-column flex-sm-row align-items-sm-center gap-2 mb-3">
-          <span><i class="bi bi-star me-1"></i>Suscribete para practicar sin limites.</span>
+          <span><i class="bi bi-lock me-1"></i>Suscribete a este examen para practicar sin limites.</span>
           <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-sm btn-primary text-nowrap">
             <i class="bi bi-star-fill me-1"></i> Suscribirme
           </a>
@@ -126,9 +130,15 @@ const SECCION_ICONS: Record<string, string> = {
                                 <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info">
                                   <i class="bi bi-journal-richtext me-1"></i>Leccion
                                 </a>
-                                <a [routerLink]="['/practice/tema', tc.tema_id]" class="btn btn-success">
-                                  <i class="bi bi-play-fill me-1"></i>Practicar
-                                </a>
+                                @if (hasAccess()) {
+                                  <a [routerLink]="['/practice/tema', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-success">
+                                    <i class="bi bi-play-fill me-1"></i>Practicar
+                                  </a>
+                                } @else {
+                                  <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-lock me-1"></i>Practicar
+                                  </a>
+                                }
                               </div>
                             </div>
                           </div>
@@ -146,9 +156,15 @@ const SECCION_ICONS: Record<string, string> = {
                           <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info btn-sm py-0 px-2">
                             <i class="bi bi-journal-richtext"></i>
                           </a>
-                          <a [routerLink]="['/practice/tema', tc.tema_id]" class="btn btn-success btn-sm py-0 px-2">
-                            <i class="bi bi-play-fill"></i>
-                          </a>
+                          @if (hasAccess()) {
+                            <a [routerLink]="['/practice/tema', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-success btn-sm py-0 px-2">
+                              <i class="bi bi-play-fill"></i>
+                            </a>
+                          } @else {
+                            <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary btn-sm py-0 px-2">
+                              <i class="bi bi-lock"></i>
+                            </a>
+                          }
                         </div>
                       }
                     </div>
@@ -213,6 +229,8 @@ export class ExploreSubjectsComponent {
   );
 
   examen = computed(() => this.examenes().find((e) => e.id === this.examenId()));
+
+  hasAccess = computed(() => this.quota.hasExamAccess(this.examenId()));
 
   temasConfig = toSignal(
     this.route.paramMap.pipe(

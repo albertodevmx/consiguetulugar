@@ -27,6 +27,23 @@ import { Pregunta } from '../../core/models';
         </div>
       }
 
+      <!-- No exam access (not paid) -->
+      @if (!loading() && auth.isLoggedIn() && !hasExamAccess()) {
+        <div class="card border-primary mb-4">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-lock-fill fs-1 text-primary d-block mb-2"></i>
+            <h4>Acceso restringido</h4>
+            <p class="text-muted mb-3">
+              Necesitas suscribirte al examen para practicar este tema.
+            </p>
+            <a routerLink="/suscripcion" class="btn btn-primary btn-lg">
+              <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
+            </a>
+            <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
+          </div>
+        </div>
+      }
+
       <!-- Must register to answer -->
       @if (!loading() && !auth.isLoggedIn() && questions().length > 0) {
         <div class="card border-warning mb-4">
@@ -189,6 +206,8 @@ export class TopicPracticeComponent {
   auth = inject(AuthService);
   quota = inject(QuotaService);
 
+  private examenId = signal('');
+
   questions = signal<Pregunta[]>([]);
   currentIndex = signal(0);
   selectedOption = signal<number | null>(null);
@@ -198,6 +217,12 @@ export class TopicPracticeComponent {
   correctCount = signal(0);
   totalAnswered = signal(0);
 
+  hasExamAccess = computed(() => {
+    const eid = this.examenId();
+    if (!eid) return false;
+    return this.quota.hasExamAccess(eid);
+  });
+
   currentQuestion = computed(() => {
     const qs = this.questions();
     const idx = this.currentIndex();
@@ -206,6 +231,7 @@ export class TopicPracticeComponent {
 
   canShowQuestion = computed(() => {
     if (!this.auth.isLoggedIn()) return false;
+    if (!this.hasExamAccess()) return false;
     if (this.quotaExceeded()) return false;
     return true;
   });
@@ -236,6 +262,9 @@ export class TopicPracticeComponent {
   });
 
   constructor() {
+    const qp = this.route.snapshot.queryParamMap.get('examenId');
+    if (qp) this.examenId.set(qp);
+
     this.route.paramMap
       .pipe(
         map((p) => p.get('temaId')!),

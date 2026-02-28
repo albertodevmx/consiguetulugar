@@ -27,7 +27,6 @@ export class QuotaService {
   hasExamAccess(examenId: string): boolean {
     const p = this.auth.profile();
     if (!p) return false;
-    if (p.plan === 'premium' && p.examenes_pagados?.length === 0) return true;
     return p.examenes_pagados?.includes(examenId) ?? false;
   }
 

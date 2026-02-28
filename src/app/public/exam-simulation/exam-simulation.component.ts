@@ -43,8 +43,25 @@ import { Pregunta, Examen, TemaConfig } from '../../core/models';
         </div>
       }
 
+      <!-- No exam access (not paid) -->
+      @if (!loading() && auth.isLoggedIn() && !hasAccess()) {
+        <div class="card border-primary mb-4">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-lock-fill fs-1 text-primary d-block mb-2"></i>
+            <h4>Acceso restringido</h4>
+            <p class="text-muted mb-3">
+              Necesitas suscribirte a este examen para poder realizar la simulacion.
+            </p>
+            <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-primary btn-lg">
+              <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
+            </a>
+            <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
+          </div>
+        </div>
+      }
+
       <!-- Pre-start screen -->
-      @if (!loading() && auth.isLoggedIn() && !started() && !finished()) {
+      @if (!loading() && auth.isLoggedIn() && hasAccess() && !started() && !finished()) {
         <div class="card text-center py-4">
           <div class="card-body">
             <i class="bi bi-clipboard-check fs-1 text-primary d-block mb-2"></i>
@@ -176,6 +193,7 @@ export class ExamSimulationComponent implements OnDestroy {
   finished = signal(false);
   timeExpired = signal(false);
   examen = signal<Examen | null>(null);
+  examenId = signal('');
   questions = signal<Pregunta[]>([]);
   currentIndex = signal(0);
   selectedOption = signal<number | null>(null);
@@ -183,6 +201,8 @@ export class ExamSimulationComponent implements OnDestroy {
   correctCount = signal(0);
   totalAnswered = signal(0);
   timeRemaining = signal(0);
+
+  hasAccess = computed(() => this.quota.hasExamAccess(this.examenId()));
 
   private timerId: ReturnType<typeof setInterval> | null = null;
 
@@ -236,8 +256,9 @@ export class ExamSimulationComponent implements OnDestroy {
     this.route.paramMap
       .pipe(
         map((p) => p.get('examenId')!),
-        switchMap((examenId) =>
-          this.examenSvc.listByEscuela('').pipe(
+        switchMap((examenId) => {
+          this.examenId.set(examenId);
+          return this.examenSvc.listByEscuela('').pipe(
             take(1),
             switchMap(() =>
               this.examenSvc.list().pipe(
@@ -262,8 +283,8 @@ export class ExamSimulationComponent implements OnDestroy {
                 }),
               );
             }),
-          ),
-        ),
+          );
+        }),
       )
       .subscribe(({ examen, questions }) => {
         this.examen.set(examen);

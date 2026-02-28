@@ -13,6 +13,8 @@ export interface Usuario {
   examen_activo: string | null;
   plan: 'gratuito' | 'premium';
   examenes_pagados: string[];
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
   preguntas_semana: number;
   fecha_inicio_semana: string | null;
   fecha_registro: Timestamp;
