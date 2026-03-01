@@ -1,31 +1,86 @@
+<!-- Hero -->
 <section class="hero">
-  <img src="logo.png" alt="Estudiar es barato" class="hero-logo">
-  <h1>Estudiar es barato</h1>
-  <p class="subtitle">Tu lugar para prepararte para distintos examenes.</p>
+  <img src="logo.png" alt="Consigue Tu Lugar" class="hero-logo">
+  <h1>Consigue tu lugar</h1>
+  <p class="subtitle">Prepárate para tu examen de admisión con simulacros y práctica por tema.</p>
   <p class="description">
-    Por ahora contamos con material para el examen de la
-    <strong>UNAM</strong>. Iremos creciendo poco a poco, pero ya puedes
-    practicar materias que se repiten en otras universidades.
+    Practica con simulacros que replican la estructura de tu examen:
+    mismo número de preguntas y tiempo límite, para que llegues listo el día del examen.
   </p>
-  <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+  <a class="btn btn-success btn-lg cta-main" routerLink="/explore">
+    <i class="bi bi-play-circle me-1"></i> Comenzar a practicar
+  </a>
+</section>
+
+<!-- Beneficios -->
+<section class="features">
+  <h2>¿Por qué prepararte aquí?</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="bi bi-clipboard2-check"></i>
+      </div>
+      <h3>Simulacros de examen</h3>
+      <p>Practica con simulacros que siguen la misma cantidad de reactivos y tiempo que el examen real.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="bi bi-book"></i>
+      </div>
+      <h3>Práctica por tema</h3>
+      <p>Refuerza las materias donde más lo necesitas con preguntas organizadas por tema.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="bi bi-chat-left-text"></i>
+      </div>
+      <h3>Retroalimentación</h3>
+      <p>Al responder cada pregunta, recibe retroalimentación para entender tus aciertos y errores.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="bi bi-phone"></i>
+      </div>
+      <h3>Desde cualquier dispositivo</h3>
+      <p>Estudia donde quieras, cuando quieras. Solo necesitas un navegador.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Universidades -->
+<section class="universities">
+  <h2>¿Para qué examen te preparas?</h2>
+  <p class="universities-subtitle">Actualmente contamos con material para:</p>
+  <div class="university-badges">
+    <div class="university-badge">
+      <i class="bi bi-mortarboard-fill"></i>
+      <span>UNAM</span>
+    </div>
+    <div class="university-badge">
+      <i class="bi bi-mortarboard-fill"></i>
+      <span>IPN</span>
+    </div>
+  </div>
+  <p class="universities-note">
+    ¿Tu universidad o examen no aparece?
+    <a href="https://wa.me/5215512345678?text=Hola%2C%20me%20gustar%C3%ADa%20solicitar%20material%20para%20mi%20examen"
+       target="_blank" rel="noopener">
+      Solicítalo aquí
+    </a>
+    y lo agregaremos pronto.
+  </p>
+</section>
+
+<!-- CTA final -->
+<section class="final-cta">
+  <h2>Tu lugar te está esperando</h2>
+  <p>Empieza hoy y llega preparado a tu examen de admisión.</p>
+  <div class="d-flex flex-wrap justify-content-center gap-3">
     <a class="btn btn-success btn-lg" routerLink="/explore">
       <i class="bi bi-play-circle me-1"></i> Comenzar a practicar
     </a>
-    <a class="btn btn-outline-primary btn-lg" routerLink="/quick-practice">
-      <i class="bi bi-lightning-charge me-1"></i> Practica rapida
+    <a class="btn btn-outline-light btn-lg" routerLink="/suscripcion">
+      <i class="bi bi-star-fill me-1"></i> Ver plan premium
     </a>
-  </div>
-
-  <!-- Upsell -->
-  <div class="upsell-card mt-3 mx-auto" style="max-width: 500px;">
-    <div class="card border-primary shadow-sm">
-      <div class="card-body text-center py-3">
-        <h5 class="text-primary mb-1"><i class="bi bi-star-fill me-1"></i> Plan Premium</h5>
-        <p class="text-muted small mb-2">Practica sin limites por solo <strong>$99 MXN/mes</strong>. Miles de preguntas con explicaciones.</p>
-        <a routerLink="/suscripcion" class="btn btn-primary btn-sm">
-          <i class="bi bi-star-fill me-1"></i> Ver planes
-        </a>
-      </div>
-    </div>
   </div>
 </section>
