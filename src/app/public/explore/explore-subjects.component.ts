@@ -123,7 +123,6 @@ const SECCION_ICONS: Record<string, string> = {
                         <div class="col-md-4 col-lg-3">
                           <div class="card explore-card h-100">
                             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
-                              <i class="bi fs-1 mb-2 text-info" [class]="sectionIcon(group.seccion)"></i>
                               <h6 class="card-title mb-3">{{ tc.nombre_mostrar }}</h6>
                               <div class="d-flex gap-2 mt-auto">
                                 <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info">
@@ -150,7 +149,6 @@ const SECCION_ICONS: Record<string, string> = {
                     <div class="list-group list-group-flush">
                       @for (tc of group.temas; track tc.id) {
                         <div class="list-group-item d-flex align-items-center gap-2 px-0">
-                          <i class="bi text-info" [class]="sectionIcon(group.seccion)"></i>
                           <span class="flex-grow-1 small">{{ tc.nombre_mostrar }}</span>
                           <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info btn-sm py-0 px-2">
                             <i class="bi bi-journal-richtext"></i>
