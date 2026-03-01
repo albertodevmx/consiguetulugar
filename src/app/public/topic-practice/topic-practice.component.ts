@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap, take, map, combineLatest, of } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
 import { ExamenService } from '../../core/services/examen.service';
+import { ProgresoService } from '../../core/services/progreso.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta, TemaConfig } from '../../core/models';
@@ -199,6 +200,7 @@ export class TopicPracticeComponent {
   private location = inject(Location);
   private preguntaSvc = inject(PreguntaService);
   private examenSvc = inject(ExamenService);
+  private progresoSvc = inject(ProgresoService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
 
@@ -262,13 +264,17 @@ export class TopicPracticeComponent {
     return q.opciones[idx]?.explicacion ?? '';
   });
 
+  private falladasSet = new Set<string>();
+
   constructor() {
     const qp = this.route.snapshot.queryParamMap.get('examenId');
     if (qp) this.examenIdValue.set(qp);
 
+    const temaId = this.route.snapshot.paramMap.get('temaId')!;
+
     const questions$ = this.route.paramMap.pipe(
       map((p) => p.get('temaId')!),
-      switchMap((temaId) => this.preguntaSvc.listByTema(temaId).pipe(take(1))),
+      switchMap((tid) => this.preguntaSvc.listByTema(tid).pipe(take(1))),
     );
 
     const configs$ = qp
@@ -276,8 +282,14 @@ export class TopicPracticeComponent {
       : of([] as TemaConfig[]);
 
     // Wait for both questions and config so access() is accurate
-    combineLatest([questions$, configs$]).subscribe(([qs, configs]) => {
+    combineLatest([questions$, configs$]).subscribe(async ([qs, configs]) => {
       this.temasConfig.set(configs);
+
+      // Load user's progress to prioritize failed questions
+      const progreso = await this.progresoSvc.getProgreso(temaId);
+      if (progreso?.falladas?.length) {
+        this.falladasSet = new Set(progreso.falladas);
+      }
 
       // Sort deterministically by id so free-trial always shows the same questions
       const sorted = [...qs].sort((a, b) => (a.id ?? '').localeCompare(b.id ?? ''));
@@ -286,7 +298,7 @@ export class TopicPracticeComponent {
       if (this.access() === 'free') {
         this.questions.set(sorted.slice(0, FREE_QUESTION_LIMIT));
       } else {
-        this.questions.set(this.shuffle(sorted));
+        this.questions.set(this.prioritize(sorted));
       }
 
       this.loading.set(false);
@@ -302,7 +314,11 @@ export class TopicPracticeComponent {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
-    if (this.isCorrect()) this.correctCount.update((n) => n + 1);
+    const correct = this.isCorrect();
+    if (correct) this.correctCount.update((n) => n + 1);
+
+    const q = this.currentQuestion();
+    if (q) this.progresoSvc.recordAnswer(q, correct);
   }
 
   nextQuestion() {
@@ -321,7 +337,7 @@ export class TopicPracticeComponent {
       // Trial: same questions, same order
       this.questions.set(this._allQuestions().slice(0, FREE_QUESTION_LIMIT));
     } else {
-      this.questions.set(this.shuffle(this._allQuestions()));
+      this.questions.set(this.prioritize(this._allQuestions()));
     }
     this.currentIndex.set(0);
     this.selectedOption.set(null);
@@ -347,6 +363,14 @@ export class TopicPracticeComponent {
 
   goBack() {
     this.location.back();
+  }
+
+  /** Put previously-failed questions first, then shuffle the rest */
+  private prioritize(all: Pregunta[]): Pregunta[] {
+    if (this.falladasSet.size === 0) return this.shuffle(all);
+    const failed = all.filter((q) => this.falladasSet.has(q.id!));
+    const rest = all.filter((q) => !this.falladasSet.has(q.id!));
+    return [...this.shuffle(failed), ...this.shuffle(rest)];
   }
 
   private shuffle<T>(arr: T[]): T[] {

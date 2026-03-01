@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { take } from 'rxjs';
 
 import { PreguntaService } from '../../core/services/pregunta.service';
+import { ProgresoService } from '../../core/services/progreso.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta } from '../../core/models';
@@ -16,6 +17,7 @@ import { Pregunta } from '../../core/models';
 })
 export class QuickPracticeComponent {
   private preguntaSvc = inject(PreguntaService);
+  private progresoSvc = inject(ProgresoService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
 
@@ -90,7 +92,11 @@ export class QuickPracticeComponent {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
-    if (this.isCorrect()) this.correctCount.update((n) => n + 1);
+    const correct = this.isCorrect();
+    if (correct) this.correctCount.update((n) => n + 1);
+
+    const q = this.currentQuestion();
+    if (q) this.progresoSvc.recordAnswer(q, correct);
   }
 
   nextQuestion() {

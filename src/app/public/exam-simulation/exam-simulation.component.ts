@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap, take, map, of } from 'rxjs';
 import { ExamenService } from '../../core/services/examen.service';
 import { PreguntaService } from '../../core/services/pregunta.service';
+import { ProgresoService } from '../../core/services/progreso.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta, Examen, TemaConfig } from '../../core/models';
@@ -175,6 +176,7 @@ export class ExamSimulationComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private examenSvc = inject(ExamenService);
   private preguntaSvc = inject(PreguntaService);
+  private progresoSvc = inject(ProgresoService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
 
@@ -301,7 +303,11 @@ export class ExamSimulationComponent implements OnDestroy {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
-    if (this.isCorrect()) this.correctCount.update((n) => n + 1);
+    const correct = this.isCorrect();
+    if (correct) this.correctCount.update((n) => n + 1);
+
+    const q = this.currentQuestion();
+    if (q) this.progresoSvc.recordAnswer(q, correct);
   }
 
   nextQuestion() {

@@ -1,4 +1,5 @@
 <div class="profile-wrapper">
+  <div class="profile-content">
   @if (!profileLoaded()) {
     <div class="text-center py-5">
       <span class="spinner-border text-primary"></span>
@@ -188,6 +189,81 @@
 
       </div>
     </div>
+    <!-- Progress section -->
+    @if (progresoLoaded() && overallTotal() > 0) {
+      <div class="card shadow-sm mt-4">
+        <div class="card-body p-4">
+          <h5 class="mb-3"><i class="bi bi-bar-chart-fill me-2"></i>Mi avance</h5>
+
+          <!-- Overall stats -->
+          <div class="overall-stats mb-4">
+            <div class="stat-row">
+              <span class="text-muted">Total respondidas</span>
+              <strong>{{ overallTotal() }}</strong>
+            </div>
+            <div class="stat-row">
+              <span class="text-muted">Correctas</span>
+              <strong class="text-success">{{ overallCorrectas() }}</strong>
+            </div>
+            <div class="stat-row">
+              <span class="text-muted">Acierto general</span>
+              <strong [class]="overallPercent() >= 60 ? 'text-success' : 'text-danger'">{{ overallPercent() }}%</strong>
+            </div>
+            <div class="progress mt-2" style="height: 8px">
+              <div
+                class="progress-bar"
+                [class]="overallPercent() >= 60 ? 'bg-success' : 'bg-danger'"
+                [style.width.%]="overallPercent()"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Per-materia breakdown -->
+          <h6 class="text-muted mb-3">Por materia</h6>
+          @for (mat of materiaProgreso(); track mat.materia_id) {
+            <div class="materia-block mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-semibold">{{ mat.nombre }}</span>
+                <span class="badge" [class]="mat.percent >= 60 ? 'bg-success' : 'bg-danger'">{{ mat.percent }}%</span>
+              </div>
+              <div class="progress mb-2" style="height: 6px">
+                <div
+                  class="progress-bar"
+                  [class]="mat.percent >= 60 ? 'bg-success' : 'bg-danger'"
+                  [style.width.%]="mat.percent"
+                ></div>
+              </div>
+              <div class="tema-list">
+                @for (tema of mat.temas; track tema.nombre) {
+                  <div class="tema-row">
+                    <span class="tema-name">{{ tema.nombre }}</span>
+                    <span class="tema-stats">
+                      <span [class]="tema.percent >= 60 ? 'text-success' : 'text-danger'">{{ tema.percent }}%</span>
+                      <span class="text-muted ms-1">({{ tema.correctas }}/{{ tema.total }})</span>
+                      @if (tema.falladas > 0) {
+                        <span class="text-warning ms-1" title="Preguntas por reforzar">
+                          <i class="bi bi-exclamation-triangle-fill"></i> {{ tema.falladas }}
+                        </span>
+                      }
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else if (progresoLoaded()) {
+      <div class="card shadow-sm mt-4">
+        <div class="card-body p-4 text-center">
+          <i class="bi bi-bar-chart text-muted fs-1 d-block mb-2"></i>
+          <p class="text-muted mb-1">Aún no tienes avance registrado.</p>
+          <a routerLink="/explore" class="btn btn-primary btn-sm mt-2">
+            <i class="bi bi-mortarboard me-1"></i> Empezar a practicar
+          </a>
+        </div>
+      </div>
+    }
   } @else {
     <div class="text-center py-5">
       <i class="bi bi-exclamation-circle display-4 text-muted"></i>
@@ -195,4 +271,5 @@
       <a routerLink="/" class="btn btn-outline-primary btn-sm">Volver al inicio</a>
     </div>
   }
+  </div>
 </div>
