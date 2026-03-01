@@ -7,7 +7,7 @@
   <div class="header-actions">
     <nav>
       <a routerLink="/" class="nav-link"><i class="bi bi-house-door"></i><span class="nav-label"> Inicio</span></a>
-      <a routerLink="/explore" class="nav-link"><i class="bi bi-mortarboard"></i><span class="nav-label"> Practicar</span></a>
+      <a [routerLink]="practiceLink()" class="nav-link"><i class="bi bi-mortarboard"></i><span class="nav-label"> Practicar</span></a>
     </nav>
 
     @if (auth.isLoggedIn()) {

@@ -28,6 +28,20 @@ export const publicRoutes: Routes = [
       ),
   },
   {
+    path: 'practicar',
+    loadComponent: () =>
+      import('./practicar/practicar-dashboard.component').then(
+        (m) => m.PracticarDashboardComponent,
+      ),
+  },
+  {
+    path: 'practicar/:escuela/:examenId',
+    loadComponent: () =>
+      import('./practicar/practicar-subjects.component').then(
+        (m) => m.PracticarSubjectsComponent,
+      ),
+  },
+  {
     path: 'lesson/:temaId',
     loadComponent: () =>
       import('./topic-lesson/topic-lesson.component').then(

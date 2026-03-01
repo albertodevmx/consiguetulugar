@@ -7,9 +7,15 @@
     Practica con simulacros que replican la estructura de tu examen:
     mismo número de preguntas y tiempo límite, para que llegues listo el día del examen.
   </p>
-  <a class="btn btn-success btn-lg cta-main" routerLink="/explore">
-    <i class="bi bi-play-circle me-1"></i> Comenzar a practicar
-  </a>
+  @if (quota.isFree()) {
+    <a class="btn btn-success btn-lg cta-main" routerLink="/explore">
+      <i class="bi bi-search me-1"></i> Explorar exámenes
+    </a>
+  } @else {
+    <a class="btn btn-success btn-lg cta-main" routerLink="/practicar">
+      <i class="bi bi-play-circle me-1"></i> Ir a practicar
+    </a>
+  }
 </section>
 
 <!-- Beneficios -->
@@ -76,12 +82,19 @@
   <h2>Tu lugar te está esperando</h2>
   <p>Empieza hoy y llega preparado a tu examen de admisión.</p>
   <div class="d-flex flex-wrap justify-content-center gap-3">
-    <a class="btn btn-success btn-lg" routerLink="/explore">
-      <i class="bi bi-play-circle me-1"></i> Comenzar a practicar
-    </a>
     @if (quota.isFree()) {
+      <a class="btn btn-success btn-lg" routerLink="/explore">
+        <i class="bi bi-search me-1"></i> Explorar exámenes
+      </a>
       <a class="btn btn-outline-light btn-lg" routerLink="/suscripcion">
         <i class="bi bi-star-fill me-1"></i> Ver plan premium
+      </a>
+    } @else {
+      <a class="btn btn-success btn-lg" routerLink="/practicar">
+        <i class="bi bi-play-circle me-1"></i> Ir a practicar
+      </a>
+      <a class="btn btn-outline-light btn-lg" routerLink="/explore">
+        <i class="bi bi-search me-1"></i> Explorar más exámenes
       </a>
     }
   </div>
