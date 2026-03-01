@@ -304,12 +304,11 @@ export class PracticarSubjectsComponent {
     return calcularDominio(this.examCorrectas(), this.examTotalPreguntas());
   });
 
-  // All sections expanded by default in practice view
+  // All sections collapsed by default
   expandedSections = computed(() => {
     const set = this._expandedOverrides();
     if (set !== null) return set;
-    const all = new Set(this.groupedBySections().map((g) => g.seccion));
-    return all;
+    return new Set<string>();
   });
 
   private _expandedOverrides = signal<Set<string> | null>(null);
