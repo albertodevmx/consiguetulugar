@@ -167,16 +167,6 @@ import { Pregunta, Examen, TemaConfig } from '../../core/models';
           </div>
         </div>
 
-        @if (quota.isFree()) {
-          <div class="card border-primary">
-            <div class="card-body text-center py-3">
-              <h5 class="text-primary mb-2"><i class="bi bi-star-fill me-1"></i> Quieres seguir practicando sin limites?</h5>
-              <a routerLink="/suscripcion" class="btn btn-primary">
-                Suscribirme por $99 MXN/mes
-              </a>
-            </div>
-          </div>
-        }
       }
     </div>
   `,
@@ -307,12 +297,11 @@ export class ExamSimulationComponent implements OnDestroy {
     if (!this.answered()) this.selectedOption.set(idx);
   }
 
-  async submitAnswer() {
+  submitAnswer() {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
     if (this.isCorrect()) this.correctCount.update((n) => n + 1);
-    await this.quota.recordAnswer();
   }
 
   nextQuestion() {

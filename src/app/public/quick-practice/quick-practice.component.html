@@ -29,49 +29,34 @@
     </div>
   }
 
-  <!-- Must register -->
+  <!-- Not logged in -->
   @if (!loading() && !auth.isLoggedIn() && pool().length > 0) {
-    <div class="card border-warning mb-4">
+    <div class="card border-primary mb-4">
       <div class="card-body text-center py-4">
-        <i class="bi bi-lock fs-1 text-warning d-block mb-2"></i>
-        <h4>Registrate para practicar</h4>
-        <p class="text-muted">Crea una cuenta gratuita para responder preguntas. Tendras 30 preguntas de prueba gratis.</p>
-        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <a routerLink="/registro" class="btn btn-warning btn-lg">
-            <i class="bi bi-person-plus me-1"></i> Crear cuenta gratis
-          </a>
-          <a routerLink="/login" class="btn btn-outline-primary btn-lg">
-            <i class="bi bi-box-arrow-in-right me-1"></i> Ya tengo cuenta
-          </a>
-        </div>
+        <i class="bi bi-star-fill fs-1 text-primary d-block mb-2"></i>
+        <h4>Practica rapida es una funcion premium</h4>
+        <p class="text-muted mb-3">Suscribete para practicar preguntas de todos los temas de forma aleatoria.</p>
+        <a routerLink="/suscripcion" class="btn btn-primary btn-lg">
+          <i class="bi bi-star-fill me-1"></i> Suscribirme - $99 MXN/mes
+        </a>
+        <p class="text-muted small mt-3 mb-0">
+          No tienes cuenta? <a routerLink="/registro" class="fw-bold">Registrate</a>
+        </p>
       </div>
     </div>
   }
 
-  <!-- Quota warning -->
-  @if (auth.isLoggedIn() && quota.isFree() && quota.quotaMessage()) {
-    <div class="alert d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3"
-         [ngClass]="quota.remaining() > 5 ? 'alert-info' : quota.remaining() > 0 ? 'alert-warning' : 'alert-danger'">
-      <span>
-        <i class="bi bi-info-circle me-1"></i>{{ quota.quotaMessage() }}
-      </span>
-      <a routerLink="/suscripcion" class="btn btn-sm btn-primary text-nowrap">
-        <i class="bi bi-star-fill me-1"></i> Desbloquear Premium
-      </a>
-    </div>
-  }
-
-  <!-- Quota exceeded -->
-  @if (auth.isLoggedIn() && quotaExceeded()) {
+  <!-- Logged in but no paid access -->
+  @if (!loading() && auth.isLoggedIn() && !hasPaidAccess() && pool().length > 0) {
     <div class="card border-primary mb-4">
       <div class="card-body text-center py-4">
         <i class="bi bi-star-fill fs-1 text-primary d-block mb-2"></i>
-        <h4>Has agotado tus preguntas gratuitas</h4>
+        <h4>Practica rapida es una funcion premium</h4>
         <p class="text-muted mb-3">
-          Suscribete para practicar sin limites y prepararte al maximo para tu examen.
+          Suscribete a un examen para desbloquear practica rapida con preguntas de todos los temas.
         </p>
         <a routerLink="/suscripcion" class="btn btn-primary btn-lg">
-          <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
+          <i class="bi bi-star-fill me-1"></i> Suscribirme - $99 MXN/mes
         </a>
         <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
       </div>

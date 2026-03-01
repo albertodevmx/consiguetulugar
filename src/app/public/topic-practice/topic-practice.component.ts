@@ -3,9 +3,10 @@ import { NgClass, Location } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap, take, map } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
+import { ExamenService } from '../../core/services/examen.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
-import { Pregunta } from '../../core/models';
+import { Pregunta, TemaConfig } from '../../core/models';
 
 @Component({
   selector: 'app-topic-practice',
@@ -27,32 +28,32 @@ import { Pregunta } from '../../core/models';
         </div>
       }
 
-      <!-- No exam access (not paid) -->
-      @if (!loading() && auth.isLoggedIn() && !hasExamAccess()) {
+      <!-- Locked: needs subscription -->
+      @if (!loading() && access() === 'locked') {
         <div class="card border-primary mb-4">
           <div class="card-body text-center py-4">
             <i class="bi bi-lock-fill fs-1 text-primary d-block mb-2"></i>
             <h4>Acceso restringido</h4>
             <p class="text-muted mb-3">
-              Necesitas suscribirte al examen para practicar este tema.
+              Suscribete para practicar todos los temas, con preguntas ilimitadas y simulacros de examen.
             </p>
-            <a routerLink="/suscripcion" class="btn btn-primary btn-lg">
-              <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
+            <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-primary btn-lg">
+              <i class="bi bi-star-fill me-1"></i> Suscribirme - $99 MXN/mes
             </a>
             <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
           </div>
         </div>
       }
 
-      <!-- Must register to answer -->
-      @if (!loading() && !auth.isLoggedIn() && questions().length > 0) {
-        <div class="card border-warning mb-4">
+      <!-- Free topic but not logged in: must register -->
+      @if (!loading() && access() === 'free' && !auth.isLoggedIn() && questions().length > 0) {
+        <div class="card border-success mb-4">
           <div class="card-body text-center py-4">
-            <i class="bi bi-lock fs-1 text-warning d-block mb-2"></i>
+            <i class="bi bi-person-plus fs-1 text-success d-block mb-2"></i>
             <h4>Registrate para practicar</h4>
-            <p class="text-muted">Crea una cuenta gratuita para responder preguntas. Tendras 30 preguntas de prueba gratis.</p>
+            <p class="text-muted">Este tema es gratuito. Crea tu cuenta para empezar a resolver preguntas.</p>
             <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
-              <a routerLink="/registro" class="btn btn-warning btn-lg">
+              <a routerLink="/registro" class="btn btn-success btn-lg">
                 <i class="bi bi-person-plus me-1"></i> Crear cuenta gratis
               </a>
               <a routerLink="/login" class="btn btn-outline-primary btn-lg">
@@ -63,43 +64,13 @@ import { Pregunta } from '../../core/models';
         </div>
       }
 
-      <!-- Quota warning for free users -->
-      @if (auth.isLoggedIn() && quota.isFree() && quota.quotaMessage()) {
-        <div class="alert d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3"
-             [ngClass]="quota.remaining() > 5 ? 'alert-info' : quota.remaining() > 0 ? 'alert-warning' : 'alert-danger'">
-          <span>
-            <i class="bi bi-info-circle me-1"></i>{{ quota.quotaMessage() }}
-          </span>
-          <a routerLink="/suscripcion" class="btn btn-sm btn-primary text-nowrap">
-            <i class="bi bi-star-fill me-1"></i> Desbloquear Premium
-          </a>
-        </div>
-      }
-
-      <!-- Quota exceeded -->
-      @if (auth.isLoggedIn() && quotaExceeded()) {
-        <div class="card border-primary mb-4">
-          <div class="card-body text-center py-4">
-            <i class="bi bi-star-fill fs-1 text-primary d-block mb-2"></i>
-            <h4>Has agotado tus preguntas gratuitas</h4>
-            <p class="text-muted mb-3">
-              Suscribete para practicar sin limites y prepararte al maximo para tu examen.
-            </p>
-            <a routerLink="/suscripcion" class="btn btn-primary btn-lg">
-              <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
-            </a>
-            <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
-          </div>
-        </div>
-      }
-
       <!-- No questions -->
       @if (!loading() && questions().length === 0) {
         <div class="card text-center py-5">
           <div class="card-body">
             <i class="bi bi-question-circle fs-1 text-muted d-block mb-2"></i>
             <h5 class="text-muted">No hay preguntas disponibles para este tema.</h5>
-            <button class="btn btn-warning mt-3" onclick="history.back()">
+            <button class="btn btn-warning mt-3" (click)="goBack()">
               <i class="bi bi-arrow-left me-1"></i> Volver
             </button>
           </div>
@@ -119,21 +90,21 @@ import { Pregunta } from '../../core/models';
               <button class="btn btn-success" (click)="restart()">
                 <i class="bi bi-arrow-repeat me-1"></i> Reiniciar
               </button>
-              <button class="btn btn-warning" onclick="history.back()">
+              <button class="btn btn-warning" (click)="goBack()">
                 <i class="bi bi-arrow-left me-1"></i> Volver
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Upsell after finishing -->
+        <!-- Upsell after finishing (free-tier users) -->
         @if (quota.isFree()) {
           <div class="card border-primary">
             <div class="card-body text-center py-3">
-              <h5 class="text-primary mb-2"><i class="bi bi-star-fill me-1"></i> Quieres seguir practicando sin limites?</h5>
-              <p class="text-muted small mb-2">Con Premium tendras acceso ilimitado a miles de preguntas con explicaciones detalladas.</p>
-              <a routerLink="/suscripcion" class="btn btn-primary">
-                Suscribirme por $99 MXN/mes
+              <h5 class="text-primary mb-2"><i class="bi bi-star-fill me-1"></i> Desbloquea todos los temas</h5>
+              <p class="text-muted small mb-2">Suscribete para practicar todas las materias sin limites y hacer simulacros completos.</p>
+              <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-primary">
+                Suscribirme - $99 MXN/mes
               </a>
             </div>
           </div>
@@ -203,10 +174,12 @@ export class TopicPracticeComponent {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
   private preguntaSvc = inject(PreguntaService);
+  private examenSvc = inject(ExamenService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
 
-  private examenId = signal('');
+  private examenIdValue = signal('');
+  private temasConfig = signal<TemaConfig[]>([]);
 
   questions = signal<Pregunta[]>([]);
   currentIndex = signal(0);
@@ -217,10 +190,14 @@ export class TopicPracticeComponent {
   correctCount = signal(0);
   totalAnswered = signal(0);
 
-  hasExamAccess = computed(() => {
-    const eid = this.examenId();
-    if (!eid) return false;
-    return this.quota.hasExamAccess(eid);
+  examenId = this.examenIdValue.asReadonly();
+
+  /** Access level for this topic: 'free', 'paid', or 'locked' */
+  access = computed(() => {
+    const eid = this.examenIdValue();
+    if (!eid) return 'locked' as const;
+    const temaId = this.route.snapshot.paramMap.get('temaId') ?? '';
+    return this.quota.getTemaAccess(temaId, eid, this.temasConfig());
   });
 
   currentQuestion = computed(() => {
@@ -231,13 +208,8 @@ export class TopicPracticeComponent {
 
   canShowQuestion = computed(() => {
     if (!this.auth.isLoggedIn()) return false;
-    if (!this.hasExamAccess()) return false;
-    if (this.quotaExceeded()) return false;
-    return true;
-  });
-
-  quotaExceeded = computed(() => {
-    return this.auth.isLoggedIn() && this.quota.isFree() && !this.quota.canAnswer();
+    const a = this.access();
+    return a === 'free' || a === 'paid';
   });
 
   isCorrect = computed(() => {
@@ -263,8 +235,16 @@ export class TopicPracticeComponent {
 
   constructor() {
     const qp = this.route.snapshot.queryParamMap.get('examenId');
-    if (qp) this.examenId.set(qp);
+    if (qp) this.examenIdValue.set(qp);
 
+    // Load TemaConfig for access check
+    if (qp) {
+      this.examenSvc.listTemasConfig(qp).pipe(take(1)).subscribe((configs) => {
+        this.temasConfig.set(configs);
+      });
+    }
+
+    // Load questions
     this.route.paramMap
       .pipe(
         map((p) => p.get('temaId')!),
@@ -281,19 +261,14 @@ export class TopicPracticeComponent {
     if (!this.answered()) this.selectedOption.set(idx);
   }
 
-  async submitAnswer() {
+  submitAnswer() {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
     if (this.isCorrect()) this.correctCount.update((n) => n + 1);
-    await this.quota.recordAnswer();
   }
 
   nextQuestion() {
-    if (this.quota.isFree() && !this.quota.canAnswer()) {
-      this.sessionFinished.set(true);
-      return;
-    }
     const next = this.currentIndex() + 1;
     if (next < this.questions().length) {
       this.currentIndex.set(next);
@@ -305,7 +280,6 @@ export class TopicPracticeComponent {
   }
 
   restart() {
-    if (this.quota.isFree() && !this.quota.canAnswer()) return;
     this.questions.set(this.shuffle(this.questions()));
     this.currentIndex.set(0);
     this.selectedOption.set(null);

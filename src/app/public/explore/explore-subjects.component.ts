@@ -21,6 +21,7 @@ const SECCION_ICONS: Record<string, string> = {
   historia: 'bi-hourglass-split',
   'historia universal': 'bi-hourglass-split',
   'historia de mexico': 'bi-hourglass-split',
+  'historia de méxico': 'bi-hourglass-split',
   geografia: 'bi-globe-americas',
   geografía: 'bi-globe-americas',
   ingles: 'bi-translate',
@@ -64,32 +65,33 @@ const SECCION_ICONS: Record<string, string> = {
 
       @if (examen(); as ex) {
         <h2 class="mb-2"><i class="bi bi-journal-text me-2"></i>{{ ex.nombre }}</h2>
+
         @if (hasAccess()) {
-          <p class="text-muted mb-1">Elige un tema para practicar o inicia un examen simulacion.</p>
+          <p class="text-muted mb-1">Elige un tema para practicar o inicia un examen simulacro.</p>
           <div class="mb-4">
             <a [routerLink]="['/exam-simulation', examenId()]" class="btn btn-primary d-block d-sm-inline-block">
-              <i class="bi bi-clock me-1"></i> Examen Simulacion
+              <i class="bi bi-clock me-1"></i> Examen Simulacro
             </a>
           </div>
         } @else {
-          <p class="text-muted mb-1">Revisa los temas de este examen. Suscribete para practicar.</p>
+          <p class="text-muted mb-1">Explora los temas de este examen. Los temas marcados como <span class="badge bg-success">Gratis</span> los puedes estudiar y practicar.</p>
         }
       }
 
-      <!-- Upsell for non-logged-in users -->
+      <!-- Banner for non-logged-in users -->
       @if (!auth.isLoggedIn()) {
-        <div class="alert alert-warning d-flex flex-column flex-sm-row align-items-sm-center gap-2 mb-3">
-          <span><i class="bi bi-lock me-1"></i>Registrate gratis para practicar. Obtendras 30 preguntas de prueba.</span>
-          <a routerLink="/registro" class="btn btn-sm btn-warning text-nowrap">
+        <div class="alert alert-success d-flex flex-column flex-sm-row align-items-sm-center gap-2 mb-3">
+          <span><i class="bi bi-unlock me-1"></i>Prueba los temas gratuitos. Registrate para practicar preguntas.</span>
+          <a routerLink="/registro" class="btn btn-sm btn-success text-nowrap">
             <i class="bi bi-person-plus me-1"></i> Crear cuenta
           </a>
         </div>
       }
 
-      <!-- Upsell for users without access to this exam -->
+      <!-- Banner for logged-in users without exam access -->
       @if (auth.isLoggedIn() && !hasAccess()) {
         <div class="alert alert-info d-flex flex-column flex-sm-row align-items-sm-center gap-2 mb-3">
-          <span><i class="bi bi-lock me-1"></i>Suscribete a este examen para practicar sin limites.</span>
+          <span><i class="bi bi-star me-1"></i>Suscribete para desbloquear todos los temas, simulacros y practica ilimitada.</span>
           <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-sm btn-primary text-nowrap">
             <i class="bi bi-star-fill me-1"></i> Suscribirme
           </a>
@@ -112,6 +114,9 @@ const SECCION_ICONS: Record<string, string> = {
                   (click)="toggleSection(group.seccion)">
                   <i class="bi me-2" [class]="sectionIcon(group.seccion)"></i>
                   {{ group.seccion || 'General' }}
+                  @if (sectionHasFreeTopics(group.seccion)) {
+                    <span class="badge bg-success ms-2" style="font-size: 0.7rem">Temas gratis</span>
+                  }
                 </button>
               </h2>
               @if (expandedSections().has(group.seccion)) {
@@ -121,14 +126,25 @@ const SECCION_ICONS: Record<string, string> = {
                     <div class="row g-3">
                       @for (tc of group.temas; track tc.id) {
                         <div class="col-md-4 col-lg-3">
-                          <div class="card explore-card h-100">
+                          <div class="card explore-card h-100" [class.border-success]="isFreeTema(tc.tema_id)" [class.free-card]="isFreeTema(tc.tema_id)">
                             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
+                              @if (isFreeTema(tc.tema_id)) {
+                                <span class="badge bg-success mb-2"><i class="bi bi-unlock me-1"></i>Gratis</span>
+                              }
                               <h6 class="card-title mb-3">{{ tc.nombre_mostrar }}</h6>
                               <div class="d-flex gap-2 mt-auto">
-                                <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info">
-                                  <i class="bi bi-journal-richtext me-1"></i>Leccion
-                                </a>
-                                @if (hasAccess()) {
+                                <!-- Lesson button -->
+                                @if (isFreeTema(tc.tema_id) || hasAccess()) {
+                                  <a [routerLink]="['/lesson', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-outline-info">
+                                    <i class="bi bi-journal-richtext me-1"></i>Leccion
+                                  </a>
+                                } @else {
+                                  <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-lock me-1"></i>Leccion
+                                  </a>
+                                }
+                                <!-- Practice button -->
+                                @if (isFreeTema(tc.tema_id) || hasAccess()) {
                                   <a [routerLink]="['/practice/tema', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-success">
                                     <i class="bi bi-play-fill me-1"></i>Practicar
                                   </a>
@@ -149,11 +165,24 @@ const SECCION_ICONS: Record<string, string> = {
                     <div class="list-group list-group-flush">
                       @for (tc of group.temas; track tc.id) {
                         <div class="list-group-item d-flex align-items-center gap-2 px-0">
+                          @if (isFreeTema(tc.tema_id)) {
+                            <span class="badge bg-success" style="font-size:0.65rem">Gratis</span>
+                          } @else if (!hasAccess()) {
+                            <i class="bi bi-lock text-secondary" style="font-size:0.75rem"></i>
+                          }
                           <span class="flex-grow-1 small">{{ tc.nombre_mostrar }}</span>
-                          <a [routerLink]="['/lesson', tc.tema_id]" class="btn btn-outline-info btn-sm py-0 px-2">
-                            <i class="bi bi-journal-richtext"></i>
-                          </a>
-                          @if (hasAccess()) {
+                          <!-- Lesson -->
+                          @if (isFreeTema(tc.tema_id) || hasAccess()) {
+                            <a [routerLink]="['/lesson', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-outline-info btn-sm py-0 px-2">
+                              <i class="bi bi-journal-richtext"></i>
+                            </a>
+                          } @else {
+                            <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary btn-sm py-0 px-2">
+                              <i class="bi bi-lock"></i>
+                            </a>
+                          }
+                          <!-- Practice -->
+                          @if (isFreeTema(tc.tema_id) || hasAccess()) {
                             <a [routerLink]="['/practice/tema', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-success btn-sm py-0 px-2">
                               <i class="bi bi-play-fill"></i>
                             </a>
@@ -187,9 +216,15 @@ const SECCION_ICONS: Record<string, string> = {
       min-height: 140px;
     }
     .explore-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    .explore-card.free-card {
+      background: linear-gradient(135deg, rgba(25, 135, 84, 0.03) 0%, rgba(25, 135, 84, 0.08) 100%);
+    }
+    .explore-card.free-card:hover {
       border-color: var(--bs-success);
       box-shadow: 0 4px 12px rgba(25, 135, 84, 0.15);
-      transform: translateY(-2px);
     }
     .accordion-button:not(.collapsed) {
       background-color: rgba(13, 202, 240, 0.08);
@@ -235,6 +270,22 @@ export class ExploreSubjectsComponent {
       switchMap((id) => this.examenSvc.listTemasConfig(id)),
     ),
   );
+
+  /** Set of tema_ids that are free trial content */
+  freeTemaIds = computed(() => {
+    const configs = this.temasConfig() ?? [];
+    return this.quota.getFreeTemaIds(configs);
+  });
+
+  isFreeTema(temaId: string): boolean {
+    return this.freeTemaIds().has(temaId);
+  }
+
+  sectionHasFreeTopics(seccion: string): boolean {
+    const configs = this.temasConfig() ?? [];
+    const freeIds = this.freeTemaIds();
+    return configs.some(c => c.seccion === seccion && freeIds.has(c.tema_id));
+  }
 
   groupedBySections = computed(() => {
     const configs = this.temasConfig() ?? [];

@@ -27,6 +27,13 @@ export class QuickPracticeComponent {
   correctCount = signal(0);
   totalAnswered = signal(0);
 
+  /** Quick practice requires a paid subscription */
+  hasPaidAccess = computed(() => {
+    const p = this.auth.profile();
+    if (!p) return false;
+    return (p.examenes_pagados?.length ?? 0) > 0;
+  });
+
   currentQuestion = computed(() => {
     const p = this.pool();
     const idx = this.currentIndex();
@@ -35,12 +42,8 @@ export class QuickPracticeComponent {
 
   canShowQuestion = computed(() => {
     if (!this.auth.isLoggedIn()) return false;
-    if (this.quotaExceeded()) return false;
+    if (!this.hasPaidAccess()) return false;
     return true;
-  });
-
-  quotaExceeded = computed(() => {
-    return this.auth.isLoggedIn() && this.quota.isFree() && !this.quota.canAnswer();
   });
 
   isCorrect = computed(() => {
@@ -83,16 +86,14 @@ export class QuickPracticeComponent {
     if (!this.answered()) this.selectedOption.set(idx);
   }
 
-  async submitAnswer() {
+  submitAnswer() {
     if (this.selectedOption() === null || this.answered()) return;
     this.answered.set(true);
     this.totalAnswered.update((n) => n + 1);
     if (this.isCorrect()) this.correctCount.update((n) => n + 1);
-    await this.quota.recordAnswer();
   }
 
   nextQuestion() {
-    if (this.quota.isFree() && !this.quota.canAnswer()) return;
     const next = this.currentIndex() + 1;
     if (next < this.pool().length) {
       this.currentIndex.set(next);
