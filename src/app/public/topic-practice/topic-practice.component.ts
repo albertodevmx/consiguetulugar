@@ -1,12 +1,15 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass, Location } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { switchMap, take, map } from 'rxjs';
+import { switchMap, take, map, combineLatest, of } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
 import { ExamenService } from '../../core/services/examen.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta, TemaConfig } from '../../core/models';
+
+/** Max questions shown in free trial practice */
+const FREE_QUESTION_LIMIT = 10;
 
 @Component({
   selector: 'app-topic-practice',
@@ -86,6 +89,12 @@ import { Pregunta, TemaConfig } from '../../core/models';
             <p class="fs-5 mt-3">
               Resultado: <span class="badge bg-success fs-5">{{ correctCount() }}</span> de <span class="badge bg-secondary fs-5">{{ totalAnswered() }}</span> correctas
             </p>
+            @if (isTrial()) {
+              <p class="text-muted mt-2 mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                Estas fueron solo {{ questions().length }} preguntas de muestra de las {{ totalQuestionsInTema() }} disponibles en este tema.
+              </p>
+            }
             <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-3">
               <button class="btn btn-success" (click)="restart()">
                 <i class="bi bi-arrow-repeat me-1"></i> Reiniciar
@@ -109,6 +118,21 @@ import { Pregunta, TemaConfig } from '../../core/models';
             </div>
           </div>
         }
+      }
+
+      <!-- Trial mode banner -->
+      @if (isTrial() && !sessionFinished() && canShowQuestion()) {
+        <div class="alert alert-info d-flex align-items-start mb-3" role="alert">
+          <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+          <div>
+            <strong>Modo de prueba.</strong>
+            Este tema tiene {{ totalQuestionsInTema() }} preguntas.
+            Estas {{ questions().length }} son solo de muestra.
+            <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="alert-link">
+              Suscribete para practicar todas.
+            </a>
+          </div>
+        </div>
       }
 
       <!-- Question card -->
@@ -189,6 +213,8 @@ export class TopicPracticeComponent {
   sessionFinished = signal(false);
   correctCount = signal(0);
   totalAnswered = signal(0);
+  private _allQuestions = signal<Pregunta[]>([]);
+  totalQuestionsInTema = computed(() => this._allQuestions().length);
 
   examenId = this.examenIdValue.asReadonly();
 
@@ -211,6 +237,9 @@ export class TopicPracticeComponent {
     const a = this.access();
     return a === 'free' || a === 'paid';
   });
+
+  /** True when user is on free plan and there are more questions than the trial limit */
+  isTrial = computed(() => this.access() === 'free' && this._allQuestions().length > FREE_QUESTION_LIMIT);
 
   isCorrect = computed(() => {
     const q = this.currentQuestion();
@@ -237,24 +266,32 @@ export class TopicPracticeComponent {
     const qp = this.route.snapshot.queryParamMap.get('examenId');
     if (qp) this.examenIdValue.set(qp);
 
-    // Load TemaConfig for access check
-    if (qp) {
-      this.examenSvc.listTemasConfig(qp).pipe(take(1)).subscribe((configs) => {
-        this.temasConfig.set(configs);
-      });
-    }
+    const questions$ = this.route.paramMap.pipe(
+      map((p) => p.get('temaId')!),
+      switchMap((temaId) => this.preguntaSvc.listByTema(temaId).pipe(take(1))),
+    );
 
-    // Load questions
-    this.route.paramMap
-      .pipe(
-        map((p) => p.get('temaId')!),
-        switchMap((temaId) => this.preguntaSvc.listByTema(temaId).pipe(take(1))),
-      )
-      .subscribe((qs) => {
-        this.questions.set(this.shuffle(qs));
-        this.loading.set(false);
-        if (qs.length === 0) this.sessionFinished.set(true);
-      });
+    const configs$ = qp
+      ? this.examenSvc.listTemasConfig(qp).pipe(take(1))
+      : of([] as TemaConfig[]);
+
+    // Wait for both questions and config so access() is accurate
+    combineLatest([questions$, configs$]).subscribe(([qs, configs]) => {
+      this.temasConfig.set(configs);
+
+      // Sort deterministically by id so free-trial always shows the same questions
+      const sorted = [...qs].sort((a, b) => (a.id ?? '').localeCompare(b.id ?? ''));
+      this._allQuestions.set(sorted);
+
+      if (this.access() === 'free') {
+        this.questions.set(sorted.slice(0, FREE_QUESTION_LIMIT));
+      } else {
+        this.questions.set(this.shuffle(sorted));
+      }
+
+      this.loading.set(false);
+      if (qs.length === 0) this.sessionFinished.set(true);
+    });
   }
 
   selectOption(idx: number) {
@@ -280,7 +317,12 @@ export class TopicPracticeComponent {
   }
 
   restart() {
-    this.questions.set(this.shuffle(this.questions()));
+    if (this.access() === 'free') {
+      // Trial: same questions, same order
+      this.questions.set(this._allQuestions().slice(0, FREE_QUESTION_LIMIT));
+    } else {
+      this.questions.set(this.shuffle(this._allQuestions()));
+    }
     this.currentIndex.set(0);
     this.selectedOption.set(null);
     this.answered.set(false);
