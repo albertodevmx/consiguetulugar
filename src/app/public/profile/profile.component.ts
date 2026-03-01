@@ -58,7 +58,7 @@ export class ProfileComponent implements OnInit {
   progresoLoaded = computed(() => true);
 
   overallTotal = computed(() =>
-    this.allProgreso().reduce((sum, p) => sum + p.total, 0),
+    this.allProgreso().reduce((sum, p) => sum + (p.total ?? 0), 0),
   );
 
   overallCorrectas = computed(() =>
@@ -92,15 +92,16 @@ export class ProfileComponent implements OnInit {
         byMateria.set(p.materia_id, { total: 0, correctas: 0, temas: [] });
       }
       const m = byMateria.get(p.materia_id)!;
-      m.total += p.total;
+      m.total += p.total ?? 0;
       m.correctas += p.correctas ?? 0;
       const correctas = p.correctas ?? 0;
+      const total = p.total ?? 0;
       m.temas.push({
         nombre: temaMap.get(p.tema_id) ?? p.tema_id,
-        total: p.total,
+        total,
         correctas,
-        dominio: calcularDominio(correctas, p.total),
-        acierto: p.total > 0 ? Math.round((correctas / p.total) * 100) : 0,
+        dominio: calcularDominio(correctas, total),
+        acierto: total > 0 ? Math.round((correctas / total) * 100) : 0,
         falladas: p.falladas?.length ?? 0,
       });
     }

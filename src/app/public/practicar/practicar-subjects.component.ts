@@ -280,7 +280,7 @@ export class PracticarSubjectsComponent {
     const temaIds = new Set((this.temasConfig() ?? []).map((t) => t.tema_id));
     let total = 0;
     for (const [id, p] of this.progresoMap()) {
-      if (temaIds.has(id)) total += p.total;
+      if (temaIds.has(id)) total += (p.total ?? 0);
     }
     return total;
   });

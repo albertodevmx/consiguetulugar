@@ -77,8 +77,8 @@ const FRASES_MOTIVACION = [
           </div>
           <div class="col-6 col-md-4">
             <div class="metric-card">
-              <div class="metric-value">{{ porcentajeAcierto() }}%</div>
-              <div class="metric-label">Porcentaje de acierto</div>
+              <div class="metric-value">{{ dominioGeneral() }}%</div>
+              <div class="metric-label">Porcentaje de dominio</div>
             </div>
           </div>
           <div class="col-6 col-md-4">
@@ -267,18 +267,12 @@ export class PracticarDashboardComponent {
   });
 
   private totalPreguntas = computed(() =>
-    this.progreso().reduce((sum, p) => sum + p.total, 0),
+    this.progreso().reduce((sum, p) => sum + (p.total ?? 0), 0),
   );
 
   private totalCorrectas = computed(() =>
     this.progreso().reduce((sum, p) => sum + (p.correctas ?? 0), 0),
   );
-
-  porcentajeAcierto = computed(() => {
-    const total = this.totalPreguntas();
-    if (total === 0) return 0;
-    return Math.round((this.totalCorrectas() / total) * 100);
-  });
 
   dominioGeneral = computed(() => {
     const total = this.totalPreguntas();
