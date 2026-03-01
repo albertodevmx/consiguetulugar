@@ -51,8 +51,7 @@
     }
   }
 
-  .auth-buttons,
-  .user-menu {
+  .auth-buttons {
     display: flex;
     align-items: center;
     gap: 0.35rem;
@@ -84,8 +83,7 @@
       padding: 0.35rem;
     }
 
-    .auth-buttons .btn,
-    .user-menu .btn {
+    .auth-buttons .btn {
       font-size: 0.9rem;
       padding: 0.25rem 0.4rem;
     }

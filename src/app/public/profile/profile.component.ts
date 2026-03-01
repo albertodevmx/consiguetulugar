@@ -39,6 +39,11 @@ export class ProfileComponent implements OnInit {
     return p.fecha_registro.toDate();
   });
 
+  async logout() {
+    await this.auth.logout();
+    this.router.navigate(['/']);
+  }
+
   ngOnInit() {
     if (!this.auth.isLoggedIn()) {
       this.router.navigate(['/login']);
