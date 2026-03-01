@@ -198,22 +198,18 @@
           <!-- Overall stats -->
           <div class="overall-stats mb-4">
             <div class="stat-row">
-              <span class="text-muted">Total respondidas</span>
-              <strong>{{ overallTotal() }}</strong>
-            </div>
-            <div class="stat-row">
-              <span class="text-muted">Correctas</span>
-              <strong class="text-success">{{ overallCorrectas() }}</strong>
+              <span class="text-muted">Dominio general</span>
+              <strong [class]="overallDominio() >= 60 ? 'text-success' : 'text-danger'">{{ overallDominio() }}%</strong>
             </div>
             <div class="stat-row">
               <span class="text-muted">Acierto general</span>
-              <strong [class]="overallPercent() >= 60 ? 'text-success' : 'text-danger'">{{ overallPercent() }}%</strong>
+              <strong [class]="overallAcierto() >= 60 ? 'text-success' : 'text-danger'">{{ overallAcierto() }}%</strong>
             </div>
             <div class="progress mt-2" style="height: 8px">
               <div
                 class="progress-bar"
-                [class]="overallPercent() >= 60 ? 'bg-success' : 'bg-danger'"
-                [style.width.%]="overallPercent()"
+                [class]="overallDominio() >= 60 ? 'bg-success' : 'bg-danger'"
+                [style.width.%]="overallDominio()"
               ></div>
             </div>
           </div>
@@ -224,13 +220,13 @@
             <div class="materia-block mb-3">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="fw-semibold">{{ mat.nombre }}</span>
-                <span class="badge" [class]="mat.percent >= 60 ? 'bg-success' : 'bg-danger'">{{ mat.percent }}%</span>
+                <span class="badge" [class]="mat.dominio >= 60 ? 'bg-success' : 'bg-danger'">{{ mat.dominio }}% dominio</span>
               </div>
               <div class="progress mb-2" style="height: 6px">
                 <div
                   class="progress-bar"
-                  [class]="mat.percent >= 60 ? 'bg-success' : 'bg-danger'"
-                  [style.width.%]="mat.percent"
+                  [class]="mat.dominio >= 60 ? 'bg-success' : 'bg-danger'"
+                  [style.width.%]="mat.dominio"
                 ></div>
               </div>
               <div class="tema-list">
@@ -238,8 +234,7 @@
                   <div class="tema-row">
                     <span class="tema-name">{{ tema.nombre }}</span>
                     <span class="tema-stats">
-                      <span [class]="tema.percent >= 60 ? 'text-success' : 'text-danger'">{{ tema.percent }}%</span>
-                      <span class="text-muted ms-1">({{ tema.correctas }}/{{ tema.total }})</span>
+                      <span [class]="tema.dominio >= 60 ? 'text-success' : 'text-danger'">{{ tema.dominio }}%</span>
                       @if (tema.falladas > 0) {
                         <span class="text-warning ms-1" title="Preguntas por reforzar">
                           <i class="bi bi-exclamation-triangle-fill"></i> {{ tema.falladas }}

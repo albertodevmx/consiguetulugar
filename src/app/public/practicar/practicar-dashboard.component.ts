@@ -1,11 +1,11 @@
-import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { ExamenService } from '../../core/services/examen.service';
 import { ProgresoService } from '../../core/services/progreso.service';
-import { Examen, ProgresoTema } from '../../core/models';
+import { calcularDominio } from '../../core/models';
 
 const FRASES_MOTIVACION = [
   '¡Cada pregunta que resuelves te acerca más a tu lugar!',
@@ -69,25 +69,19 @@ const FRASES_MOTIVACION = [
 
         <!-- Metrics -->
         <div class="row g-3 mb-4">
-          <div class="col-6 col-md-3">
+          <div class="col-6 col-md-4">
             <div class="metric-card">
-              <div class="metric-value">{{ totalPreguntas() }}</div>
-              <div class="metric-label">Preguntas resueltas</div>
+              <div class="metric-value">{{ dominioGeneral() }}%</div>
+              <div class="metric-label">Dominio general</div>
             </div>
           </div>
-          <div class="col-6 col-md-3">
-            <div class="metric-card">
-              <div class="metric-value">{{ totalCorrectas() }}</div>
-              <div class="metric-label">Respuestas correctas</div>
-            </div>
-          </div>
-          <div class="col-6 col-md-3">
+          <div class="col-6 col-md-4">
             <div class="metric-card">
               <div class="metric-value">{{ porcentajeAcierto() }}%</div>
               <div class="metric-label">Porcentaje de acierto</div>
             </div>
           </div>
-          <div class="col-6 col-md-3">
+          <div class="col-6 col-md-4">
             <div class="metric-card">
               <div class="metric-value">{{ temasEstudiados() }}</div>
               <div class="metric-label">Temas estudiados</div>
@@ -243,7 +237,7 @@ const FRASES_MOTIVACION = [
     }
   `],
 })
-export class PracticarDashboardComponent implements OnInit {
+export class PracticarDashboardComponent {
   auth = inject(AuthService);
   private quota = inject(QuotaService);
   private examenSvc = inject(ExamenService);
@@ -252,7 +246,7 @@ export class PracticarDashboardComponent implements OnInit {
 
   fraseMotivacion = FRASES_MOTIVACION[Math.floor(Math.random() * FRASES_MOTIVACION.length)];
 
-  private progreso = signal<ProgresoTema[]>([]);
+  private progreso = toSignal(this.progresoSvc.getAllProgreso$(), { initialValue: [] });
   private allExamenes = toSignal(this.examenSvc.list(), { initialValue: [] });
 
   nombreUsuario = computed(() => {
@@ -272,12 +266,12 @@ export class PracticarDashboardComponent implements OnInit {
     return all.filter((e) => pagados.includes(e.id!));
   });
 
-  totalPreguntas = computed(() =>
+  private totalPreguntas = computed(() =>
     this.progreso().reduce((sum, p) => sum + p.total, 0),
   );
 
-  totalCorrectas = computed(() =>
-    this.progreso().reduce((sum, p) => sum + p.correctas, 0),
+  private totalCorrectas = computed(() =>
+    this.progreso().reduce((sum, p) => sum + (p.correctas ?? 0), 0),
   );
 
   porcentajeAcierto = computed(() => {
@@ -286,13 +280,11 @@ export class PracticarDashboardComponent implements OnInit {
     return Math.round((this.totalCorrectas() / total) * 100);
   });
 
+  dominioGeneral = computed(() => {
+    const total = this.totalPreguntas();
+    const correctas = this.totalCorrectas();
+    return calcularDominio(correctas, total);
+  });
+
   temasEstudiados = computed(() => this.progreso().length);
-
-  async ngOnInit() {
-    const data = await this.progresoSvc.getAllProgreso();
-    this.progreso.set(data);
-
-    // Auto-redirect: if user has exactly 1 paid exam, go directly to it
-    // (only if profile is loaded and we have exam data)
-  }
 }

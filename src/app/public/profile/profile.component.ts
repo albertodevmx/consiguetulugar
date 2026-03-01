@@ -2,19 +2,20 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { take } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProgresoService } from '../../core/services/progreso.service';
 import { TemaService } from '../../core/services/tema.service';
 import { MateriaService } from '../../core/services/materia.service';
-import { ProgresoTema, Tema, Materia } from '../../core/models';
+import { calcularDominio } from '../../core/models';
 
 export interface MateriaProgreso {
   materia_id: string;
   nombre: string;
   total: number;
   correctas: number;
-  percent: number;
+  dominio: number;
+  acierto: number;
   temas: TemaProgreso[];
 }
 
@@ -22,7 +23,8 @@ export interface TemaProgreso {
   nombre: string;
   total: number;
   correctas: number;
-  percent: number;
+  dominio: number;
+  acierto: number;
   falladas: number;
 }
 
@@ -48,12 +50,77 @@ export class ProfileComponent implements OnInit {
   successMessage = signal('');
   errorMessage = signal('');
 
-  // Progress data
-  progresoLoaded = signal(false);
-  overallTotal = signal(0);
-  overallCorrectas = signal(0);
-  overallPercent = signal(0);
-  materiaProgreso = signal<MateriaProgreso[]>([]);
+  // Real-time progress data
+  private allProgreso = toSignal(this.progresoSvc.getAllProgreso$(), { initialValue: [] });
+  private allTemas = toSignal(this.temaSvc.list(), { initialValue: [] });
+  private allMaterias = toSignal(this.materiaSvc.list(), { initialValue: [] });
+
+  progresoLoaded = computed(() => true);
+
+  overallTotal = computed(() =>
+    this.allProgreso().reduce((sum, p) => sum + p.total, 0),
+  );
+
+  overallCorrectas = computed(() =>
+    this.allProgreso().reduce((sum, p) => sum + (p.correctas ?? 0), 0),
+  );
+
+  overallAcierto = computed(() => {
+    const total = this.overallTotal();
+    if (total === 0) return 0;
+    return Math.round((this.overallCorrectas() / total) * 100);
+  });
+
+  overallDominio = computed(() =>
+    calcularDominio(this.overallCorrectas(), this.overallTotal()),
+  );
+
+  materiaProgreso = computed(() => {
+    const progreso = this.allProgreso();
+    const temas = this.allTemas();
+    const materias = this.allMaterias();
+
+    if (progreso.length === 0) return [];
+
+    const temaMap = new Map(temas.map((t) => [t.id!, t.nombre_canonical]));
+    const materiaMap = new Map(materias.map((m) => [m.id!, m.nombre_canonical]));
+
+    const byMateria = new Map<string, { total: number; correctas: number; temas: TemaProgreso[] }>();
+
+    for (const p of progreso) {
+      if (!byMateria.has(p.materia_id)) {
+        byMateria.set(p.materia_id, { total: 0, correctas: 0, temas: [] });
+      }
+      const m = byMateria.get(p.materia_id)!;
+      m.total += p.total;
+      m.correctas += p.correctas ?? 0;
+      const correctas = p.correctas ?? 0;
+      m.temas.push({
+        nombre: temaMap.get(p.tema_id) ?? p.tema_id,
+        total: p.total,
+        correctas,
+        dominio: calcularDominio(correctas, p.total),
+        acierto: p.total > 0 ? Math.round((correctas / p.total) * 100) : 0,
+        falladas: p.falladas?.length ?? 0,
+      });
+    }
+
+    const materiasArr: MateriaProgreso[] = [];
+    for (const [id, data] of byMateria) {
+      data.temas.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      materiasArr.push({
+        materia_id: id,
+        nombre: materiaMap.get(id) ?? id,
+        total: data.total,
+        correctas: data.correctas,
+        dominio: calcularDominio(data.correctas, data.total),
+        acierto: data.total > 0 ? Math.round((data.correctas / data.total) * 100) : 0,
+        temas: data.temas,
+      });
+    }
+    materiasArr.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    return materiasArr;
+  });
 
   nombre = '';
   telefono = '';
@@ -82,7 +149,6 @@ export class ProfileComponent implements OnInit {
       return;
     }
     this.loadFormValues();
-    this.loadProgreso();
   }
 
   loadFormValues() {
@@ -104,71 +170,6 @@ export class ProfileComponent implements OnInit {
   cancelEditing() {
     this.editing.set(false);
     this.errorMessage.set('');
-  }
-
-  private async loadProgreso() {
-    const [progreso, temas, materias] = await Promise.all([
-      this.progresoSvc.getAllProgreso(),
-      new Promise<Tema[]>((res) =>
-        this.temaSvc.list().pipe(take(1)).subscribe(res),
-      ),
-      new Promise<Materia[]>((res) =>
-        this.materiaSvc.list().pipe(take(1)).subscribe(res),
-      ),
-    ]);
-
-    if (progreso.length === 0) {
-      this.progresoLoaded.set(true);
-      return;
-    }
-
-    const temaMap = new Map(temas.map((t) => [t.id!, t.nombre_canonical]));
-    const materiaMap = new Map(materias.map((m) => [m.id!, m.nombre_canonical]));
-
-    // Aggregate
-    let totalGeneral = 0;
-    let correctasGeneral = 0;
-
-    const byMateria = new Map<string, { total: number; correctas: number; temas: TemaProgreso[] }>();
-
-    for (const p of progreso) {
-      totalGeneral += p.total;
-      correctasGeneral += p.correctas ?? 0;
-
-      if (!byMateria.has(p.materia_id)) {
-        byMateria.set(p.materia_id, { total: 0, correctas: 0, temas: [] });
-      }
-      const m = byMateria.get(p.materia_id)!;
-      m.total += p.total;
-      m.correctas += p.correctas ?? 0;
-      m.temas.push({
-        nombre: temaMap.get(p.tema_id) ?? p.tema_id,
-        total: p.total,
-        correctas: p.correctas ?? 0,
-        percent: p.total > 0 ? Math.round(((p.correctas ?? 0) / p.total) * 100) : 0,
-        falladas: p.falladas?.length ?? 0,
-      });
-    }
-
-    this.overallTotal.set(totalGeneral);
-    this.overallCorrectas.set(correctasGeneral);
-    this.overallPercent.set(totalGeneral > 0 ? Math.round((correctasGeneral / totalGeneral) * 100) : 0);
-
-    const materiasArr: MateriaProgreso[] = [];
-    for (const [id, data] of byMateria) {
-      data.temas.sort((a, b) => a.nombre.localeCompare(b.nombre));
-      materiasArr.push({
-        materia_id: id,
-        nombre: materiaMap.get(id) ?? id,
-        total: data.total,
-        correctas: data.correctas,
-        percent: data.total > 0 ? Math.round((data.correctas / data.total) * 100) : 0,
-        temas: data.temas,
-      });
-    }
-    materiasArr.sort((a, b) => a.nombre.localeCompare(b.nombre));
-    this.materiaProgreso.set(materiasArr);
-    this.progresoLoaded.set(true);
   }
 
   async saveProfile() {

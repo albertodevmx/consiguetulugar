@@ -1,10 +1,11 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap, of } from 'rxjs';
 import { Firestore, doc, docData } from '@angular/fire/firestore';
-import { Tema } from '../../core/models';
+import { Tema, ProgresoTema } from '../../core/models';
 import { ExamenService } from '../../core/services/examen.service';
+import { ProgresoService } from '../../core/services/progreso.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 
@@ -52,10 +53,26 @@ import { QuotaService } from '../../core/services/quota.service';
           @if (t.leccion_html) {
             <div class="lesson-content" [innerHTML]="t.leccion_html"></div>
 
-            <div class="d-flex gap-2 mt-4 mb-3">
+            <div class="d-flex flex-wrap gap-2 mt-4 mb-3">
               <a [routerLink]="['/practice/tema', temaId()]" [queryParams]="{examenId: examenId()}" class="btn btn-success">
                 <i class="bi bi-play-fill me-1"></i> Practicar este tema
               </a>
+
+              @if (auth.isLoggedIn()) {
+                @if (isCompleted()) {
+                  <button class="btn btn-outline-success" disabled>
+                    <i class="bi bi-check-circle-fill me-1"></i> Leccion completada
+                  </button>
+                } @else {
+                  <button class="btn btn-primary" (click)="markAsCompleted()" [disabled]="markingComplete()">
+                    @if (markingComplete()) {
+                      <span class="spinner-border spinner-border-sm me-1"></span> Guardando...
+                    } @else {
+                      <i class="bi bi-check2-square me-1"></i> Marcar como completado
+                    }
+                  </button>
+                }
+              }
             </div>
 
             <!-- Upsell after reading a free lesson -->
@@ -114,8 +131,11 @@ export class TopicLessonComponent {
   private route = inject(ActivatedRoute);
   private fs = inject(Firestore);
   private examenSvc = inject(ExamenService);
+  private progresoSvc = inject(ProgresoService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
+
+  markingComplete = signal(false);
 
   temaId = toSignal(
     this.route.paramMap.pipe(map((p) => p.get('temaId')!)),
@@ -133,6 +153,16 @@ export class TopicLessonComponent {
       switchMap((id) => docData(doc(this.fs, 'temas', id), { idField: 'id' }) as import('rxjs').Observable<Tema>),
     ),
   );
+
+  /** Real-time progress for this topic */
+  private progreso = toSignal(
+    this.route.paramMap.pipe(
+      map((p) => p.get('temaId')!),
+      switchMap((id) => this.progresoSvc.getProgreso$(id)),
+    ),
+  );
+
+  isCompleted = computed(() => this.progreso()?.completado === true);
 
   private temasConfig = toSignal(
     this.route.queryParamMap.pipe(
@@ -153,4 +183,15 @@ export class TopicLessonComponent {
 
     return this.quota.getTemaAccess(tid, eid, configs);
   });
+
+  async markAsCompleted() {
+    const t = this.tema();
+    if (!t) return;
+    this.markingComplete.set(true);
+    try {
+      await this.progresoSvc.markCompleted(this.temaId(), t.materia_id);
+    } finally {
+      this.markingComplete.set(false);
+    }
+  }
 }

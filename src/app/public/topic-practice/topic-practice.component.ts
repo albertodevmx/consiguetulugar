@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass, Location } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { switchMap, take, map, combineLatest, of } from 'rxjs';
+import { switchMap, take, map, combineLatest, of, firstValueFrom } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
 import { ExamenService } from '../../core/services/examen.service';
 import { ProgresoService } from '../../core/services/progreso.service';
@@ -85,24 +85,18 @@ const FREE_QUESTION_LIMIT = 10;
         </div>
       }
 
-      <!-- Session finished -->
+      <!-- Session finished (only for trial/free mode) -->
       @if (sessionFinished() && totalAnswered() > 0) {
         <div class="card text-center py-4 mb-3">
           <div class="card-body">
             <i class="bi bi-trophy fs-1 text-warning d-block mb-2"></i>
-            <h4>Has completado todas las preguntas</h4>
+            <h4>Ronda completada</h4>
             <p class="fs-5 mt-3">
               Resultado: <span class="badge bg-success fs-5">{{ correctCount() }}</span> de <span class="badge bg-secondary fs-5">{{ totalAnswered() }}</span> correctas
             </p>
-            @if (isTrial()) {
-              <p class="text-muted mt-2 mb-0">
-                <i class="bi bi-info-circle me-1"></i>
-                Estas fueron solo {{ questions().length }} preguntas de muestra de las {{ totalQuestionsInTema() }} disponibles en este tema.
-              </p>
-            }
             <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-3">
               <button class="btn btn-success" (click)="restart()">
-                <i class="bi bi-arrow-repeat me-1"></i> Reiniciar
+                <i class="bi bi-arrow-repeat me-1"></i> Seguir practicando
               </button>
               <button class="btn btn-warning" (click)="goBack()">
                 <i class="bi bi-arrow-left me-1"></i> Volver
@@ -131,8 +125,7 @@ const FREE_QUESTION_LIMIT = 10;
           <i class="bi bi-info-circle-fill me-2 mt-1"></i>
           <div>
             <strong>Modo de prueba.</strong>
-            Este tema tiene {{ totalQuestionsInTema() }} preguntas.
-            Estas {{ questions().length }} son solo de muestra.
+            Estas son preguntas de muestra.
             <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="alert-link">
               Suscribete para practicar todas.
             </a>
@@ -145,10 +138,7 @@ const FREE_QUESTION_LIMIT = 10;
         @if (!sessionFinished() && canShowQuestion()) {
           <div class="card">
             <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="badge bg-secondary">
-                  <i class="bi bi-hash"></i> {{ currentIndex() + 1 }} / {{ questions().length }}
-                </span>
+              <div class="d-flex justify-content-end align-items-center mb-3">
                 @if (totalAnswered() > 0) {
                   <span class="badge bg-success">
                     <i class="bi bi-check-circle me-1"></i>{{ correctCount() }} / {{ totalAnswered() }}
@@ -290,7 +280,7 @@ export class TopicPracticeComponent {
       this.temasConfig.set(configs);
 
       // Load user's progress to prioritize failed questions
-      const progreso = await this.progresoSvc.getProgreso(temaId);
+      const progreso = await firstValueFrom(this.progresoSvc.getProgreso$(temaId));
       if (progreso?.falladas?.length) {
         this.falladasSet = new Set(progreso.falladas);
       }
@@ -331,8 +321,15 @@ export class TopicPracticeComponent {
       this.currentIndex.set(next);
       this.selectedOption.set(null);
       this.answered.set(false);
-    } else {
+    } else if (this.access() === 'free') {
+      // Free trial: end after limited questions
       this.sessionFinished.set(true);
+    } else {
+      // Paid: reshuffle and keep going
+      this.questions.set(this.prioritize(this._allQuestions()));
+      this.currentIndex.set(0);
+      this.selectedOption.set(null);
+      this.answered.set(false);
     }
   }
 

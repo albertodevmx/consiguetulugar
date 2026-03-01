@@ -1,11 +1,11 @@
-import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap } from 'rxjs';
 import { ExamenService } from '../../core/services/examen.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProgresoService } from '../../core/services/progreso.service';
-import { TemaConfig, ProgresoTema } from '../../core/models';
+import { TemaConfig, ProgresoTema, calcularDominio } from '../../core/models';
 
 const SECCION_ICONS: Record<string, string> = {
   matematicas: 'bi-calculator',
@@ -79,22 +79,16 @@ const SECCION_ICONS: Record<string, string> = {
       <!-- Progress summary for this exam -->
       @if (progresoLoaded()) {
         <div class="row g-3 mb-4">
-          <div class="col-4">
+          <div class="col-6">
             <div class="progress-summary-card">
-              <div class="ps-value">{{ examTotalPreguntas() }}</div>
-              <div class="ps-label">Resueltas</div>
+              <div class="ps-value">{{ examDominio() }}%</div>
+              <div class="ps-label">Dominio</div>
             </div>
           </div>
-          <div class="col-4">
+          <div class="col-6">
             <div class="progress-summary-card">
               <div class="ps-value">{{ examPorcentaje() }}%</div>
               <div class="ps-label">Acierto</div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="progress-summary-card">
-              <div class="ps-value">{{ examTemasAvanzados() }}/{{ totalTemas() }}</div>
-              <div class="ps-label">Temas</div>
             </div>
           </div>
         </div>
@@ -116,7 +110,6 @@ const SECCION_ICONS: Record<string, string> = {
                   (click)="toggleSection(group.seccion)">
                   <i class="bi me-2" [class]="sectionIcon(group.seccion)"></i>
                   {{ group.seccion || 'General' }}
-                  <span class="badge bg-primary ms-2" style="font-size: 0.7rem">{{ group.temas.length }} temas</span>
                 </button>
               </h2>
               @if (expandedSections().has(group.seccion)) {
@@ -128,12 +121,12 @@ const SECCION_ICONS: Record<string, string> = {
                         <div class="col-md-4 col-lg-3">
                           <div class="card practice-card h-100">
                             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
-                              @if (getTemaProgreso(tc.tema_id); as prog) {
-                                <div class="progress-mini mb-2" [title]="prog.correctas + '/' + prog.total + ' correctas'">
+                              @if (getTemaDominio(tc.tema_id); as dom) {
+                                <div class="progress-mini mb-2">
                                   <div class="progress" style="height: 4px; width: 60px;">
-                                    <div class="progress-bar bg-success" [style.width.%]="prog.total > 0 ? (prog.correctas / prog.total * 100) : 0"></div>
+                                    <div class="progress-bar bg-success" [style.width.%]="dom"></div>
                                   </div>
-                                  <small class="text-muted" style="font-size: 0.65rem">{{ prog.correctas }}/{{ prog.total }}</small>
+                                  <small class="text-muted" style="font-size: 0.65rem">{{ dom }}%</small>
                                 </div>
                               }
                               <h6 class="card-title mb-3">{{ tc.nombre_mostrar }}</h6>
@@ -156,8 +149,8 @@ const SECCION_ICONS: Record<string, string> = {
                     <div class="list-group list-group-flush">
                       @for (tc of group.temas; track tc.id) {
                         <div class="list-group-item d-flex align-items-center gap-2 px-0">
-                          @if (getTemaProgreso(tc.tema_id); as prog) {
-                            <span class="badge bg-success" style="font-size:0.6rem">{{ prog.correctas }}/{{ prog.total }}</span>
+                          @if (getTemaDominio(tc.tema_id); as dom) {
+                            <span class="badge bg-success" style="font-size:0.6rem">{{ dom }}%</span>
                           }
                           <span class="flex-grow-1 small">{{ tc.nombre_mostrar }}</span>
                           <a [routerLink]="['/lesson', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-outline-info btn-sm py-0 px-2">
@@ -227,14 +220,23 @@ const SECCION_ICONS: Record<string, string> = {
     }
   `],
 })
-export class PracticarSubjectsComponent implements OnInit {
+export class PracticarSubjectsComponent {
   private route = inject(ActivatedRoute);
   private examenSvc = inject(ExamenService);
   private progresoSvc = inject(ProgresoService);
   auth = inject(AuthService);
 
-  private progresoMap = signal<Map<string, ProgresoTema>>(new Map());
-  progresoLoaded = signal(false);
+  private allProgreso = toSignal(this.progresoSvc.getAllProgreso$(), { initialValue: [] });
+
+  private progresoMap = computed(() => {
+    const m = new Map<string, ProgresoTema>();
+    for (const p of this.allProgreso()) {
+      m.set(p.tema_id, p);
+    }
+    return m;
+  });
+
+  progresoLoaded = computed(() => this.allProgreso().length >= 0);
 
   escuela = toSignal(
     this.route.paramMap.pipe(map((p) => p.get('escuela')!)),
@@ -273,10 +275,8 @@ export class PracticarSubjectsComponent implements OnInit {
     return [...groups.entries()].map(([seccion, temas]) => ({ seccion, temas }));
   });
 
-  totalTemas = computed(() => (this.temasConfig() ?? []).length);
-
   // Progress metrics for this exam
-  examTotalPreguntas = computed(() => {
+  private examTotalPreguntas = computed(() => {
     const temaIds = new Set((this.temasConfig() ?? []).map((t) => t.tema_id));
     let total = 0;
     for (const [id, p] of this.progresoMap()) {
@@ -285,11 +285,11 @@ export class PracticarSubjectsComponent implements OnInit {
     return total;
   });
 
-  examCorrectas = computed(() => {
+  private examCorrectas = computed(() => {
     const temaIds = new Set((this.temasConfig() ?? []).map((t) => t.tema_id));
     let correctas = 0;
     for (const [id, p] of this.progresoMap()) {
-      if (temaIds.has(id)) correctas += p.correctas;
+      if (temaIds.has(id)) correctas += (p.correctas ?? 0);
     }
     return correctas;
   });
@@ -300,13 +300,8 @@ export class PracticarSubjectsComponent implements OnInit {
     return Math.round((this.examCorrectas() / total) * 100);
   });
 
-  examTemasAvanzados = computed(() => {
-    const temaIds = new Set((this.temasConfig() ?? []).map((t) => t.tema_id));
-    let count = 0;
-    for (const [id] of this.progresoMap()) {
-      if (temaIds.has(id)) count++;
-    }
-    return count;
+  examDominio = computed(() => {
+    return calcularDominio(this.examCorrectas(), this.examTotalPreguntas());
   });
 
   // All sections expanded by default in practice view
@@ -334,17 +329,10 @@ export class PracticarSubjectsComponent implements OnInit {
     return SECCION_ICONS[key] ?? 'bi-book';
   }
 
-  getTemaProgreso(temaId: string): ProgresoTema | null {
-    return this.progresoMap().get(temaId) ?? null;
-  }
-
-  async ngOnInit() {
-    const all = await this.progresoSvc.getAllProgreso();
-    const m = new Map<string, ProgresoTema>();
-    for (const p of all) {
-      m.set(p.tema_id, p);
-    }
-    this.progresoMap.set(m);
-    this.progresoLoaded.set(true);
+  /** Returns mastery percentage for a topic, or null if no progress */
+  getTemaDominio(temaId: string): number | null {
+    const prog = this.progresoMap().get(temaId);
+    if (!prog || prog.total === 0) return null;
+    return calcularDominio(prog.correctas ?? 0, prog.total);
   }
 }

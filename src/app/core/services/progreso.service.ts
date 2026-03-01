@@ -2,14 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import {
   Firestore,
   doc,
-  getDoc,
   setDoc,
   collection,
-  getDocs,
   increment,
   arrayUnion,
   arrayRemove,
+  collectionData,
+  docData,
 } from '@angular/fire/firestore';
+import { Observable, of } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { Pregunta } from '../models';
 import { ProgresoTema } from '../models/progreso.model';
@@ -40,22 +41,37 @@ export class ProgresoService {
     );
   }
 
-  async getProgreso(temaId: string): Promise<ProgresoTema | null> {
+  async markCompleted(temaId: string, materiaId: string): Promise<void> {
     const uid = this.auth.user()?.uid;
-    if (!uid) return null;
+    if (!uid) return;
 
     const ref = doc(this.fs, 'usuarios', uid, 'progreso', temaId);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-    return snap.data() as ProgresoTema;
+    await setDoc(
+      ref,
+      {
+        tema_id: temaId,
+        materia_id: materiaId,
+        completado: true,
+      },
+      { merge: true },
+    );
   }
 
-  async getAllProgreso(): Promise<ProgresoTema[]> {
+  /** Real-time observable of progress for a specific topic */
+  getProgreso$(temaId: string): Observable<ProgresoTema | undefined> {
     const uid = this.auth.user()?.uid;
-    if (!uid) return [];
+    if (!uid) return of(undefined);
+
+    const ref = doc(this.fs, 'usuarios', uid, 'progreso', temaId);
+    return docData(ref) as Observable<ProgresoTema | undefined>;
+  }
+
+  /** Real-time observable of all progress */
+  getAllProgreso$(): Observable<ProgresoTema[]> {
+    const uid = this.auth.user()?.uid;
+    if (!uid) return of([]);
 
     const col = collection(this.fs, 'usuarios', uid, 'progreso');
-    const snap = await getDocs(col);
-    return snap.docs.map((d) => d.data() as ProgresoTema);
+    return collectionData(col) as Observable<ProgresoTema[]>;
   }
 }
