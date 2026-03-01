@@ -46,8 +46,8 @@
     </div>
   }
 
-  <!-- Logged in but no paid access -->
-  @if (!loading() && auth.isLoggedIn() && !hasPaidAccess() && pool().length > 0) {
+  <!-- Logged in but no paid access (only show upsell for free-plan users) -->
+  @if (!loading() && auth.isLoggedIn() && !hasPaidAccess() && quota.isFree() && pool().length > 0) {
     <div class="card border-primary mb-4">
       <div class="card-body text-center py-4">
         <i class="bi bi-star-fill fs-1 text-primary d-block mb-2"></i>

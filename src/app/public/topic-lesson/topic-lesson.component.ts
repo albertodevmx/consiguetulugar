@@ -31,13 +31,17 @@ import { QuotaService } from '../../core/services/quota.service';
           <div class="card-body text-center py-5">
             <i class="bi bi-lock-fill fs-1 text-primary d-block mb-3"></i>
             <h4>Este contenido requiere suscripcion</h4>
-            <p class="text-muted mb-3">
-              Suscribete para acceder a todas las lecciones, practica ilimitada y simulacros de examen.
-            </p>
-            <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-primary btn-lg">
-              <i class="bi bi-star-fill me-1"></i> Suscribirme - $99 MXN/mes
-            </a>
-            <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
+            @if (quota.isFree()) {
+              <p class="text-muted mb-3">
+                Suscribete para acceder a todas las lecciones, practica ilimitada y simulacros de examen.
+              </p>
+              <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-primary btn-lg">
+                <i class="bi bi-star-fill me-1"></i> Suscribirme - $99 MXN/mes
+              </a>
+              <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
+            } @else {
+              <p class="text-muted mb-0">No tienes acceso a este contenido.</p>
+            }
           </div>
         </div>
       } @else {

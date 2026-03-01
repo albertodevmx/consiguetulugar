@@ -88,8 +88,8 @@ const SECCION_ICONS: Record<string, string> = {
         </div>
       }
 
-      <!-- Banner for logged-in users without exam access -->
-      @if (auth.isLoggedIn() && !hasAccess()) {
+      <!-- Banner for logged-in free users without exam access -->
+      @if (auth.isLoggedIn() && !hasAccess() && quota.isFree()) {
         <div class="alert alert-info d-flex flex-column flex-sm-row align-items-sm-center gap-2 mb-3">
           <span><i class="bi bi-star me-1"></i>Suscribete para desbloquear todos los temas, simulacros y practica ilimitada.</span>
           <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-sm btn-primary text-nowrap">
@@ -138,20 +138,28 @@ const SECCION_ICONS: Record<string, string> = {
                                   <a [routerLink]="['/lesson', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-outline-info">
                                     <i class="bi bi-journal-richtext me-1"></i>Leccion
                                   </a>
-                                } @else {
+                                } @else if (quota.isFree()) {
                                   <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary">
                                     <i class="bi bi-lock me-1"></i>Leccion
                                   </a>
+                                } @else {
+                                  <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-lock me-1"></i>Leccion
+                                  </button>
                                 }
                                 <!-- Practice button -->
                                 @if (isFreeTema(tc.tema_id) || hasAccess()) {
                                   <a [routerLink]="['/practice/tema', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-success">
                                     <i class="bi bi-play-fill me-1"></i>Practicar
                                   </a>
-                                } @else {
+                                } @else if (quota.isFree()) {
                                   <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary">
                                     <i class="bi bi-lock me-1"></i>Practicar
                                   </a>
+                                } @else {
+                                  <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-lock me-1"></i>Practicar
+                                  </button>
                                 }
                               </div>
                             </div>
@@ -176,20 +184,28 @@ const SECCION_ICONS: Record<string, string> = {
                             <a [routerLink]="['/lesson', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-outline-info btn-sm py-0 px-2">
                               <i class="bi bi-journal-richtext"></i>
                             </a>
-                          } @else {
+                          } @else if (quota.isFree()) {
                             <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary btn-sm py-0 px-2">
                               <i class="bi bi-lock"></i>
                             </a>
+                          } @else {
+                            <button class="btn btn-outline-secondary btn-sm py-0 px-2" disabled>
+                              <i class="bi bi-lock"></i>
+                            </button>
                           }
                           <!-- Practice -->
                           @if (isFreeTema(tc.tema_id) || hasAccess()) {
                             <a [routerLink]="['/practice/tema', tc.tema_id]" [queryParams]="{examenId: examenId()}" class="btn btn-success btn-sm py-0 px-2">
                               <i class="bi bi-play-fill"></i>
                             </a>
-                          } @else {
+                          } @else if (quota.isFree()) {
                             <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-outline-secondary btn-sm py-0 px-2">
                               <i class="bi bi-lock"></i>
                             </a>
+                          } @else {
+                            <button class="btn btn-outline-secondary btn-sm py-0 px-2" disabled>
+                              <i class="bi bi-lock"></i>
+                            </button>
                           }
                         </div>
                       }

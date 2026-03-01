@@ -50,13 +50,17 @@ import { Pregunta, Examen, TemaConfig } from '../../core/models';
           <div class="card-body text-center py-4">
             <i class="bi bi-lock-fill fs-1 text-primary d-block mb-2"></i>
             <h4>Acceso restringido</h4>
-            <p class="text-muted mb-3">
-              Necesitas suscribirte a este examen para poder realizar la simulacion.
-            </p>
-            <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-primary btn-lg">
-              <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
-            </a>
-            <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
+            @if (quota.isFree()) {
+              <p class="text-muted mb-3">
+                Necesitas suscribirte a este examen para poder realizar la simulacion.
+              </p>
+              <a [routerLink]="['/suscripcion']" [queryParams]="{examenId: examenId()}" class="btn btn-primary btn-lg">
+                <i class="bi bi-star-fill me-1"></i> Suscribirme ahora - $99 MXN/mes
+              </a>
+              <p class="text-muted small mt-2 mb-0">Cancela cuando quieras</p>
+            } @else {
+              <p class="text-muted mb-0">No tienes acceso a este examen.</p>
+            }
           </div>
         </div>
       }
