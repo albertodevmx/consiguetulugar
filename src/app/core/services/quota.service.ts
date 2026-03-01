@@ -44,9 +44,9 @@ export class QuotaService {
    *  - 'locked' → user needs to subscribe
    */
   getTemaAccess(temaId: string, examenId: string, configs: TemaConfig[]): 'free' | 'paid' | 'locked' {
+    if (this.hasExamAccess(examenId)) return 'paid';
     const freeIds = this.getFreeTemaIds(configs);
     if (freeIds.has(temaId)) return 'free';
-    if (this.hasExamAccess(examenId)) return 'paid';
     return 'locked';
   }
 }

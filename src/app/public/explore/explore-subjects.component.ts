@@ -294,10 +294,12 @@ export class ExploreSubjectsComponent {
   });
 
   isFreeTema(temaId: string): boolean {
+    if (this.hasAccess()) return false;
     return this.freeTemaIds().has(temaId);
   }
 
   sectionHasFreeTopics(seccion: string): boolean {
+    if (this.hasAccess()) return false;
     const configs = this.temasConfig() ?? [];
     const freeIds = this.freeTemaIds();
     return configs.some(c => c.seccion === seccion && freeIds.has(c.tema_id));
