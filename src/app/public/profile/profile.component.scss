@@ -1,0 +1,85 @@
+@use 'variables' as v;
+
+.profile-wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding: 2rem 1rem;
+
+  .card {
+    width: 100%;
+    max-width: 500px;
+  }
+}
+
+.profile-header {
+  .avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: v.$primary;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+
+  .info-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background-color: rgba(v.$primary, 0.1);
+    color: v.$primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+
+  .info-content {
+    flex: 1;
+    min-width: 0;
+
+    small {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    p {
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+  }
+}
+
+@media (max-width: 575.98px) {
+  .profile-wrapper {
+    padding: 1rem 0.75rem;
+  }
+
+  .profile-header .avatar-circle {
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+  }
+}

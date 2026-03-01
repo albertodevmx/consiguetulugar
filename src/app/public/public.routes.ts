@@ -56,6 +56,13 @@ export const publicRoutes: Routes = [
       ),
   },
   {
+    path: 'perfil',
+    loadComponent: () =>
+      import('./profile/profile.component').then(
+        (m) => m.ProfileComponent,
+      ),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./login/login.component').then(

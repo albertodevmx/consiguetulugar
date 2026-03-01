@@ -1,0 +1,193 @@
+<div class="profile-wrapper">
+  @if (!profileLoaded()) {
+    <div class="text-center py-5">
+      <span class="spinner-border text-primary"></span>
+      <p class="mt-2 text-muted">Cargando perfil...</p>
+    </div>
+  } @else if (profile()) {
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+
+        <!-- Header -->
+        <div class="profile-header text-center mb-4">
+          <div class="avatar-circle mx-auto mb-3">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <h2 class="mb-1">{{ profile()!.nombre }}</h2>
+          <span class="badge" [class]="profile()!.plan === 'premium' ? 'bg-warning text-dark' : 'bg-secondary'">
+            <i class="bi" [class]="profile()!.plan === 'premium' ? 'bi-star-fill' : 'bi-person'"></i>
+            Plan {{ planLabel() }}
+          </span>
+        </div>
+
+        <!-- Success message -->
+        @if (successMessage()) {
+          <div class="alert alert-success py-2 d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle me-2"></i>{{ successMessage() }}
+          </div>
+        }
+
+        <!-- Error message -->
+        @if (errorMessage()) {
+          <div class="alert alert-danger py-2 d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage() }}
+          </div>
+        }
+
+        @if (editing()) {
+          <!-- Edit mode -->
+          <form (ngSubmit)="saveProfile()" #form="ngForm">
+            <div class="mb-3">
+              <label for="nombre" class="form-label">
+                <i class="bi bi-person me-1"></i>Nombre completo
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                class="form-control"
+                [(ngModel)]="nombre"
+                name="nombre"
+                required
+                minlength="3"
+                placeholder="Tu nombre completo"
+                #nombreCtrl="ngModel"
+              >
+              @if (nombreCtrl.invalid && nombreCtrl.touched) {
+                <small class="text-danger">El nombre debe tener al menos 3 caracteres.</small>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="telefono" class="form-label">
+                <i class="bi bi-telephone me-1"></i>Teléfono
+              </label>
+              <input
+                type="tel"
+                id="telefono"
+                class="form-control"
+                [(ngModel)]="telefono"
+                name="telefono"
+                required
+                minlength="10"
+                placeholder="10 dígitos"
+                #telefonoCtrl="ngModel"
+              >
+              @if (telefonoCtrl.invalid && telefonoCtrl.touched) {
+                <small class="text-danger">El teléfono debe tener al menos 10 dígitos.</small>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="bio" class="form-label">
+                <i class="bi bi-chat-quote me-1"></i>Acerca de mí <span class="text-muted">(opcional)</span>
+              </label>
+              <textarea
+                id="bio"
+                class="form-control"
+                [(ngModel)]="bio"
+                name="bio"
+                rows="3"
+                maxlength="300"
+                placeholder="Cuéntanos un poco sobre ti..."
+              ></textarea>
+              <small class="text-muted">{{ bio.length }}/300</small>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary flex-fill"
+                [disabled]="saving() || form.invalid"
+              >
+                @if (saving()) {
+                  <span class="spinner-border spinner-border-sm me-1"></span> Guardando...
+                } @else {
+                  <i class="bi bi-check-lg me-1"></i> Guardar cambios
+                }
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="cancelEditing()"
+                [disabled]="saving()"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        } @else {
+          <!-- View mode -->
+          <div class="info-list">
+            <div class="info-item">
+              <div class="info-icon"><i class="bi bi-person"></i></div>
+              <div class="info-content">
+                <small class="text-muted">Nombre</small>
+                <p class="mb-0">{{ profile()!.nombre }}</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon"><i class="bi bi-envelope"></i></div>
+              <div class="info-content">
+                <small class="text-muted">Correo electrónico</small>
+                <p class="mb-0">{{ profile()!.email }}</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon"><i class="bi bi-telephone"></i></div>
+              <div class="info-content">
+                <small class="text-muted">Teléfono</small>
+                <p class="mb-0">{{ profile()!.telefono }}</p>
+              </div>
+            </div>
+
+            @if (profile()!.bio) {
+              <div class="info-item">
+                <div class="info-icon"><i class="bi bi-chat-quote"></i></div>
+                <div class="info-content">
+                  <small class="text-muted">Acerca de mí</small>
+                  <p class="mb-0">{{ profile()!.bio }}</p>
+                </div>
+              </div>
+            }
+
+            <hr>
+
+            <div class="info-item">
+              <div class="info-icon"><i class="bi bi-calendar3"></i></div>
+              <div class="info-content">
+                <small class="text-muted">Miembro desde</small>
+                <p class="mb-0">{{ fechaRegistro() | date:'d \'de\' MMMM, yyyy' }}</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon"><i class="bi bi-shield-check"></i></div>
+              <div class="info-content">
+                <small class="text-muted">Plan</small>
+                <p class="mb-0">
+                  {{ planLabel() }}
+                  @if (profile()!.plan === 'gratuito') {
+                    <a routerLink="/suscripcion" class="ms-2 small">Mejorar plan</a>
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100 mt-4" (click)="startEditing()">
+            <i class="bi bi-pencil me-1"></i> Editar perfil
+          </button>
+        }
+
+      </div>
+    </div>
+  } @else {
+    <div class="text-center py-5">
+      <i class="bi bi-exclamation-circle display-4 text-muted"></i>
+      <p class="mt-2 text-muted">No se pudo cargar tu perfil.</p>
+      <a routerLink="/" class="btn btn-outline-primary btn-sm">Volver al inicio</a>
+    </div>
+  }
+</div>
