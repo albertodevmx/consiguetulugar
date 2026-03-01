@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ExamenService } from '../../core/services/examen.service';
 import { MateriaService } from '../../core/services/materia.service';
 import { PreguntaService } from '../../core/services/pregunta.service';
+import { MensajeService } from '../../core/services/mensaje.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,10 +17,20 @@ export class DashboardComponent {
   private readonly examenSvc = inject(ExamenService);
   private readonly materiaSvc = inject(MateriaService);
   private readonly preguntaSvc = inject(PreguntaService);
+  private readonly mensajeSvc = inject(MensajeService);
 
   examenes = toSignal(this.examenSvc.list(), { initialValue: [] });
   materias = toSignal(this.materiaSvc.list(), { initialValue: [] });
   preguntas = toSignal(this.preguntaSvc.adminListAll(500), { initialValue: [] });
+  mensajesNuevos = toSignal(this.mensajeSvc.listNuevos(), { initialValue: [] });
+
+  totalMensajesNuevos = computed(() => this.mensajesNuevos().length);
+  reportesNuevos = computed(() =>
+    this.mensajesNuevos().filter((m) => m.tipo === 'reporte').length,
+  );
+  feedbackNuevo = computed(() =>
+    this.mensajesNuevos().filter((m) => m.tipo !== 'reporte').length,
+  );
 
   totalExamenes = computed(() => this.examenes().length);
   totalMaterias = computed(() => this.materias().length);

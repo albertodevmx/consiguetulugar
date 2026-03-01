@@ -67,6 +67,13 @@
     @if (canShowQuestion()) {
       <div class="card">
         <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-outline-danger btn-sm" (click)="openReportModal()">
+              <i class="bi bi-flag me-1"></i> Reportar
+            </button>
+            <span></span>
+          </div>
+
           <h5 class="mb-4">{{ q.texto }}</h5>
 
           <div class="d-grid gap-2 mb-4">
@@ -105,8 +112,64 @@
               </button>
             </div>
           }
+
+          @if (reportSent()) {
+            <div class="alert alert-success mt-3 py-2 small mb-0">
+              <i class="bi bi-check-circle me-1"></i> Reporte enviado. ¡Gracias por ayudarnos a mejorar!
+            </div>
+          }
         </div>
       </div>
     }
+  }
+
+  <!-- Report modal -->
+  @if (showReportModal()) {
+    <div class="report-overlay" (click)="closeReportModal()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1050;padding:1rem">
+      <div (click)="$event.stopPropagation()" style="background:#fff;border-radius:12px;padding:1.5rem;max-width:480px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
+        @if (reportStep() === 'confirm') {
+          <h5 class="mb-3"><i class="bi bi-flag text-danger me-2"></i>Reportar pregunta</h5>
+          <p class="text-muted small">¿Encontraste un error en esta pregunta? Al reportarla, nuestro equipo la revisará.</p>
+          <div class="card bg-light mb-3">
+            <div class="card-body py-2 px-3">
+              <small class="text-muted">{{ currentQuestion()?.texto }}</small>
+            </div>
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-outline-secondary btn-sm" (click)="closeReportModal()">Cancelar</button>
+            <button class="btn btn-danger btn-sm" (click)="reportStep.set('feedback')">
+              <i class="bi bi-flag me-1"></i> Sí, reportar
+            </button>
+          </div>
+        } @else {
+          <h5 class="mb-3"><i class="bi bi-chat-left-text text-primary me-2"></i>Más información</h5>
+          <p class="text-muted small">Opcional: cuéntanos más sobre el error para ayudarnos a corregirlo.</p>
+          <div class="position-relative mb-3">
+            <textarea
+              class="form-control"
+              rows="3"
+              placeholder="¿Qué error encontraste? (opcional, máx. 280 caracteres)"
+              [(ngModel)]="reportText"
+              [maxlength]="maxReportLength"
+            ></textarea>
+            <small style="position:absolute;bottom:4px;right:8px;font-size:0.75rem;color:#999" [class.text-danger]="reportText.length >= maxReportLength">
+              {{ reportText.length }}/{{ maxReportLength }}
+            </small>
+          </div>
+          @if (reportError()) {
+            <div class="alert alert-danger py-1 px-2 small mb-2">{{ reportError() }}</div>
+          }
+          <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-outline-secondary btn-sm" (click)="closeReportModal()">Cancelar</button>
+            <button class="btn btn-danger btn-sm" (click)="submitReport()" [disabled]="reportSending()">
+              @if (reportSending()) {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+              }
+              <i class="bi bi-send me-1"></i> Enviar reporte
+            </button>
+          </div>
+        }
+      </div>
+    </div>
   }
 </div>

@@ -6,6 +6,7 @@ import { QuotaService } from '../../core/services/quota.service';
 import { ExamenService } from '../../core/services/examen.service';
 import { ProgresoService } from '../../core/services/progreso.service';
 import { calcularDominio } from '../../core/models';
+import { FeedbackBoxComponent } from '../../shared/components/feedback-box/feedback-box.component';
 
 const FRASES_MOTIVACION = [
   '¡Cada pregunta que resuelves te acerca más a tu lugar!',
@@ -23,7 +24,7 @@ const FRASES_MOTIVACION = [
 @Component({
   selector: 'app-practicar-dashboard',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FeedbackBoxComponent],
   template: `
     @if (!auth.isLoggedIn()) {
       <div class="container py-5 text-center">
@@ -158,6 +159,25 @@ const FRASES_MOTIVACION = [
                 </div>
               </div>
             </a>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback-card mt-4">
+          <div class="card">
+            <div class="card-body text-center py-3">
+              <i class="bi bi-lightbulb text-warning fs-4 d-block mb-1"></i>
+              <h6 class="mb-1">¿Qué te gustaría practicar?</h6>
+              <p class="text-muted small mb-2">Cuéntanos qué temas, materias o funciones te gustaría que agreguemos.</p>
+              <app-feedback-box
+                tipo="feedback"
+                origen="practicar"
+                buttonText="Enviar sugerencia"
+                placeholder="¿Qué te gustaría que mejoremos o agreguemos? (máx. 280 caracteres)"
+                successMessage="¡Gracias! Tu sugerencia nos ayuda a mejorar."
+                btnClass="btn-outline-warning"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -54,6 +54,36 @@
     </div>
   </div>
 
+  <!-- Mensajes -->
+  @if (totalMensajesNuevos() > 0) {
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6">
+        <div class="card text-bg-danger">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-flag me-1"></i>Preguntas reportadas</h5>
+            <p class="display-6 mb-1">{{ reportesNuevos() }}</p>
+            <p class="card-text small mb-0">Reportes nuevos sin revisar</p>
+          </div>
+          <a routerLink="/dashboard/mensajes" class="card-footer text-white small text-decoration-none">
+            Ver reportes &rarr;
+          </a>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card text-bg-info">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-chat-heart me-1"></i>Opiniones y sugerencias</h5>
+            <p class="display-6 mb-1">{{ feedbackNuevo() }}</p>
+            <p class="card-text small mb-0">Mensajes nuevos de usuarios</p>
+          </div>
+          <a routerLink="/dashboard/mensajes" class="card-footer text-dark small text-decoration-none">
+            Ver mensajes &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- Preguntas por materia -->
   @if (preguntasPorMateria().length > 0) {
     <div class="card">

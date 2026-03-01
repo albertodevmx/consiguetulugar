@@ -163,6 +163,41 @@
   }
 }
 
+// ---- Opinion ----
+.opinion-section {
+  padding: 3.5rem 2rem;
+  text-align: center;
+  background: #eef6ff;
+
+  .opinion-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(v.$primary, 0.1);
+    color: v.$primary;
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: v.$primary;
+    margin-bottom: 0.5rem;
+  }
+
+  .opinion-subtitle {
+    font-size: 1rem;
+    color: v.$secondary;
+    max-width: 520px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.6;
+  }
+}
+
 // ---- Final CTA ----
 .final-cta {
   padding: 3.5rem 2rem;
@@ -210,6 +245,14 @@
   }
 
   .universities {
+    padding: 2.5rem 1rem;
+
+    h2 {
+      font-size: 1.4rem;
+    }
+  }
+
+  .opinion-section {
     padding: 2.5rem 1rem;
 
     h2 {

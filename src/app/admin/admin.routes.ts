@@ -51,6 +51,13 @@ export const adminRoutes: Routes = [
       ),
   },
   {
+    path: 'mensajes',
+    loadComponent: () =>
+      import('./mensajes/mensajes.component').then(
+        (m) => m.MensajesComponent,
+      ),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./settings/settings.component').then(

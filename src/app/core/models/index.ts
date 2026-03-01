@@ -5,3 +5,4 @@ export type { Examen, TemaConfig } from './examen.model';
 export type { Usuario, RolUsuario } from './usuario.model';
 export type { ProgresoTema } from './progreso.model';
 export { calcularDominio } from './progreso.model';
+export type { Mensaje, TipoMensaje, OrigenMensaje, EstadoMensaje } from './mensaje.model';

@@ -1,13 +1,16 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass, Location } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap, take, map, combineLatest, of, firstValueFrom } from 'rxjs';
 import { PreguntaService } from '../../core/services/pregunta.service';
 import { ExamenService } from '../../core/services/examen.service';
 import { ProgresoService } from '../../core/services/progreso.service';
+import { MensajeService } from '../../core/services/mensaje.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta, TemaConfig } from '../../core/models';
+import { MAX_MESSAGE_LENGTH } from '../../core/utils/sanitize-message';
 
 /** Max questions shown in free trial practice */
 const FREE_QUESTION_LIMIT = 10;
@@ -15,7 +18,7 @@ const FREE_QUESTION_LIMIT = 10;
 @Component({
   selector: 'app-topic-practice',
   standalone: true,
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, FormsModule, RouterLink],
   template: `
     <div class="container py-4">
       <button class="btn btn-warning btn-sm mb-3" (click)="goBack()">
@@ -138,7 +141,10 @@ const FREE_QUESTION_LIMIT = 10;
         @if (!sessionFinished() && canShowQuestion()) {
           <div class="card">
             <div class="card-body">
-              <div class="d-flex justify-content-end align-items-center mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-danger btn-sm" (click)="openReportModal()">
+                  <i class="bi bi-flag me-1"></i> Reportar
+                </button>
                 @if (totalAnswered() > 0) {
                   <span class="badge bg-success">
                     <i class="bi bi-check-circle me-1"></i>{{ correctCount() }} / {{ totalAnswered() }}
@@ -182,12 +188,95 @@ const FREE_QUESTION_LIMIT = 10;
                   </button>
                 </div>
               }
+
+              @if (reportSent()) {
+                <div class="alert alert-success mt-3 py-2 small mb-0">
+                  <i class="bi bi-check-circle me-1"></i> Reporte enviado. ¡Gracias por ayudarnos a mejorar!
+                </div>
+              }
             </div>
           </div>
         }
       }
+
+      <!-- Report modal -->
+      @if (showReportModal()) {
+        <div class="report-overlay" (click)="closeReportModal()">
+          <div class="report-modal" (click)="$event.stopPropagation()">
+            @if (reportStep() === 'confirm') {
+              <h5 class="mb-3"><i class="bi bi-flag text-danger me-2"></i>Reportar pregunta</h5>
+              <p class="text-muted small">¿Encontraste un error en esta pregunta? Al reportarla, nuestro equipo la revisará.</p>
+              <div class="card bg-light mb-3">
+                <div class="card-body py-2 px-3">
+                  <small class="text-muted">{{ currentQuestion()?.texto }}</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary btn-sm" (click)="closeReportModal()">Cancelar</button>
+                <button class="btn btn-danger btn-sm" (click)="reportStep.set('feedback')">
+                  <i class="bi bi-flag me-1"></i> Sí, reportar
+                </button>
+              </div>
+            } @else {
+              <h5 class="mb-3"><i class="bi bi-chat-left-text text-primary me-2"></i>Más información</h5>
+              <p class="text-muted small">Opcional: cuéntanos más sobre el error para ayudarnos a corregirlo.</p>
+              <div class="position-relative mb-3">
+                <textarea
+                  class="form-control"
+                  rows="3"
+                  placeholder="¿Qué error encontraste? (opcional, máx. 280 caracteres)"
+                  [(ngModel)]="reportText"
+                  [maxlength]="maxReportLength"
+                ></textarea>
+                <small class="report-char-count" [class.text-danger]="reportText.length >= maxReportLength">
+                  {{ reportText.length }}/{{ maxReportLength }}
+                </small>
+              </div>
+              @if (reportError()) {
+                <div class="alert alert-danger py-1 px-2 small mb-2">{{ reportError() }}</div>
+              }
+              <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary btn-sm" (click)="closeReportModal()">Cancelar</button>
+                <button class="btn btn-danger btn-sm" (click)="submitReport()" [disabled]="reportSending()">
+                  @if (reportSending()) {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                  }
+                  <i class="bi bi-send me-1"></i> Enviar reporte
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
   `,
+  styles: [`
+    .report-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1050;
+      padding: 1rem;
+    }
+    .report-modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .report-char-count {
+      position: absolute;
+      bottom: 4px;
+      right: 8px;
+      font-size: 0.75rem;
+      color: #999;
+    }
+  `],
 })
 export class TopicPracticeComponent {
   private route = inject(ActivatedRoute);
@@ -195,6 +284,7 @@ export class TopicPracticeComponent {
   private preguntaSvc = inject(PreguntaService);
   private examenSvc = inject(ExamenService);
   private progresoSvc = inject(ProgresoService);
+  private mensajeSvc = inject(MensajeService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
 
@@ -257,6 +347,15 @@ export class TopicPracticeComponent {
     if (!q || idx === null) return '';
     return q.opciones[idx]?.explicacion ?? '';
   });
+
+  // Report question
+  showReportModal = signal(false);
+  reportStep = signal<'confirm' | 'feedback'>('confirm');
+  reportText = '';
+  reportSending = signal(false);
+  reportSent = signal(false);
+  reportError = signal('');
+  readonly maxReportLength = MAX_MESSAGE_LENGTH;
 
   private falladasSet = new Set<string>();
 
@@ -381,5 +480,44 @@ export class TopicPracticeComponent {
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+  }
+
+  openReportModal() {
+    this.showReportModal.set(true);
+    this.reportStep.set('confirm');
+    this.reportText = '';
+    this.reportError.set('');
+    this.reportSent.set(false);
+  }
+
+  closeReportModal() {
+    this.showReportModal.set(false);
+  }
+
+  async submitReport() {
+    this.reportError.set('');
+    this.reportSending.set(true);
+    try {
+      const q = this.currentQuestion();
+      const texto = this.reportText.trim() || 'Pregunta reportada sin comentario adicional.';
+      const result = await this.mensajeSvc.enviar(
+        texto,
+        'reporte',
+        'pregunta',
+        q?.id,
+        q?.texto,
+      );
+      if (result.success) {
+        this.showReportModal.set(false);
+        this.reportSent.set(true);
+        setTimeout(() => this.reportSent.set(false), 4000);
+      } else {
+        this.reportError.set(result.error ?? 'Error al enviar.');
+      }
+    } catch {
+      this.reportError.set('Error de conexión. Intenta de nuevo.');
+    } finally {
+      this.reportSending.set(false);
+    }
   }
 }

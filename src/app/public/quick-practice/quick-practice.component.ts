@@ -1,23 +1,27 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { take } from 'rxjs';
 
 import { PreguntaService } from '../../core/services/pregunta.service';
 import { ProgresoService } from '../../core/services/progreso.service';
+import { MensajeService } from '../../core/services/mensaje.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { QuotaService } from '../../core/services/quota.service';
 import { Pregunta } from '../../core/models';
+import { MAX_MESSAGE_LENGTH } from '../../core/utils/sanitize-message';
 
 @Component({
   selector: 'app-quick-practice',
   standalone: true,
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, FormsModule, RouterLink],
   templateUrl: './quick-practice.component.html',
 })
 export class QuickPracticeComponent {
   private preguntaSvc = inject(PreguntaService);
   private progresoSvc = inject(ProgresoService);
+  private mensajeSvc = inject(MensajeService);
   auth = inject(AuthService);
   quota = inject(QuotaService);
 
@@ -68,6 +72,15 @@ export class QuickPracticeComponent {
     if (!q || idx === null) return '';
     return q.opciones[idx]?.explicacion ?? '';
   });
+
+  // Report question
+  showReportModal = signal(false);
+  reportStep = signal<'confirm' | 'feedback'>('confirm');
+  reportText = '';
+  reportSending = signal(false);
+  reportSent = signal(false);
+  reportError = signal('');
+  readonly maxReportLength = MAX_MESSAGE_LENGTH;
 
   constructor() {
     this.loadAll();
@@ -132,5 +145,44 @@ export class QuickPracticeComponent {
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+  }
+
+  openReportModal() {
+    this.showReportModal.set(true);
+    this.reportStep.set('confirm');
+    this.reportText = '';
+    this.reportError.set('');
+    this.reportSent.set(false);
+  }
+
+  closeReportModal() {
+    this.showReportModal.set(false);
+  }
+
+  async submitReport() {
+    this.reportError.set('');
+    this.reportSending.set(true);
+    try {
+      const q = this.currentQuestion();
+      const texto = this.reportText.trim() || 'Pregunta reportada sin comentario adicional.';
+      const result = await this.mensajeSvc.enviar(
+        texto,
+        'reporte',
+        'pregunta',
+        q?.id,
+        q?.texto,
+      );
+      if (result.success) {
+        this.showReportModal.set(false);
+        this.reportSent.set(true);
+        setTimeout(() => this.reportSent.set(false), 4000);
+      } else {
+        this.reportError.set(result.error ?? 'Error al enviar.');
+      }
+    } catch {
+      this.reportError.set('Error de conexión. Intenta de nuevo.');
+    } finally {
+      this.reportSending.set(false);
+    }
   }
 }
