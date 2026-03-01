@@ -112,7 +112,6 @@ const SECCION_ICONS: Record<string, string> = {
                   (click)="toggleSection(group.seccion)">
                   <i class="bi me-2" [class]="sectionIcon(group.seccion)"></i>
                   {{ group.seccion || 'General' }}
-                  <span class="badge bg-secondary ms-2">{{ group.temas.length }}</span>
                 </button>
               </h2>
               @if (expandedSections().has(group.seccion)) {
@@ -250,12 +249,11 @@ export class ExploreSubjectsComponent {
     return [...groups.entries()].map(([seccion, temas]) => ({ seccion, temas }));
   });
 
-  // All sections expanded by default
+  // All sections collapsed by default
   expandedSections = computed(() => {
-    const groups = this.groupedBySections();
     const set = this._expandedOverrides();
     if (set !== null) return set;
-    return new Set(groups.map((g) => g.seccion));
+    return new Set<string>();
   });
 
   private _expandedOverrides = signal<Set<string> | null>(null);
