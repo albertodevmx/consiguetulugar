@@ -24,6 +24,14 @@ import { Mensaje } from '../../core/models';
         </button>
       </li>
       <li class="nav-item">
+        <button class="nav-link" [class.active]="tab() === 'buzon'" (click)="tab.set('buzon')">
+          <i class="bi bi-mailbox2 me-1"></i>Buzón
+          @if (buzonNuevos() > 0) {
+            <span class="badge bg-danger ms-1">{{ buzonNuevos() }}</span>
+          }
+        </button>
+      </li>
+      <li class="nav-item">
         <button class="nav-link" [class.active]="tab() === 'feedback'" (click)="tab.set('feedback')">
           <i class="bi bi-chat-heart me-1"></i>Opiniones
         </button>
@@ -64,6 +72,12 @@ import { Mensaje } from '../../core/models';
                     @case ('feedback') {
                       <span class="badge bg-info text-dark"><i class="bi bi-lightbulb me-1"></i>Sugerencia</span>
                     }
+                    @case ('sugerencia') {
+                      <span class="badge bg-info text-dark"><i class="bi bi-lightbulb me-1"></i>Sugerencia</span>
+                    }
+                    @case ('queja') {
+                      <span class="badge bg-warning text-dark"><i class="bi bi-emoji-frown me-1"></i>Queja</span>
+                    }
                     @case ('reporte') {
                       <span class="badge bg-danger"><i class="bi bi-flag me-1"></i>Reporte</span>
                     }
@@ -72,6 +86,7 @@ import { Mensaje } from '../../core/models';
                     @if (m.origen === 'home') { desde Inicio }
                     @else if (m.origen === 'practicar') { desde Practicar }
                     @else if (m.origen === 'pregunta') { desde Pregunta }
+                    @else if (m.origen === 'buzon') { desde Buzón }
                   </small>
                   @if (m.estado === 'nuevo') {
                     <span class="badge bg-warning text-dark">Nuevo</span>
@@ -141,7 +156,7 @@ import { Mensaje } from '../../core/models';
 export class MensajesComponent {
   private readonly mensajeSvc = inject(MensajeService);
 
-  tab = signal<'todos' | 'feedback' | 'reportes'>('todos');
+  tab = signal<'todos' | 'buzon' | 'feedback' | 'reportes'>('todos');
 
   private allMessages = toSignal(this.mensajeSvc.listAll(), { initialValue: [] });
   private nuevos = toSignal(this.mensajeSvc.listNuevos(), { initialValue: [] });
@@ -154,9 +169,14 @@ export class MensajesComponent {
     this.nuevos().filter((m) => m.tipo === 'reporte').length,
   );
 
+  buzonNuevos = computed(() =>
+    this.nuevos().filter((m) => m.tipo === 'queja' || m.tipo === 'sugerencia').length,
+  );
+
   filteredMessages = computed(() => {
     const all = this.allMessages() ?? [];
     const t = this.tab();
+    if (t === 'buzon') return all.filter((m) => m.tipo === 'queja' || m.tipo === 'sugerencia');
     if (t === 'feedback') return all.filter((m) => m.tipo === 'opinion' || m.tipo === 'feedback');
     if (t === 'reportes') return all.filter((m) => m.tipo === 'reporte');
     return all;

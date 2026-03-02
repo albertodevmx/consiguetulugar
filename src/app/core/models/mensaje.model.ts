@@ -1,7 +1,7 @@
 import { Timestamp } from '@angular/fire/firestore';
 
-export type TipoMensaje = 'opinion' | 'feedback' | 'reporte';
-export type OrigenMensaje = 'home' | 'practicar' | 'pregunta';
+export type TipoMensaje = 'opinion' | 'feedback' | 'reporte' | 'queja' | 'sugerencia';
+export type OrigenMensaje = 'home' | 'practicar' | 'pregunta' | 'buzon';
 export type EstadoMensaje = 'nuevo' | 'leido' | 'archivado';
 
 export interface Mensaje {

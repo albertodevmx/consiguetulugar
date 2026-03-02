@@ -35,7 +35,7 @@ export class StripeService {
           priceId,
           examenId,
           examenNombre,
-          returnUrl: `${window.location.origin}/suscripcion/exito`,
+          returnUrl: `${window.location.origin}/suscripcion/exito?examenId=${encodeURIComponent(examenId)}`,
         }),
       },
     );
@@ -47,5 +47,31 @@ export class StripeService {
 
     const { clientSecret } = await response.json();
     return clientSecret;
+  }
+
+  /**
+   * Cancel the user's active Stripe subscription via Cloud Function.
+   */
+  async cancelSubscription(): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('Debes iniciar sesion primero.');
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(
+      `${environment.functionsUrl}/cancelSubscription`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Error de conexion' }));
+      throw new Error(err.error || 'Error al cancelar la suscripcion');
+    }
   }
 }

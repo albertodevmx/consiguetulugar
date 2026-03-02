@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
+import { StripeService } from '../../core/services/stripe.service';
 import { ProgresoService } from '../../core/services/progreso.service';
 import { TemaService } from '../../core/services/tema.service';
 import { MateriaService } from '../../core/services/materia.service';
@@ -38,6 +39,7 @@ export interface TemaProgreso {
 export class ProfileComponent implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private stripeSvc = inject(StripeService);
   private progresoSvc = inject(ProgresoService);
   private temaSvc = inject(TemaService);
   private materiaSvc = inject(MateriaService);
@@ -123,6 +125,11 @@ export class ProfileComponent implements OnInit {
     return materiasArr;
   });
 
+  cancellingSubscription = signal(false);
+  showCancelConfirm = signal(false);
+  cancelMessage = signal('');
+  cancelError = signal('');
+
   nombre = '';
   telefono = '';
   bio = '';
@@ -171,6 +178,22 @@ export class ProfileComponent implements OnInit {
   cancelEditing() {
     this.editing.set(false);
     this.errorMessage.set('');
+  }
+
+  async cancelSubscription() {
+    this.cancelError.set('');
+    this.cancelMessage.set('');
+    this.cancellingSubscription.set(true);
+
+    try {
+      await this.stripeSvc.cancelSubscription();
+      this.cancelMessage.set('Tu suscripción ha sido cancelada. Mantendrás el acceso hasta el final del periodo pagado.');
+      this.showCancelConfirm.set(false);
+    } catch (e: any) {
+      this.cancelError.set(e.message || 'Error al cancelar. Intenta de nuevo.');
+    } finally {
+      this.cancellingSubscription.set(false);
+    }
   }
 
   async saveProfile() {

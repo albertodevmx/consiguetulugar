@@ -91,6 +91,13 @@ export const publicRoutes: Routes = [
       ),
   },
   {
+    path: 'buzon',
+    loadComponent: () =>
+      import('./buzon/buzon.component').then(
+        (m) => m.BuzonComponent,
+      ),
+  },
+  {
     path: 'suscripcion',
     loadComponent: () =>
       import('./subscription/subscribe.component').then(

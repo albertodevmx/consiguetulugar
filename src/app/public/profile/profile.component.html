@@ -180,6 +180,62 @@
                 </p>
               </div>
             </div>
+
+            @if (profile()!.plan === 'premium') {
+              <div class="cancel-subscription-section mt-3">
+                @if (cancelMessage()) {
+                  <div class="alert alert-success py-2 small">
+                    <i class="bi bi-check-circle me-1"></i>{{ cancelMessage() }}
+                  </div>
+                }
+                @if (cancelError()) {
+                  <div class="alert alert-danger py-2 small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>{{ cancelError() }}
+                  </div>
+                }
+
+                @if (!showCancelConfirm()) {
+                  <button
+                    class="btn btn-outline-danger btn-sm w-100"
+                    (click)="showCancelConfirm.set(true)"
+                  >
+                    <i class="bi bi-x-circle me-1"></i>Cancelar suscripción
+                  </button>
+                } @else {
+                  <div class="card border-danger">
+                    <div class="card-body p-3">
+                      <p class="small mb-2 fw-semibold text-danger">
+                        <i class="bi bi-exclamation-triangle me-1"></i>¿Estás seguro de que quieres cancelar?
+                      </p>
+                      <p class="small text-muted mb-3">
+                        Tu acceso premium continuará hasta el final del periodo que ya pagaste.
+                        Después de eso, tu cuenta volverá al plan gratuito.
+                      </p>
+                      <div class="d-flex gap-2">
+                        <button
+                          class="btn btn-danger btn-sm flex-fill"
+                          (click)="cancelSubscription()"
+                          [disabled]="cancellingSubscription()"
+                        >
+                          @if (cancellingSubscription()) {
+                            <span class="spinner-border spinner-border-sm me-1"></span> Cancelando...
+                          } @else {
+                            Sí, cancelar suscripción
+                          }
+                        </button>
+                        <button
+                          class="btn btn-outline-secondary btn-sm"
+                          (click)="showCancelConfirm.set(false)"
+                          [disabled]="cancellingSubscription()"
+                        >
+                          No, mantener
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           </div>
 
           <button class="btn btn-primary w-100 mt-4" (click)="startEditing()">

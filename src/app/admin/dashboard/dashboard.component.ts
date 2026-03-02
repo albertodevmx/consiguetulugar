@@ -29,7 +29,10 @@ export class DashboardComponent {
     this.mensajesNuevos().filter((m) => m.tipo === 'reporte').length,
   );
   feedbackNuevo = computed(() =>
-    this.mensajesNuevos().filter((m) => m.tipo !== 'reporte').length,
+    this.mensajesNuevos().filter((m) => m.tipo === 'opinion' || m.tipo === 'feedback').length,
+  );
+  buzonNuevo = computed(() =>
+    this.mensajesNuevos().filter((m) => m.tipo === 'queja' || m.tipo === 'sugerencia').length,
   );
 
   totalExamenes = computed(() => this.examenes().length);

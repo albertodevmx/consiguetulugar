@@ -12,10 +12,11 @@ import {
   Firestore,
   doc,
   setDoc,
-  getDoc,
   updateDoc,
+  onSnapshot,
   serverTimestamp,
 } from '@angular/fire/firestore';
+import { Unsubscribe } from '@angular/fire/firestore';
 import { Usuario } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -31,6 +32,9 @@ export class AuthService {
   readonly profile = this._profile.asReadonly();
   readonly profileLoaded = this._profileLoaded.asReadonly();
 
+  /** Unsubscribe from the current Firestore profile listener */
+  private profileUnsub: Unsubscribe | null = null;
+
   readonly isLoggedIn = () => this._user() !== null;
 
   constructor() {
@@ -39,8 +43,9 @@ export class AuthService {
         this._user.set(user);
         if (user) {
           this._profileLoaded.set(false);
-          this.loadProfile(user.uid);
+          this.listenProfile(user.uid);
         } else {
+          this.stopListeningProfile();
           this._profile.set(null);
           this._profileLoaded.set(false);
         }
@@ -98,32 +103,41 @@ export class AuthService {
     return this.ngZone.run(() => signOut(this.auth));
   }
 
-  /** Update the in-memory profile after Firestore changes */
-  refreshProfile() {
-    const uid = this._user()?.uid;
-    if (uid) this.loadProfile(uid);
-  }
-
-  /** Update specific fields on the user profile in Firestore and refresh */
+  /** Update specific fields on the user profile in Firestore (listener auto-updates) */
   async updateProfile(fields: Partial<Omit<Usuario, 'id'>>) {
     const uid = this._user()?.uid;
     if (!uid) return;
     await updateDoc(doc(this.fs, 'usuarios', uid), fields as any);
-    await this.loadProfile(uid);
   }
 
-  private async loadProfile(uid: string) {
-    const snap = await getDoc(doc(this.fs, 'usuarios', uid));
-    if (snap.exists()) {
-      const data = snap.data() as Omit<Usuario, 'id'>;
-      this._profile.set({
-        ...data,
-        id: snap.id,
-        examenes_pagados: data.examenes_pagados ?? [],
-        preguntas_semana: data.preguntas_semana ?? (data as any).preguntas_respondidas ?? 0,
-        fecha_inicio_semana: data.fecha_inicio_semana ?? (data as any).fecha_preguntas_hoy ?? null,
+  /**
+   * Listen to the user profile in real-time via onSnapshot.
+   * Any change made by the Stripe webhook (or any other source)
+   * is reflected instantly without requiring logout/login.
+   */
+  private listenProfile(uid: string) {
+    this.stopListeningProfile();
+    this.profileUnsub = onSnapshot(doc(this.fs, 'usuarios', uid), (snap) => {
+      this.ngZone.run(() => {
+        if (snap.exists()) {
+          const data = snap.data() as Omit<Usuario, 'id'>;
+          this._profile.set({
+            ...data,
+            id: snap.id,
+            examenes_pagados: data.examenes_pagados ?? [],
+            preguntas_semana: data.preguntas_semana ?? (data as any).preguntas_respondidas ?? 0,
+            fecha_inicio_semana: data.fecha_inicio_semana ?? (data as any).fecha_preguntas_hoy ?? null,
+          });
+        }
+        this._profileLoaded.set(true);
       });
+    });
+  }
+
+  private stopListeningProfile() {
+    if (this.profileUnsub) {
+      this.profileUnsub();
+      this.profileUnsub = null;
     }
-    this._profileLoaded.set(true);
   }
 }

@@ -8,4 +8,12 @@
   color: v.$primary;
   font-size: 0.875rem;
   font-weight: 600;
+
+  .footer-link {
+    color: v.$primary;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

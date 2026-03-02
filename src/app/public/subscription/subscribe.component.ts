@@ -29,6 +29,7 @@ import { Examen } from '../../core/models';
           <img src="logo.png" alt="Estudiar es barato" class="mb-3" style="width: 80px; height: 80px;">
           <h1 class="h2">Elige el examen que quieres practicar</h1>
           <p class="text-muted">Cada examen se paga por separado. Selecciona el que vas a presentar.</p>
+          <p class="text-muted small mb-0"><i class="bi bi-shield-check me-1"></i>Sin compromisos: puedes cancelar tu suscripción en cualquier momento.</p>
         </div>
 
         @if (loadingExams()) {
@@ -144,8 +145,11 @@ import { Examen } from '../../core/models';
                         <i class="bi bi-credit-card me-1"></i> Suscribirme ahora
                       }
                     </button>
-                    <p class="text-muted small mt-3 mb-0">
+                    <p class="text-muted small mt-3 mb-1">
                       <i class="bi bi-shield-lock me-1"></i>Pago seguro procesado por Stripe
+                    </p>
+                    <p class="text-muted small mb-0">
+                      <i class="bi bi-x-circle me-1"></i>Sin compromisos: cancela desde tu perfil en cualquier momento, sin cargos adicionales.
                     </p>
                   }
                 </div>
@@ -162,6 +166,9 @@ import { Examen } from '../../core/models';
             <div class="text-center mb-3">
               <h3>Completa tu pago</h3>
               <p class="text-muted">Ingresa los datos de tu tarjeta para activar tu suscripcion.</p>
+              <p class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>Es un cobro mensual recurrente de $99 MXN. Puedes cancelar en cualquier momento desde tu perfil sin penalizaciones.
+              </p>
             </div>
             <div #checkoutContainer></div>
           </div>

@@ -192,6 +192,57 @@ exports.stripeWebhook = onRequest(
 );
 
 /**
+ * Cancels the authenticated user's Stripe subscription.
+ * The webhook will handle updating the Firestore profile when Stripe confirms.
+ */
+exports.cancelSubscription = onRequest(
+  { secrets: [stripeSecret], cors: true, invoker: 'public' },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    const authHeader = req.headers.authorization || '';
+    const match = authHeader.match(/^Bearer (.+)$/);
+    if (!match) {
+      res.status(401).json({ error: 'Missing authentication' });
+      return;
+    }
+
+    try {
+      const token = await getAuth().verifyIdToken(match[1]);
+      const db = getFirestore();
+
+      // Get user's subscription ID from Firestore
+      const userDoc = await db.doc(`usuarios/${token.uid}`).get();
+      if (!userDoc.exists) {
+        res.status(404).json({ error: 'Usuario no encontrado' });
+        return;
+      }
+
+      const subscriptionId = userDoc.data().stripe_subscription_id;
+      if (!subscriptionId) {
+        res.status(400).json({ error: 'No tienes una suscripción activa' });
+        return;
+      }
+
+      const key = stripeSecret.value().replace(/[^\x20-\x7E]/g, '');
+
+      // Cancel at period end so user keeps access until the billing period expires
+      await stripeRequest('POST', `/v1/subscriptions/${subscriptionId}`, key, {
+        cancel_at_period_end: 'true',
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Cancel subscription error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+/**
  * Raw HTTPS call to the OpenAI Chat Completions API (no SDK).
  */
 function openaiRequest(apiKey, model, messages) {
