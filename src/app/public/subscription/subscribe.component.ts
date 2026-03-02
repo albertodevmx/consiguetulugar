@@ -127,11 +127,15 @@ import { Examen } from '../../core/models';
 
                   @if (!auth.isLoggedIn()) {
                     <p class="text-muted small mb-3">Necesitas una cuenta para suscribirte</p>
-                    <a routerLink="/registro" class="btn btn-primary btn-lg w-100 py-2">
+                    <a [routerLink]="['/registro']"
+                       [queryParams]="{returnUrl: '/suscripcion', examenId: ex.id}"
+                       class="btn btn-primary btn-lg w-100 py-2">
                       <i class="bi bi-person-plus me-1"></i> Crear cuenta y suscribirme
                     </a>
                     <p class="mt-2 small">
-                      Ya tienes cuenta? <a routerLink="/login" class="fw-bold">Inicia sesion</a>
+                      Ya tienes cuenta? <a [routerLink]="['/login']"
+                        [queryParams]="{returnUrl: '/suscripcion', examenId: ex.id}"
+                        class="fw-bold">Inicia sesion</a>
                     </p>
                   } @else {
                     <button

@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -90,7 +90,7 @@ import { AuthService } from '../../core/auth/auth.service';
 
           <p class="text-center mt-3 mb-0 small">
             ¿No tienes cuenta?
-            <a routerLink="/registro" class="fw-bold">Regístrate gratis</a>
+            <a [routerLink]="['/registro']" [queryParams]="forwardParams()" class="fw-bold">Regístrate gratis</a>
           </p>
         </div>
       </div>
@@ -118,6 +118,10 @@ import { AuthService } from '../../core/auth/auth.service';
 export class PublicLoginComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  private returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+  private examenId = this.route.snapshot.queryParamMap.get('examenId');
 
   email = '';
   password = '';
@@ -125,13 +129,29 @@ export class PublicLoginComponent {
   errorMessage = signal('');
   loading = signal(false);
 
+  /** Preserves returnUrl/examenId when switching to the register page */
+  forwardParams(): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (this.returnUrl) params['returnUrl'] = this.returnUrl;
+    if (this.examenId) params['examenId'] = this.examenId;
+    return params;
+  }
+
   async onSubmit() {
     this.errorMessage.set('');
     this.loading.set(true);
 
     try {
       await this.auth.login(this.email, this.password);
-      this.router.navigate(['/']);
+
+      // If came from subscription/unlock → go to payment
+      if (this.returnUrl) {
+        const qp: Record<string, string> = {};
+        if (this.examenId) qp['examenId'] = this.examenId;
+        this.router.navigate([this.returnUrl], { queryParams: qp });
+      } else {
+        this.router.navigate(['/']);
+      }
     } catch {
       this.errorMessage.set('Correo o contraseña incorrectos.');
     } finally {

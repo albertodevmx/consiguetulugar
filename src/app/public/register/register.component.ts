@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -179,7 +179,7 @@ import { AuthService } from '../../core/auth/auth.service';
 
           <p class="text-center mt-3 mb-0 small">
             ¿Ya tienes cuenta?
-            <a routerLink="/login" class="fw-bold">Inicia sesión</a>
+            <a [routerLink]="['/login']" [queryParams]="forwardParams()" class="fw-bold">Inicia sesión</a>
           </p>
         </div>
       </div>
@@ -207,6 +207,10 @@ import { AuthService } from '../../core/auth/auth.service';
 export class RegisterComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  private returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+  private examenId = this.route.snapshot.queryParamMap.get('examenId');
 
   nombre = '';
   email = '';
@@ -217,6 +221,14 @@ export class RegisterComponent {
   showConfirm = signal(false);
   errorMessage = signal('');
   loading = signal(false);
+
+  /** Preserves returnUrl/examenId when switching to the login page */
+  forwardParams(): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (this.returnUrl) params['returnUrl'] = this.returnUrl;
+    if (this.examenId) params['examenId'] = this.examenId;
+    return params;
+  }
 
   async onSubmit() {
     if (this.password !== this.confirmPassword) {
@@ -233,7 +245,16 @@ export class RegisterComponent {
         telefono: this.telefono,
         password: this.password,
       });
-      this.router.navigate(['/']);
+
+      // Flow 2: came from subscription/unlock → go to payment
+      if (this.returnUrl) {
+        const qp: Record<string, string> = {};
+        if (this.examenId) qp['examenId'] = this.examenId;
+        this.router.navigate([this.returnUrl], { queryParams: qp });
+      } else {
+        // Flow 1: normal registration → go to explore
+        this.router.navigate(['/explore']);
+      }
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         this.errorMessage.set('Este correo ya está registrado.');
