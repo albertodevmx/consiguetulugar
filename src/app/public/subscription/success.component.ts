@@ -20,10 +20,10 @@ import { ExamenService } from '../../core/services/examen.service';
 
       @if (examenId()) {
         <a [routerLink]="examLink()" class="btn btn-success btn-lg">
-          <i class="bi bi-play-circle me-1"></i> Ir a mi curso
+          <i class="bi bi-play-circle me-1"></i> Comenzar a practicar
         </a>
       } @else {
-        <a routerLink="/explore" class="btn btn-success btn-lg">
+        <a routerLink="/practicar" class="btn btn-success btn-lg">
           <i class="bi bi-play-circle me-1"></i> Comenzar a practicar
         </a>
       }
@@ -43,9 +43,9 @@ export class SubscriptionSuccessComponent {
 
   examLink = computed(() => {
     const id = this.examenId();
-    if (!id) return ['/explore'];
+    if (!id) return ['/practicar'];
     const ex = this.examenes().find((e) => e.id === id);
-    if (!ex) return ['/explore'];
-    return ['/explore', ex.escuela, id];
+    if (!ex) return ['/practicar'];
+    return ['/practicar', ex.escuela, id];
   });
 }
