@@ -1,0 +1,525 @@
+{
+  "materias": [
+    {
+      "key": "razonamiento_verbal",
+      "nombre_canonical": "Razonamiento Verbal",
+      "temas": [
+        {
+          "key": "comprension_lectora",
+          "nombre_canonical": "Comprensión lectora UAM",
+          "subtemas": ["Ideas principales y secundarias", "Inferencias y deducciones", "Propósito e intención del autor", "Estructura y organización del texto"]
+        },
+        {
+          "key": "vocabulario_contexto",
+          "nombre_canonical": "Vocabulario en contexto",
+          "subtemas": ["Significado por contexto", "Sinónimos y antónimos en contexto", "Denotación y connotación", "Uso figurado del lenguaje"]
+        },
+        {
+          "key": "analogias_verbales",
+          "nombre_canonical": "Analogías verbales",
+          "subtemas": ["Relaciones de sinonimia y antonimia", "Relaciones de causa-efecto", "Relaciones parte-todo", "Relaciones de clasificación"]
+        },
+        {
+          "key": "ortografia_redaccion",
+          "nombre_canonical": "Ortografía y redacción",
+          "subtemas": ["Reglas de acentuación", "Uso correcto de grafías", "Signos de puntuación", "Concordancia y coherencia"]
+        },
+        {
+          "key": "comprension_escrita",
+          "nombre_canonical": "Comprensión escrita",
+          "subtemas": ["Tipos de textos y géneros discursivos", "Argumentación y persuasión", "Resumen y paráfrasis", "Análisis crítico de textos"]
+        }
+      ]
+    },
+    {
+      "key": "razonamiento_matematico",
+      "nombre_canonical": "Razonamiento Matemático",
+      "temas": [
+        {
+          "key": "series_numericas",
+          "nombre_canonical": "Series y sucesiones numéricas",
+          "subtemas": ["Series aritméticas", "Series geométricas", "Patrones numéricos", "Sucesiones alfanuméricas"]
+        },
+        {
+          "key": "razonamiento_numerico",
+          "nombre_canonical": "Razonamiento numérico",
+          "subtemas": ["Operaciones con fracciones", "Porcentajes y proporciones", "Razones y tasas", "Problemas de planteo"]
+        },
+        {
+          "key": "razonamiento_algebraico",
+          "nombre_canonical": "Razonamiento algebraico",
+          "subtemas": ["Expresiones algebraicas", "Ecuaciones y desigualdades", "Patrones y funciones", "Problemas de traducción algebraica"]
+        },
+        {
+          "key": "razonamiento_geometrico",
+          "nombre_canonical": "Razonamiento geométrico",
+          "subtemas": ["Figuras y sus propiedades", "Áreas y perímetros", "Volúmenes", "Razonamiento espacial"]
+        },
+        {
+          "key": "razonamiento_estadistico",
+          "nombre_canonical": "Razonamiento estadístico",
+          "subtemas": ["Interpretación de gráficas", "Medidas de tendencia central", "Probabilidad básica", "Análisis de datos y tablas"]
+        }
+      ]
+    },
+    {
+      "key": "matematicas",
+      "nombre_canonical": "Matemáticas",
+      "temas": [
+        {
+          "key": "numeros_reales",
+          "nombre_canonical": "Operaciones con números reales",
+          "subtemas": ["Números naturales y enteros", "Números racionales e irracionales", "Operaciones básicas y jerarquía", "Valor absoluto", "Notación científica"]
+        },
+        {
+          "key": "productos_notables",
+          "nombre_canonical": "Productos notables y factorización",
+          "subtemas": ["Binomio al cuadrado", "Binomios conjugados", "Diferencia de cuadrados", "Trinomio cuadrado perfecto", "Factor común y agrupación"]
+        },
+        {
+          "key": "ecuaciones",
+          "nombre_canonical": "Ecuaciones",
+          "subtemas": ["Ecuaciones lineales", "Ecuaciones cuadráticas", "Fórmula general", "Ecuaciones con fracciones", "Problemas de aplicación"]
+        },
+        {
+          "key": "desigualdades",
+          "nombre_canonical": "Desigualdades",
+          "subtemas": ["Desigualdades lineales", "Desigualdades cuadráticas", "Desigualdades con valor absoluto", "Intervalos y representación gráfica"]
+        },
+        {
+          "key": "linea_recta",
+          "nombre_canonical": "Línea recta",
+          "subtemas": ["Pendiente y ordenada al origen", "Ecuación punto-pendiente", "Ecuación general de la recta", "Rectas paralelas y perpendiculares", "Distancia entre dos puntos"]
+        },
+        {
+          "key": "sistemas_ecuaciones",
+          "nombre_canonical": "Sistemas de ecuaciones lineales",
+          "subtemas": ["Método de sustitución", "Método de eliminación", "Método gráfico", "Sistemas de 2x2 y 3x3", "Problemas de aplicación"]
+        },
+        {
+          "key": "funciones",
+          "nombre_canonical": "Funciones",
+          "subtemas": ["Concepto de función", "Dominio y rango", "Función lineal y cuadrática", "Función exponencial y logarítmica", "Gráficas de funciones"]
+        },
+        {
+          "key": "trigonometria",
+          "nombre_canonical": "Trigonometría",
+          "subtemas": ["Funciones trigonométricas", "Identidades trigonométricas", "Triángulos rectángulos", "Ley de senos y cosenos", "Círculo unitario"]
+        },
+        {
+          "key": "geometria_analitica",
+          "nombre_canonical": "Geometría analítica",
+          "subtemas": ["Circunferencia", "Parábola", "Elipse", "Hipérbola", "Ecuaciones canónicas y generales"]
+        },
+        {
+          "key": "logaritmos_exponenciales",
+          "nombre_canonical": "Logaritmos y exponenciales",
+          "subtemas": ["Propiedades de los logaritmos", "Logaritmo natural y base 10", "Ecuaciones exponenciales", "Ecuaciones logarítmicas"]
+        },
+        {
+          "key": "sucesiones_series",
+          "nombre_canonical": "Sucesiones y series",
+          "subtemas": ["Sucesiones aritméticas", "Sucesiones geométricas", "Suma de series aritméticas", "Suma de series geométricas"]
+        },
+        {
+          "key": "probabilidad_estadistica",
+          "nombre_canonical": "Probabilidad y estadística",
+          "subtemas": ["Medidas de tendencia central", "Medidas de dispersión", "Combinaciones y permutaciones", "Probabilidad clásica", "Representación gráfica de datos"]
+        }
+      ]
+    },
+    {
+      "key": "fisica",
+      "nombre_canonical": "Física",
+      "temas": [
+        {
+          "key": "cinematica",
+          "nombre_canonical": "Cinemática",
+          "subtemas": ["Movimiento rectilíneo uniforme (MRU)", "Movimiento rectilíneo uniformemente acelerado (MRUA)", "Caída libre", "Tiro parabólico", "Gráficas de movimiento"]
+        },
+        {
+          "key": "leyes_newton",
+          "nombre_canonical": "Fuerzas y Leyes de Newton",
+          "subtemas": ["Primera ley de Newton (inercia)", "Segunda ley de Newton (F=ma)", "Tercera ley de Newton (acción-reacción)", "Fuerza de fricción", "Plano inclinado"]
+        },
+        {
+          "key": "trabajo_energia",
+          "nombre_canonical": "Trabajo, energía y potencia",
+          "subtemas": ["Trabajo mecánico", "Energía cinética", "Energía potencial gravitacional", "Conservación de la energía", "Potencia"]
+        },
+        {
+          "key": "termodinamica",
+          "nombre_canonical": "Termodinámica",
+          "subtemas": ["Temperatura y escalas termométricas", "Calor y transferencia de calor", "Primera ley de la termodinámica", "Segunda ley de la termodinámica", "Dilatación térmica"]
+        },
+        {
+          "key": "ondas",
+          "nombre_canonical": "Ondas",
+          "subtemas": ["Clasificación de ondas", "Propiedades: frecuencia, amplitud, longitud de onda", "Sonido y sus características", "Efecto Doppler"]
+        },
+        {
+          "key": "electromagnetismo",
+          "nombre_canonical": "Electromagnetismo",
+          "subtemas": ["Carga eléctrica y ley de Coulomb", "Campo eléctrico", "Circuitos eléctricos (serie y paralelo)", "Ley de Ohm", "Campo magnético"]
+        },
+        {
+          "key": "optica",
+          "nombre_canonical": "Óptica",
+          "subtemas": ["Reflexión de la luz", "Refracción y ley de Snell", "Lentes convergentes y divergentes", "Espejos cóncavos y convexos"]
+        },
+        {
+          "key": "fluidos",
+          "nombre_canonical": "Fluidos",
+          "subtemas": ["Presión y presión atmosférica", "Principio de Pascal", "Principio de Arquímedes", "Ecuación de continuidad y Bernoulli"]
+        }
+      ]
+    },
+    {
+      "key": "quimica",
+      "nombre_canonical": "Química",
+      "temas": [
+        {
+          "key": "materia_energia",
+          "nombre_canonical": "Materia y energía",
+          "subtemas": ["Estados de la materia", "Cambios físicos y químicos", "Mezclas homogéneas y heterogéneas", "Métodos de separación de mezclas"]
+        },
+        {
+          "key": "estructura_atomica",
+          "nombre_canonical": "Estructura atómica",
+          "subtemas": ["Modelos atómicos", "Partículas subatómicas", "Números cuánticos", "Configuración electrónica"]
+        },
+        {
+          "key": "tabla_periodica",
+          "nombre_canonical": "Tabla periódica",
+          "subtemas": ["Grupos y periodos", "Propiedades periódicas", "Metales, no metales y metaloides", "Electronegatividad y radio atómico"]
+        },
+        {
+          "key": "enlace_quimico",
+          "nombre_canonical": "Enlace químico",
+          "subtemas": ["Enlace iónico", "Enlace covalente", "Enlace metálico", "Fuerzas intermoleculares", "Estructura de Lewis"]
+        },
+        {
+          "key": "nomenclatura",
+          "nombre_canonical": "Nomenclatura química",
+          "subtemas": ["Óxidos", "Ácidos", "Bases e hidróxidos", "Sales", "Nomenclatura IUPAC y tradicional"]
+        },
+        {
+          "key": "reacciones_quimicas",
+          "nombre_canonical": "Reacciones químicas",
+          "subtemas": ["Balanceo de ecuaciones", "Tipos de reacciones", "Estequiometría", "Reactivo limitante", "Rendimiento de reacción"]
+        },
+        {
+          "key": "disoluciones",
+          "nombre_canonical": "Disoluciones",
+          "subtemas": ["Concentración (molaridad, porcentaje)", "Solubilidad y factores", "Propiedades coligativas", "Diluciones"]
+        },
+        {
+          "key": "quimica_carbono",
+          "nombre_canonical": "Química del carbono",
+          "subtemas": ["Hidrocarburos (alcanos, alquenos, alquinos)", "Grupos funcionales", "Isomería", "Compuestos orgánicos de importancia biológica"]
+        }
+      ]
+    },
+    {
+      "key": "biologia",
+      "nombre_canonical": "Biología",
+      "temas": [
+        {
+          "key": "celula",
+          "nombre_canonical": "Célula",
+          "subtemas": ["Estructura celular", "Organelos y sus funciones", "Célula procariota y eucariota", "Membrana celular y transporte"]
+        },
+        {
+          "key": "metabolismo",
+          "nombre_canonical": "Metabolismo celular",
+          "subtemas": ["Respiración celular", "Fotosíntesis", "Fermentación", "ATP y energía celular"]
+        },
+        {
+          "key": "genetica",
+          "nombre_canonical": "Genética",
+          "subtemas": ["Leyes de Mendel", "ADN y ARN", "Síntesis de proteínas", "Mutaciones y herencia", "Ingeniería genética"]
+        },
+        {
+          "key": "evolucion",
+          "nombre_canonical": "Evolución",
+          "subtemas": ["Teorías evolutivas (Lamarck, Darwin)", "Selección natural", "Evidencias de la evolución", "Especiación"]
+        },
+        {
+          "key": "ecologia",
+          "nombre_canonical": "Ecología",
+          "subtemas": ["Ecosistemas y sus componentes", "Cadenas y redes alimenticias", "Ciclos biogeoquímicos", "Relaciones interespecíficas"]
+        },
+        {
+          "key": "biodiversidad",
+          "nombre_canonical": "Biodiversidad",
+          "subtemas": ["Clasificación de los seres vivos", "Reinos biológicos", "Taxonomía y nomenclatura", "Virus y su clasificación"]
+        },
+        {
+          "key": "reproduccion",
+          "nombre_canonical": "Reproducción",
+          "subtemas": ["Mitosis y meiosis", "Reproducción sexual y asexual", "Ciclo celular", "Gametogénesis"]
+        },
+        {
+          "key": "anatomia_fisiologia",
+          "nombre_canonical": "Anatomía y fisiología humana",
+          "subtemas": ["Sistema digestivo", "Sistema respiratorio", "Sistema circulatorio", "Sistema nervioso", "Sistema endocrino"]
+        }
+      ]
+    },
+    {
+      "key": "historia_universal",
+      "nombre_canonical": "Historia Universal",
+      "temas": [
+        {
+          "key": "prehistoria_civilizaciones",
+          "nombre_canonical": "Prehistoria y primeras civilizaciones",
+          "subtemas": ["Mesopotamia", "Egipto", "India y China antiguas", "Origen del ser humano y Paleolítico"]
+        },
+        {
+          "key": "grecia_roma",
+          "nombre_canonical": "Grecia y Roma",
+          "subtemas": ["Democracia ateniense", "Filosofía griega", "República e Imperio Romano", "Legado cultural grecorromano"]
+        },
+        {
+          "key": "edad_media",
+          "nombre_canonical": "Edad Media",
+          "subtemas": ["Feudalismo", "Las Cruzadas", "El Islam y su expansión", "La Iglesia medieval"]
+        },
+        {
+          "key": "renacimiento_reforma",
+          "nombre_canonical": "Renacimiento y Reforma",
+          "subtemas": ["Humanismo renacentista", "Reforma protestante", "Contrarreforma", "Grandes exploraciones geográficas"]
+        },
+        {
+          "key": "ilustracion_revoluciones",
+          "nombre_canonical": "Ilustración y revoluciones",
+          "subtemas": ["La Ilustración y sus pensadores", "Revolución Francesa", "Revolución Industrial", "Independencia de las Trece Colonias"]
+        },
+        {
+          "key": "imperialismo_wwi",
+          "nombre_canonical": "Imperialismo y Primera Guerra Mundial",
+          "subtemas": ["Imperialismo europeo en África y Asia", "Causas de la Primera Guerra Mundial", "Desarrollo y consecuencias de la Gran Guerra", "Tratado de Versalles"]
+        },
+        {
+          "key": "entreguerras_wwii",
+          "nombre_canonical": "Periodo entreguerras y Segunda Guerra Mundial",
+          "subtemas": ["Crisis de 1929", "Fascismo y nazismo", "Segunda Guerra Mundial", "Holocausto y consecuencias"]
+        },
+        {
+          "key": "guerra_fria_contemporaneo",
+          "nombre_canonical": "Guerra Fría y mundo contemporáneo",
+          "subtemas": ["Bipolaridad: EUA vs URSS", "Descolonización", "Caída del muro de Berlín", "Globalización y conflictos actuales"]
+        }
+      ]
+    },
+    {
+      "key": "historia_mexico",
+      "nombre_canonical": "Historia de México",
+      "temas": [
+        {
+          "key": "mexico_prehispanico",
+          "nombre_canonical": "México prehispánico",
+          "subtemas": ["Olmecas y culturas preclásicas", "Mayas", "Teotihuacán", "Aztecas (mexicas)"]
+        },
+        {
+          "key": "conquista_colonia",
+          "nombre_canonical": "Conquista y Colonia",
+          "subtemas": ["Expediciones y conquista de Hernán Cortés", "Organización del virreinato", "Sociedad novohispana y castas", "Economía colonial"]
+        },
+        {
+          "key": "independencia",
+          "nombre_canonical": "Independencia de México",
+          "subtemas": ["Causas internas y externas", "Etapa de inicio (Hidalgo)", "Etapa de organización (Morelos)", "Consumación (Iturbide y Guerrero)"]
+        },
+        {
+          "key": "mexico_independiente_reforma",
+          "nombre_canonical": "México independiente y Reforma",
+          "subtemas": ["Primer Imperio y República Federal", "Guerra con Estados Unidos", "Leyes de Reforma y Guerra de Reforma", "Intervención francesa y Segundo Imperio"]
+        },
+        {
+          "key": "porfiriato",
+          "nombre_canonical": "Porfiriato",
+          "subtemas": ["Modernización económica", "Política de conciliación", "Desigualdad social y hacendados", "Oposición al régimen"]
+        },
+        {
+          "key": "revolucion_mexicana",
+          "nombre_canonical": "Revolución Mexicana",
+          "subtemas": ["Causas y el Plan de San Luis", "Maderismo y Decena Trágica", "Zapatismo, villismo y carrancismo", "Constitución de 1917"]
+        },
+        {
+          "key": "mexico_posrevolucionario",
+          "nombre_canonical": "México posrevolucionario",
+          "subtemas": ["Institucionalización del poder", "Maximato y Cardenismo", "Nacionalización del petróleo", "Modelo de sustitución de importaciones"]
+        },
+        {
+          "key": "mexico_contemporaneo",
+          "nombre_canonical": "México contemporáneo",
+          "subtemas": ["Desarrollo estabilizador", "Movimiento estudiantil de 1968", "Crisis económicas y neoliberalismo", "Transición democrática"]
+        }
+      ]
+    },
+    {
+      "key": "literatura",
+      "nombre_canonical": "Literatura",
+      "temas": [
+        {
+          "key": "generos_literarios",
+          "nombre_canonical": "Géneros literarios",
+          "subtemas": ["Género épico/narrativo", "Género lírico", "Género dramático", "Subgéneros literarios"]
+        },
+        {
+          "key": "corrientes_literarias",
+          "nombre_canonical": "Corrientes literarias",
+          "subtemas": ["Clasicismo y Edad Media", "Renacimiento y Barroco", "Romanticismo y Realismo", "Modernismo y Vanguardismo", "Literatura contemporánea"]
+        },
+        {
+          "key": "figuras_retoricas",
+          "nombre_canonical": "Figuras retóricas",
+          "subtemas": ["Metáfora y símil", "Hipérbole y personificación", "Metonimia y sinécdoque", "Anáfora, aliteración y onomatopeya"]
+        },
+        {
+          "key": "analisis_textos",
+          "nombre_canonical": "Análisis de textos literarios",
+          "subtemas": ["Estructura narrativa", "Tema y motivos", "Tipos de narrador", "Análisis de personajes"]
+        },
+        {
+          "key": "literatura_hispanoamericana",
+          "nombre_canonical": "Literatura hispanoamericana",
+          "subtemas": ["Boom latinoamericano", "Realismo mágico", "Autores representativos (García Márquez, Borges, Cortázar)", "Poesía hispanoamericana (Neruda, Paz)"]
+        },
+        {
+          "key": "literatura_mexicana",
+          "nombre_canonical": "Literatura mexicana",
+          "subtemas": ["Sor Juana Inés de la Cruz", "Novela de la Revolución", "Juan Rulfo y Octavio Paz", "Literatura mexicana contemporánea"]
+        },
+        {
+          "key": "comprension_analisis",
+          "nombre_canonical": "Comprensión y análisis de textos",
+          "subtemas": ["Comentario literario", "Interpretación de poesía", "Análisis de narrativa", "Contexto histórico-literario"]
+        }
+      ]
+    },
+    {
+      "key": "formacion_civica",
+      "nombre_canonical": "Formación Cívica y Política",
+      "temas": [
+        {
+          "key": "constitucion_derechos",
+          "nombre_canonical": "Constitución y derechos",
+          "subtemas": ["Constitución Política de México", "Garantías individuales y derechos humanos", "Derechos sociales", "Organismos protectores de derechos humanos"]
+        },
+        {
+          "key": "estructura_gobierno",
+          "nombre_canonical": "Estructura del gobierno mexicano",
+          "subtemas": ["Poderes de la Unión (Ejecutivo, Legislativo, Judicial)", "Niveles de gobierno (federal, estatal, municipal)", "Organismos autónomos", "Federalismo"]
+        },
+        {
+          "key": "democracia_participacion",
+          "nombre_canonical": "Democracia y participación ciudadana",
+          "subtemas": ["Concepto de democracia", "Partidos políticos en México", "Procesos electorales", "Participación ciudadana y sociedad civil"]
+        },
+        {
+          "key": "problemas_sociales",
+          "nombre_canonical": "Problemas sociales contemporáneos",
+          "subtemas": ["Desigualdad y pobreza", "Migración", "Violencia y seguridad", "Corrupción y transparencia"]
+        }
+      ]
+    },
+    {
+      "key": "historia_arte",
+      "nombre_canonical": "Historia del Arte",
+      "temas": [
+        {
+          "key": "arte_antiguo_medieval",
+          "nombre_canonical": "Arte antiguo y medieval",
+          "subtemas": ["Arte prehistórico", "Arte egipcio y mesopotámico", "Arte grecoromano", "Arte medieval y bizantino"]
+        },
+        {
+          "key": "arte_prehispanico_colonial",
+          "nombre_canonical": "Arte prehispánico y colonial mexicano",
+          "subtemas": ["Arquitectura y escultura prehispánica", "Pintura mural prehispánica", "Arte barroco novohispano", "Arte colonial mexicano"]
+        },
+        {
+          "key": "arte_moderno",
+          "nombre_canonical": "Arte moderno y vanguardias",
+          "subtemas": ["Impresionismo y postimpresionismo", "Cubismo y surrealismo", "Expresionismo abstracto", "Muralismo mexicano"]
+        },
+        {
+          "key": "arte_contemporaneo_diseno",
+          "nombre_canonical": "Arte contemporáneo y diseño",
+          "subtemas": ["Arte pop y minimalismo", "Arte conceptual", "Diseño gráfico e industrial", "Tendencias artísticas actuales"]
+        }
+      ]
+    }
+  ],
+  "areas": [
+    {
+      "key": "cbi",
+      "nombre": "UAM Ciencias Básicas e Ingeniería 2025",
+      "area": "CBI - Ciencias Básicas e Ingeniería",
+      "orden": 1,
+      "escuela_orden": 3,
+      "total_reactivos": 80,
+      "tiempo_limite_minutos": 120,
+      "distribucion": {
+        "razonamiento_verbal": 20,
+        "razonamiento_matematico": 20,
+        "matematicas": 14,
+        "fisica": 13,
+        "quimica": 13
+      }
+    },
+    {
+      "key": "cbs",
+      "nombre": "UAM Ciencias Biológicas y de la Salud 2025",
+      "area": "CBS - Ciencias Biológicas y de la Salud",
+      "orden": 2,
+      "escuela_orden": 3,
+      "total_reactivos": 80,
+      "tiempo_limite_minutos": 120,
+      "distribucion": {
+        "razonamiento_verbal": 20,
+        "razonamiento_matematico": 20,
+        "matematicas": 10,
+        "biologia": 10,
+        "fisica": 10,
+        "quimica": 10
+      }
+    },
+    {
+      "key": "csh",
+      "nombre": "UAM Ciencias Sociales y Humanidades 2025",
+      "area": "CSH - Ciencias Sociales y Humanidades",
+      "orden": 3,
+      "escuela_orden": 3,
+      "total_reactivos": 80,
+      "tiempo_limite_minutos": 120,
+      "distribucion": {
+        "razonamiento_verbal": 20,
+        "razonamiento_matematico": 20,
+        "matematicas": 8,
+        "literatura": 8,
+        "historia_universal": 8,
+        "historia_mexico": 8,
+        "formacion_civica": 8
+      }
+    },
+    {
+      "key": "cyad",
+      "nombre": "UAM Ciencias y Artes para el Diseño 2025",
+      "area": "CyAD - Ciencias y Artes para el Diseño",
+      "orden": 4,
+      "escuela_orden": 3,
+      "total_reactivos": 80,
+      "tiempo_limite_minutos": 120,
+      "distribucion": {
+        "razonamiento_verbal": 20,
+        "razonamiento_matematico": 20,
+        "matematicas": 10,
+        "fisica": 10,
+        "historia_arte": 10,
+        "formacion_civica": 10
+      }
+    }
+  ]
+}

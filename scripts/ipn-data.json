@@ -1,0 +1,370 @@
+{
+  "materias": [
+    {
+      "key": "comunicacion",
+      "nombre_canonical": "Comunicación",
+      "temas": [
+        {
+          "key": "comprension_lectora",
+          "nombre_canonical": "Comprensión lectora IPN",
+          "subtemas": ["Idea principal y secundarias", "Inferencias y conclusiones", "Vocabulario en contexto", "Propósito del autor", "Estructura del texto"]
+        },
+        {
+          "key": "analisis_textos_informativos",
+          "nombre_canonical": "Análisis de textos informativos",
+          "subtemas": ["Textos científicos y técnicos", "Textos periodísticos", "Textos argumentativos", "Interpretación de gráficas y tablas"]
+        },
+        {
+          "key": "gramatica_ortografia",
+          "nombre_canonical": "Gramática y ortografía IPN",
+          "subtemas": ["Reglas ortográficas", "Signos de puntuación", "Concordancia gramatical", "Vicios del lenguaje", "Uso de grafías"]
+        },
+        {
+          "key": "redaccion_expresion",
+          "nombre_canonical": "Redacción y expresión escrita",
+          "subtemas": ["Coherencia y cohesión textual", "Conectores y nexos", "Tipos de párrafos", "Estructura de un ensayo"]
+        },
+        {
+          "key": "comunicacion_funcional",
+          "nombre_canonical": "Comunicación funcional",
+          "subtemas": ["Funciones del lenguaje", "Intención comunicativa", "Registros lingüísticos", "Comunicación verbal y no verbal"]
+        }
+      ]
+    },
+    {
+      "key": "matematicas",
+      "nombre_canonical": "Matemáticas",
+      "temas": [
+        {
+          "key": "numeros_reales",
+          "nombre_canonical": "Operaciones con números reales",
+          "subtemas": ["Números naturales y enteros", "Números racionales e irracionales", "Operaciones básicas y jerarquía", "Valor absoluto", "Notación científica"]
+        },
+        {
+          "key": "productos_notables",
+          "nombre_canonical": "Productos notables y factorización",
+          "subtemas": ["Binomio al cuadrado", "Binomios conjugados", "Diferencia de cuadrados", "Trinomio cuadrado perfecto", "Factor común y agrupación"]
+        },
+        {
+          "key": "ecuaciones",
+          "nombre_canonical": "Ecuaciones",
+          "subtemas": ["Ecuaciones lineales", "Ecuaciones cuadráticas", "Fórmula general", "Ecuaciones con fracciones", "Problemas de aplicación"]
+        },
+        {
+          "key": "desigualdades",
+          "nombre_canonical": "Desigualdades",
+          "subtemas": ["Desigualdades lineales", "Desigualdades cuadráticas", "Desigualdades con valor absoluto", "Intervalos y representación gráfica"]
+        },
+        {
+          "key": "linea_recta",
+          "nombre_canonical": "Línea recta",
+          "subtemas": ["Pendiente y ordenada al origen", "Ecuación punto-pendiente", "Ecuación general de la recta", "Rectas paralelas y perpendiculares", "Distancia entre dos puntos"]
+        },
+        {
+          "key": "sistemas_ecuaciones",
+          "nombre_canonical": "Sistemas de ecuaciones lineales",
+          "subtemas": ["Método de sustitución", "Método de eliminación", "Método gráfico", "Sistemas de 2x2 y 3x3", "Problemas de aplicación"]
+        },
+        {
+          "key": "funciones",
+          "nombre_canonical": "Funciones",
+          "subtemas": ["Concepto de función", "Dominio y rango", "Función lineal y cuadrática", "Función exponencial y logarítmica", "Gráficas de funciones"]
+        },
+        {
+          "key": "trigonometria",
+          "nombre_canonical": "Trigonometría",
+          "subtemas": ["Funciones trigonométricas", "Identidades trigonométricas", "Triángulos rectángulos", "Ley de senos y cosenos", "Círculo unitario"]
+        },
+        {
+          "key": "geometria_analitica",
+          "nombre_canonical": "Geometría analítica",
+          "subtemas": ["Circunferencia", "Parábola", "Elipse", "Hipérbola", "Ecuaciones canónicas y generales"]
+        },
+        {
+          "key": "logaritmos_exponenciales",
+          "nombre_canonical": "Logaritmos y exponenciales",
+          "subtemas": ["Propiedades de los logaritmos", "Logaritmo natural y base 10", "Ecuaciones exponenciales", "Ecuaciones logarítmicas"]
+        },
+        {
+          "key": "sucesiones_series",
+          "nombre_canonical": "Sucesiones y series",
+          "subtemas": ["Sucesiones aritméticas", "Sucesiones geométricas", "Suma de series aritméticas", "Suma de series geométricas"]
+        },
+        {
+          "key": "probabilidad_estadistica",
+          "nombre_canonical": "Probabilidad y estadística",
+          "subtemas": ["Medidas de tendencia central", "Medidas de dispersión", "Combinaciones y permutaciones", "Probabilidad clásica", "Representación gráfica de datos"]
+        },
+        {
+          "key": "calculo_diferencial",
+          "nombre_canonical": "Cálculo diferencial",
+          "subtemas": ["Límites y continuidad", "Definición de derivada", "Reglas de derivación", "Derivada de funciones trigonométricas", "Aplicaciones de la derivada"]
+        },
+        {
+          "key": "calculo_integral",
+          "nombre_canonical": "Cálculo integral",
+          "subtemas": ["Antiderivadas e integral indefinida", "Integral definida", "Teorema fundamental del cálculo", "Métodos de integración", "Aplicaciones de la integral"]
+        }
+      ]
+    },
+    {
+      "key": "fisica",
+      "nombre_canonical": "Física",
+      "temas": [
+        {
+          "key": "cinematica",
+          "nombre_canonical": "Cinemática",
+          "subtemas": ["Movimiento rectilíneo uniforme (MRU)", "Movimiento rectilíneo uniformemente acelerado (MRUA)", "Caída libre", "Tiro parabólico", "Gráficas de movimiento"]
+        },
+        {
+          "key": "leyes_newton",
+          "nombre_canonical": "Fuerzas y Leyes de Newton",
+          "subtemas": ["Primera ley de Newton (inercia)", "Segunda ley de Newton (F=ma)", "Tercera ley de Newton (acción-reacción)", "Fuerza de fricción", "Plano inclinado"]
+        },
+        {
+          "key": "trabajo_energia",
+          "nombre_canonical": "Trabajo, energía y potencia",
+          "subtemas": ["Trabajo mecánico", "Energía cinética", "Energía potencial gravitacional", "Conservación de la energía", "Potencia"]
+        },
+        {
+          "key": "termodinamica",
+          "nombre_canonical": "Termodinámica",
+          "subtemas": ["Temperatura y escalas termométricas", "Calor y transferencia de calor", "Primera ley de la termodinámica", "Segunda ley de la termodinámica", "Dilatación térmica"]
+        },
+        {
+          "key": "ondas",
+          "nombre_canonical": "Ondas",
+          "subtemas": ["Clasificación de ondas", "Propiedades: frecuencia, amplitud, longitud de onda", "Sonido y sus características", "Efecto Doppler"]
+        },
+        {
+          "key": "electromagnetismo",
+          "nombre_canonical": "Electromagnetismo",
+          "subtemas": ["Carga eléctrica y ley de Coulomb", "Campo eléctrico", "Circuitos eléctricos (serie y paralelo)", "Ley de Ohm", "Campo magnético"]
+        },
+        {
+          "key": "optica",
+          "nombre_canonical": "Óptica",
+          "subtemas": ["Reflexión de la luz", "Refracción y ley de Snell", "Lentes convergentes y divergentes", "Espejos cóncavos y convexos"]
+        },
+        {
+          "key": "fluidos",
+          "nombre_canonical": "Fluidos",
+          "subtemas": ["Presión y presión atmosférica", "Principio de Pascal", "Principio de Arquímedes", "Ecuación de continuidad y Bernoulli"]
+        }
+      ]
+    },
+    {
+      "key": "quimica",
+      "nombre_canonical": "Química",
+      "temas": [
+        {
+          "key": "materia_energia",
+          "nombre_canonical": "Materia y energía",
+          "subtemas": ["Estados de la materia", "Cambios físicos y químicos", "Mezclas homogéneas y heterogéneas", "Métodos de separación de mezclas"]
+        },
+        {
+          "key": "estructura_atomica",
+          "nombre_canonical": "Estructura atómica",
+          "subtemas": ["Modelos atómicos", "Partículas subatómicas", "Números cuánticos", "Configuración electrónica"]
+        },
+        {
+          "key": "tabla_periodica",
+          "nombre_canonical": "Tabla periódica",
+          "subtemas": ["Grupos y periodos", "Propiedades periódicas", "Metales, no metales y metaloides", "Electronegatividad y radio atómico"]
+        },
+        {
+          "key": "enlace_quimico",
+          "nombre_canonical": "Enlace químico",
+          "subtemas": ["Enlace iónico", "Enlace covalente", "Enlace metálico", "Fuerzas intermoleculares", "Estructura de Lewis"]
+        },
+        {
+          "key": "nomenclatura",
+          "nombre_canonical": "Nomenclatura química",
+          "subtemas": ["Óxidos", "Ácidos", "Bases e hidróxidos", "Sales", "Nomenclatura IUPAC y tradicional"]
+        },
+        {
+          "key": "reacciones_quimicas",
+          "nombre_canonical": "Reacciones químicas",
+          "subtemas": ["Balanceo de ecuaciones", "Tipos de reacciones", "Estequiometría", "Reactivo limitante", "Rendimiento de reacción"]
+        },
+        {
+          "key": "disoluciones",
+          "nombre_canonical": "Disoluciones",
+          "subtemas": ["Concentración (molaridad, porcentaje)", "Solubilidad y factores", "Propiedades coligativas", "Diluciones"]
+        },
+        {
+          "key": "quimica_carbono",
+          "nombre_canonical": "Química del carbono",
+          "subtemas": ["Hidrocarburos (alcanos, alquenos, alquinos)", "Grupos funcionales", "Isomería", "Compuestos orgánicos de importancia biológica"]
+        }
+      ]
+    },
+    {
+      "key": "biologia",
+      "nombre_canonical": "Biología",
+      "temas": [
+        {
+          "key": "celula",
+          "nombre_canonical": "Célula",
+          "subtemas": ["Estructura celular", "Organelos y sus funciones", "Célula procariota y eucariota", "Membrana celular y transporte"]
+        },
+        {
+          "key": "metabolismo",
+          "nombre_canonical": "Metabolismo celular",
+          "subtemas": ["Respiración celular", "Fotosíntesis", "Fermentación", "ATP y energía celular"]
+        },
+        {
+          "key": "genetica",
+          "nombre_canonical": "Genética",
+          "subtemas": ["Leyes de Mendel", "ADN y ARN", "Síntesis de proteínas", "Mutaciones y herencia", "Ingeniería genética"]
+        },
+        {
+          "key": "evolucion",
+          "nombre_canonical": "Evolución",
+          "subtemas": ["Teorías evolutivas (Lamarck, Darwin)", "Selección natural", "Evidencias de la evolución", "Especiación"]
+        },
+        {
+          "key": "ecologia",
+          "nombre_canonical": "Ecología",
+          "subtemas": ["Ecosistemas y sus componentes", "Cadenas y redes alimenticias", "Ciclos biogeoquímicos", "Relaciones interespecíficas"]
+        },
+        {
+          "key": "biodiversidad",
+          "nombre_canonical": "Biodiversidad",
+          "subtemas": ["Clasificación de los seres vivos", "Reinos biológicos", "Taxonomía y nomenclatura", "Virus y su clasificación"]
+        },
+        {
+          "key": "reproduccion",
+          "nombre_canonical": "Reproducción",
+          "subtemas": ["Mitosis y meiosis", "Reproducción sexual y asexual", "Ciclo celular", "Gametogénesis"]
+        },
+        {
+          "key": "anatomia_fisiologia",
+          "nombre_canonical": "Anatomía y fisiología humana",
+          "subtemas": ["Sistema digestivo", "Sistema respiratorio", "Sistema circulatorio", "Sistema nervioso", "Sistema endocrino"]
+        }
+      ]
+    },
+    {
+      "key": "economia",
+      "nombre_canonical": "Economía",
+      "temas": [
+        {
+          "key": "microeconomia",
+          "nombre_canonical": "Microeconomía básica",
+          "subtemas": ["Oferta y demanda", "Elasticidad", "Mercado y precios", "Estructura de mercado (competencia, monopolio)"]
+        },
+        {
+          "key": "macroeconomia",
+          "nombre_canonical": "Macroeconomía básica",
+          "subtemas": ["PIB y crecimiento económico", "Inflación y desempleo", "Política fiscal", "Política monetaria"]
+        },
+        {
+          "key": "economia_mexicana",
+          "nombre_canonical": "Economía mexicana",
+          "subtemas": ["Modelo económico actual", "Comercio exterior y tratados", "Sectores productivos de México", "Indicadores económicos nacionales"]
+        },
+        {
+          "key": "finanzas_basicas",
+          "nombre_canonical": "Finanzas básicas",
+          "subtemas": ["Interés simple y compuesto", "Crédito y ahorro", "Sistema financiero mexicano", "Impuestos básicos (ISR, IVA)"]
+        }
+      ]
+    },
+    {
+      "key": "contabilidad",
+      "nombre_canonical": "Contabilidad",
+      "temas": [
+        {
+          "key": "fundamentos_contabilidad",
+          "nombre_canonical": "Fundamentos de contabilidad",
+          "subtemas": ["Concepto y objetivo de la contabilidad", "Principios de contabilidad (NIF)", "Ecuación contable básica", "Partida doble"]
+        },
+        {
+          "key": "registros_contables",
+          "nombre_canonical": "Registros contables",
+          "subtemas": ["Libro diario", "Libro mayor", "Balanza de comprobación", "Catálogo de cuentas"]
+        },
+        {
+          "key": "estados_financieros",
+          "nombre_canonical": "Estados financieros básicos",
+          "subtemas": ["Balance general", "Estado de resultados", "Estado de flujo de efectivo", "Interpretación de estados financieros"]
+        }
+      ]
+    },
+    {
+      "key": "administracion",
+      "nombre_canonical": "Administración",
+      "temas": [
+        {
+          "key": "proceso_administrativo",
+          "nombre_canonical": "Proceso administrativo",
+          "subtemas": ["Planeación", "Organización", "Dirección", "Control"]
+        },
+        {
+          "key": "teorias_administrativas",
+          "nombre_canonical": "Teorías administrativas",
+          "subtemas": ["Administración científica (Taylor)", "Teoría clásica (Fayol)", "Escuela de relaciones humanas", "Enfoques modernos de administración"]
+        },
+        {
+          "key": "empresa_organizacion",
+          "nombre_canonical": "Empresa y organización",
+          "subtemas": ["Tipos de empresas", "Estructuras organizacionales", "Recursos humanos básicos", "Emprendimiento"]
+        }
+      ]
+    }
+  ],
+  "areas": [
+    {
+      "key": "iycfm",
+      "nombre": "IPN Ingeniería y Ciencias Físico-Matemáticas 2025",
+      "area": "IyCFM - Ingeniería y Ciencias Físico-Matemáticas",
+      "orden": 1,
+      "escuela_orden": 2,
+      "total_reactivos": 130,
+      "tiempo_limite_minutos": 180,
+      "distribucion": {
+        "comunicacion": 40,
+        "matematicas": 50,
+        "fisica": 20,
+        "quimica": 10,
+        "biologia": 10
+      }
+    },
+    {
+      "key": "cmb",
+      "nombre": "IPN Ciencias Médico-Biológicas 2025",
+      "area": "CMB - Ciencias Médico-Biológicas",
+      "orden": 2,
+      "escuela_orden": 2,
+      "total_reactivos": 130,
+      "tiempo_limite_minutos": 180,
+      "distribucion": {
+        "comunicacion": 40,
+        "matematicas": 35,
+        "fisica": 10,
+        "quimica": 20,
+        "biologia": 25
+      }
+    },
+    {
+      "key": "csa",
+      "nombre": "IPN Ciencias Sociales y Administrativas 2025",
+      "area": "CSA - Ciencias Sociales y Administrativas",
+      "orden": 3,
+      "escuela_orden": 2,
+      "total_reactivos": 130,
+      "tiempo_limite_minutos": 180,
+      "distribucion": {
+        "comunicacion": 40,
+        "matematicas": 35,
+        "fisica": 10,
+        "quimica": 10,
+        "biologia": 10,
+        "economia": 10,
+        "contabilidad": 8,
+        "administracion": 7
+      }
+    }
+  ]
+}
