@@ -140,7 +140,7 @@ import { Examen } from '../../core/models';
                   } @else {
                     <button
                       class="btn btn-primary btn-lg w-100 py-2"
-                      (click)="subscribe()"
+                      (click)="openConfirmModal()"
                       [disabled]="loading()"
                     >
                       @if (loading()) {
@@ -161,6 +161,39 @@ import { Examen } from '../../core/models';
             </div>
           </div>
         }
+      }
+
+      <!-- ===== CONFIRMATION MODAL ===== -->
+      @if (showConfirmModal() && selectedExamen(); as ex) {
+        <div class="modal-backdrop fade show" (click)="closeConfirmModal()"></div>
+        <div class="modal d-block fade show" tabindex="-1" (click)="closeConfirmModal()">
+          <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">Confirma tu compra</h5>
+                <button type="button" class="btn-close" (click)="closeConfirmModal()"></button>
+              </div>
+              <div class="modal-body text-center py-4">
+                <i class="bi bi-exclamation-circle fs-1 text-warning d-block mb-3"></i>
+                <p class="fs-5 mb-1">Estas por pagar el examen:</p>
+                <p class="fw-bold fs-5 text-primary mb-1">{{ ex.nombre }} - {{ ex.area }}</p>
+                <p class="text-muted mb-0">{{ ex.escuela }} | {{ ex.total_reactivos }} reactivos</p>
+              </div>
+              <div class="modal-footer border-0 justify-content-center gap-2 pt-0">
+                <button class="btn btn-outline-secondary px-4" (click)="clearSelection()">
+                  <i class="bi bi-arrow-left me-1"></i> No, elegir otro examen
+                </button>
+                <button
+                  class="btn btn-primary px-4"
+                  (click)="closeConfirmModal(); subscribe()"
+                  [disabled]="loading()"
+                >
+                  <i class="bi bi-check-circle me-1"></i> Si, continuar con el pago
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       }
 
       <!-- ===== EMBEDDED CHECKOUT FORM ===== -->
@@ -198,6 +231,7 @@ export class SubscribeComponent implements OnDestroy {
   errorMessage = signal('');
   checkoutActive = signal(false);
   selectedExamen = signal<Examen | null>(null);
+  showConfirmModal = signal(false);
 
   private allExamenes = signal<Examen[]>([]);
 
@@ -240,6 +274,15 @@ export class SubscribeComponent implements OnDestroy {
   clearSelection() {
     this.selectedExamen.set(null);
     this.errorMessage.set('');
+    this.showConfirmModal.set(false);
+  }
+
+  openConfirmModal() {
+    this.showConfirmModal.set(true);
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal.set(false);
   }
 
   async subscribe() {
