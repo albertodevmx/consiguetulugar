@@ -46,6 +46,8 @@
     font-size: 0.85rem;
     white-space: nowrap;
 
+    i { font-size: 1.3em; }
+
     &:hover {
       color: #fff;
     }
@@ -61,6 +63,8 @@
       font-size: 0.8rem;
       padding: 0.25rem 0.5rem;
       white-space: nowrap;
+
+      i { font-size: 1.3em; }
     }
   }
 }

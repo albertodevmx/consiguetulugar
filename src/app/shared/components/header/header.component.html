@@ -6,7 +6,6 @@
 
   <div class="header-actions">
     <nav>
-      <a routerLink="/" class="nav-link"><i class="bi bi-house-door"></i><span class="nav-label"> Inicio</span></a>
       <a [routerLink]="practiceLink()" class="nav-link"><i class="bi bi-mortarboard"></i><span class="nav-label"> Practicar</span></a>
     </nav>
 
@@ -15,10 +14,7 @@
     } @else {
       <div class="auth-buttons">
         <a routerLink="/login" class="btn btn-sm btn-outline-light">
-          <i class="bi bi-box-arrow-in-right"></i><span class="nav-label"> Entrar</span>
-        </a>
-        <a routerLink="/registro" class="btn btn-sm btn-warning">
-          <i class="bi bi-person-plus"></i><span class="nav-label"> Registro</span>
+          <i class="bi bi-person"></i><span class="nav-label"> Entrar</span>
         </a>
       </div>
     }
