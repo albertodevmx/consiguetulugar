@@ -12,11 +12,7 @@
     @if (auth.isLoggedIn()) {
       <a routerLink="/perfil" class="nav-link"><i class="bi bi-person-circle"></i><span class="nav-label"> Mi cuenta</span></a>
     } @else {
-      <div class="auth-buttons">
-        <a routerLink="/login" class="btn btn-sm btn-outline-light">
-          <i class="bi bi-person"></i><span class="nav-label"> Entrar</span>
-        </a>
-      </div>
+      <a routerLink="/login" class="nav-link nav-link--warning"><i class="bi bi-person"></i><span class="nav-label"> Entrar</span></a>
     }
   </div>
 </header>
