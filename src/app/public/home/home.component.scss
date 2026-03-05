@@ -7,120 +7,136 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 4rem 2rem 3rem;
-  min-height: 70vh;
+  padding: 2rem 1.25rem 2.5rem;
+  min-height: 85vh;
 
-  .hero-logo {
-    width: 110px;
-    height: 110px;
+  .hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     margin-bottom: 1.5rem;
-  }
 
-  h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    color: v.$primary;
-  }
-
-  .subtitle {
-    font-size: 1.2rem;
-    color: v.$secondary;
-    margin-bottom: 1rem;
-    max-width: 540px;
-  }
-
-  .description {
-    max-width: 560px;
-    font-size: 1rem;
-    color: #444;
-    line-height: 1.7;
-    margin-bottom: 2rem;
-  }
-
-  .cta-main {
-    font-size: 1.1rem;
-    padding: 0.75rem 2rem;
-  }
-}
-
-// ---- Features ----
-.features {
-  padding: 3.5rem 2rem;
-  background: #f8f9fa;
-
-  h2 {
-    text-align: center;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: v.$primary;
-    margin-bottom: 2.5rem;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-
-  .feature-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1.75rem 1.25rem;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: transform 0.2s, box-shadow 0.2s;
-
-    &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    .hero-logo {
+      width: 40px;
+      height: 40px;
     }
 
-    .feature-icon {
-      width: 56px;
-      height: 56px;
-      margin: 0 auto 1rem;
+    .hero-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: v.$primary;
+    }
+  }
+
+  .pricing-card {
+    background: #fff;
+    border: 2px solid v.$primary;
+    border-radius: 16px;
+    padding: 1.5rem 1.5rem 1.25rem;
+    margin-bottom: 1.5rem;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+    .pricing-hook {
+      font-size: 1rem;
+      color: #444;
+      margin-bottom: 0.75rem;
+    }
+
+    .pricing-discount {
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
-      background: rgba(v.$primary, 0.1);
-      color: v.$primary;
-      font-size: 1.5rem;
-    }
-
-    h3 {
-      font-size: 1.05rem;
-      font-weight: 600;
+      gap: 0.75rem;
       margin-bottom: 0.5rem;
-      color: #212529;
+
+      .price-original {
+        font-size: 1.1rem;
+        color: #999;
+        text-decoration: line-through;
+      }
+
+      .price-badge {
+        background: #dc3545;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+      }
     }
 
-    p {
-      font-size: 0.9rem;
-      color: v.$secondary;
-      line-height: 1.5;
+    .price-final {
+      font-size: 1.25rem;
+      color: #212529;
+      margin-bottom: 0.25rem;
+
+      strong {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: v.$primary;
+      }
+
+      .price-period {
+        font-size: 1rem;
+        color: #666;
+      }
+    }
+
+    .price-limited {
+      font-size: 0.85rem;
+      color: #dc3545;
+      font-weight: 600;
       margin: 0;
     }
+  }
+
+  .hero-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.75rem;
+    text-align: left;
+
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      color: #333;
+
+      i {
+        color: v.$primary;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .cta-main {
+    font-size: 1.15rem;
+    padding: 0.85rem 2.5rem;
+    font-weight: 600;
+    width: 100%;
+    max-width: 320px;
   }
 }
 
 // ---- Universities ----
 .universities {
-  padding: 3.5rem 2rem;
+  padding: 2.5rem 1.25rem;
   text-align: center;
 
   h2 {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: v.$primary;
     margin-bottom: 0.5rem;
   }
 
   .universities-subtitle {
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: v.$secondary;
     margin-bottom: 1.5rem;
   }
@@ -165,7 +181,7 @@
 
 // ---- Opinion ----
 .opinion-section {
-  padding: 3.5rem 2rem;
+  padding: 2.5rem 1.25rem;
   text-align: center;
   background: #eef6ff;
 
@@ -183,7 +199,7 @@
   }
 
   h2 {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: v.$primary;
     margin-bottom: 0.5rem;
@@ -200,13 +216,13 @@
 
 // ---- Final CTA ----
 .final-cta {
-  padding: 3.5rem 2rem;
+  padding: 2.5rem 1.25rem;
   text-align: center;
   background: v.$primary;
   color: #fff;
 
   h2 {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
   }
@@ -218,53 +234,69 @@
   }
 }
 
-// ---- Responsive ----
-@media (max-width: 575.98px) {
+// ---- Desktop ----
+@media (min-width: 576px) {
   .hero {
-    padding: 2.5rem 1.25rem 2rem;
+    padding: 3rem 2rem 3.5rem;
 
-    h1 {
-      font-size: 1.75rem;
+    .hero-brand {
+      .hero-logo {
+        width: 56px;
+        height: 56px;
+      }
+
+      .hero-title {
+        font-size: 1.35rem;
+      }
     }
 
-    .subtitle {
-      font-size: 1rem;
+    .pricing-card {
+      padding: 2rem;
+      max-width: 420px;
     }
 
-    .description {
-      font-size: 0.9rem;
+    .hero-benefits {
+      flex-direction: row;
+      gap: 1.5rem;
+      text-align: center;
+
+      .benefit-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.3rem;
+
+        i {
+          font-size: 1.3rem;
+        }
+      }
     }
-  }
 
-  .features {
-    padding: 2.5rem 1rem;
-
-    h2 {
-      font-size: 1.4rem;
+    .cta-main {
+      width: auto;
     }
   }
 
   .universities {
-    padding: 2.5rem 1rem;
+    padding: 3.5rem 2rem;
 
     h2 {
-      font-size: 1.4rem;
+      font-size: 1.75rem;
     }
   }
 
   .opinion-section {
-    padding: 2.5rem 1rem;
+    padding: 3.5rem 2rem;
 
     h2 {
-      font-size: 1.4rem;
+      font-size: 1.75rem;
     }
   }
 
   .final-cta {
-    padding: 2.5rem 1.25rem;
+    padding: 3.5rem 2rem;
 
     h2 {
-      font-size: 1.4rem;
+      font-size: 1.75rem;
     }
   }
 }

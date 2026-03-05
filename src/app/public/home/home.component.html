@@ -1,12 +1,35 @@
 <!-- Hero -->
 <section class="hero">
-  <img src="logo.png" alt="Estudiar es barato" class="hero-logo">
-  <h1>Estudiar es barato</h1>
-  <p class="subtitle">Prepárate para tu examen de admisión con simulacros y práctica por tema.</p>
-  <p class="description">
-    Practica con simulacros que replican la estructura de tu examen:
-    mismo número de preguntas y tiempo límite, para que llegues listo el día del examen.
-  </p>
+  <div class="hero-brand">
+    <img src="logo.png" alt="Estudiar es barato" class="hero-logo">
+    <span class="hero-title">Estudiar es barato</span>
+  </div>
+
+  <div class="pricing-card">
+    <p class="pricing-hook">Prepárate para tu examen de admisión</p>
+    <div class="pricing-discount">
+      <span class="price-original">$198/mes</span>
+      <span class="price-badge">50% OFF</span>
+    </div>
+    <p class="price-final">Solo <strong>$99</strong><span class="price-period">/mes</span></p>
+    <p class="price-limited">Precio por tiempo limitado</p>
+  </div>
+
+  <div class="hero-benefits">
+    <div class="benefit-item">
+      <i class="bi bi-play-circle-fill"></i>
+      <span>Lecciones cortas</span>
+    </div>
+    <div class="benefit-item">
+      <i class="bi bi-question-circle-fill"></i>
+      <span>Practica con preguntas ilimitadas</span>
+    </div>
+    <div class="benefit-item">
+      <i class="bi bi-clipboard2-check-fill"></i>
+      <span>Exámenes de simulación ilimitados</span>
+    </div>
+  </div>
+
   @if (quota.isFree()) {
     <a class="btn btn-success btn-lg cta-main" routerLink="/explore">
       <i class="bi bi-search me-1"></i> Explorar exámenes
@@ -16,41 +39,6 @@
       <i class="bi bi-play-circle me-1"></i> Ir a practicar
     </a>
   }
-</section>
-
-<!-- Beneficios -->
-<section class="features">
-  <h2>¿Por qué prepararte aquí?</h2>
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">
-        <i class="bi bi-clipboard2-check"></i>
-      </div>
-      <h3>Simulacros de examen</h3>
-      <p>Practica con simulacros que siguen la misma cantidad de reactivos y tiempo que el examen real.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">
-        <i class="bi bi-book"></i>
-      </div>
-      <h3>Práctica por tema</h3>
-      <p>Refuerza las materias donde más lo necesitas con preguntas organizadas por tema.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">
-        <i class="bi bi-chat-left-text"></i>
-      </div>
-      <h3>Retroalimentación</h3>
-      <p>Al responder cada pregunta, recibe retroalimentación para entender tus aciertos y errores.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">
-        <i class="bi bi-phone"></i>
-      </div>
-      <h3>Desde cualquier dispositivo</h3>
-      <p>Estudia donde quieras, cuando quieras. Solo necesitas un navegador.</p>
-    </div>
-  </div>
 </section>
 
 <!-- Universidades -->
