@@ -19,8 +19,9 @@
     flex-shrink: 0;
 
     .navbar-logo {
-      width: 26px;
       height: 26px;
+      width: auto;
+      object-fit: contain;
     }
 
     .brand-text {
@@ -95,8 +96,9 @@
 
     .logo {
       .navbar-logo {
-        width: 29px;
         height: 29px;
+        width: auto;
+        object-fit: contain;
       }
       .brand-text {
         font-size: 1.15rem;

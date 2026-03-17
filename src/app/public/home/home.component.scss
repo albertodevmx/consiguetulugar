@@ -17,8 +17,9 @@
     margin-bottom: 1.5rem;
 
     .hero-logo {
-      width: 40px;
-      height: 40px;
+      height: 48px;
+      width: auto;
+      object-fit: contain;
     }
 
     .hero-title {
@@ -241,8 +242,9 @@
 
     .hero-brand {
       .hero-logo {
-        width: 56px;
-        height: 56px;
+        height: 64px;
+        width: auto;
+        object-fit: contain;
       }
 
       .hero-title {

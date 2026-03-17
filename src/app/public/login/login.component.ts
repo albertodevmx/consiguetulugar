@@ -12,7 +12,7 @@ import { AuthService } from '../../core/auth/auth.service';
       <div class="card shadow-sm">
         <div class="card-body p-4">
           <div class="text-center mb-4">
-            <img src="logo.png" alt="Estudiar es barato" class="auth-logo mb-2">
+            <img src="logo.png" alt="Consigue tu lugar" class="auth-logo mb-2">
             <h2 class="card-title mb-1">Iniciar sesión</h2>
             <p class="text-muted small">Ingresa a tu cuenta para seguir practicando</p>
           </div>
@@ -110,8 +110,9 @@ import { AuthService } from '../../core/auth/auth.service';
       }
     }
     .auth-logo {
-      width: 56px;
       height: 56px;
+      width: auto;
+      object-fit: contain;
     }
   `],
 })

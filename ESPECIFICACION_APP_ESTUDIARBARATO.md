@@ -1,4 +1,4 @@
-# Especificación Técnica: App EstudiarBarato
+# Especificación Técnica: App Consigue tu lugar
 ## Guía de adaptación del frontend a la nueva estructura Firestore
 
 ---

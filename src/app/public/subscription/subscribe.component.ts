@@ -26,7 +26,7 @@ import { Examen } from '../../core/models';
       <!-- ===== STEP 1: CHOOSE EXAM ===== -->
       @if (!checkoutActive() && !selectedExamen()) {
         <div class="text-center mb-4">
-          <img src="logo.png" alt="Estudiar es barato" class="mb-3" style="width: 80px; height: 80px;">
+          <img src="logo.png" alt="Consigue tu lugar" class="mb-3" style="height: 80px; width: auto; object-fit: contain;">
           <h1 class="h2">Elige el examen que quieres practicar</h1>
           <p class="text-muted">Cada examen se paga por separado. Selecciona el que vas a presentar.</p>
           <p class="text-muted small mb-0"><i class="bi bi-shield-check me-1"></i>Sin compromisos: puedes cancelar tu suscripción en cualquier momento.</p>
