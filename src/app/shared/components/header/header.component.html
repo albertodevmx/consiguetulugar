@@ -1,17 +1,17 @@
 <header class="site-header">
   <a routerLink="/" class="logo">
-    <img src="logo-white.png" alt="Consigue tu lugar" class="navbar-logo">
+    <img src="logo-consigue-tu-lugar.png" alt="Consigue tu lugar" class="navbar-logo">
   </a>
 
   <div class="header-actions">
-    <nav>
-      <a [routerLink]="practiceLink()" class="nav-link nav-link--warning"><i class="bi bi-mortarboard"></i><span class="nav-label"> Practicar</span></a>
-    </nav>
-
     @if (auth.isLoggedIn()) {
-      <a routerLink="/perfil" class="nav-link"><i class="bi bi-person-circle"></i><span class="nav-label"> Mi cuenta</span></a>
+      <a routerLink="/perfil" class="nav-btn nav-btn--enter"><i class="bi bi-person-circle"></i> Mi cuenta</a>
     } @else {
-      <a routerLink="/login" class="nav-link nav-link--warning"><i class="bi bi-person"></i><span class="nav-label"> Entrar</span></a>
+      <a routerLink="/login" class="nav-btn nav-btn--enter"><i class="bi bi-person"></i> Entrar</a>
     }
+
+    <nav>
+      <a [routerLink]="practiceLink()" class="nav-btn nav-btn--practice"><i class="bi bi-mortarboard"></i> Practicar</a>
+    </nav>
   </div>
 </header>

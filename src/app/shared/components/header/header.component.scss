@@ -5,16 +5,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  background-color: v.$primary;
-  color: #fff;
+  background-color: #fff;
+  color: v.$primary;
   gap: 0.5rem;
+  box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075); // Bootstrap shadow-sm
+  border-bottom: 2px solid #EDEEF5;
 
   .logo {
     display: flex;
     align-items: center;
     gap: 0.4rem;
     font-weight: 700;
-    color: #fff;
+    color: v.$primary;
     text-decoration: none;
     flex-shrink: 0;
 
@@ -40,34 +42,46 @@
     align-items: center;
   }
 
-  .nav-link {
-    color: rgba(255, 255, 255, 0.8);
+  .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     text-decoration: none;
-    padding: 0.2rem 0.65rem;
+    padding: 0.45rem 1.1rem;
     font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
     white-space: nowrap;
+    transition: filter 0.2s, box-shadow 0.2s;
 
-    i { font-size: 1.3em; }
+    i { font-size: 1.15em; }
 
-    &:hover {
+    &--practice {
       color: #fff;
-    }
-
-    &--warning {
-      color: #000;
-      background-color: var(--bs-warning);
-      border-radius: 0.25rem;
-      padding: 0.2rem 0.75rem;
+      background: linear-gradient(180deg, #F5A623 0%, #E8871E 100%);
+      border: none;
+      box-shadow: 0 2px 6px rgba(232, 135, 30, 0.35);
 
       &:hover {
-        color: #000;
-        background-color: #e0a800;
+        filter: brightness(1.08);
+        color: #fff;
+      }
+    }
+
+    &--enter {
+      color: v.$primary;
+      background-color: #F3F4F8;
+      border: 2px solid #EDEEF5;
+
+      &:hover {
+        background-color: #E8E9F0;
+        color: v.$primary;
       }
     }
   }
 }
 
-/* Mobile: hide text labels, keep icons */
+/* Mobile */
 @media (max-width: 575.98px) {
   .site-header {
     padding: 0.5rem 0.75rem;
@@ -78,13 +92,9 @@
       top: -3px;
     }
 
-    .nav-label {
-      display: none;
-    }
-
-    .nav-link {
-      font-size: 1.1rem;
-      padding: 0.2rem 0.5rem;
+    .nav-btn {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.85rem;
     }
   }
 }
