@@ -8,7 +8,7 @@
   top: 0;
   overflow-y: auto;
   flex-shrink: 0;
-  background-color: color.adjust(v.$primary, $lightness: -10%);
+  background-color: color.adjust(v.$info, $lightness: -10%);
   padding: 1.5rem 1rem;
 
   .sidebar-title {
@@ -42,7 +42,7 @@
 
       &:hover,
       &.active {
-        background-color: v.$primary;
+        background-color: v.$info;
         color: #fff;
       }
     }

@@ -41,7 +41,7 @@
 
     .pricing-hook {
       font-size: 1rem;
-      color: #444;
+      color: v.$primary;
       margin-bottom: 0.75rem;
     }
 
@@ -54,12 +54,12 @@
 
       .price-original {
         font-size: 1.1rem;
-        color: #999;
+        color: v.$secondary;
         text-decoration: line-through;
       }
 
       .price-badge {
-        background: #dc3545;
+        background: v.$warning;
         color: #fff;
         font-size: 0.8rem;
         font-weight: 700;
@@ -70,24 +70,24 @@
 
     .price-final {
       font-size: 1.25rem;
-      color: #212529;
+      color: v.$primary;
       margin-bottom: 0.25rem;
 
       strong {
         font-size: 2.5rem;
         font-weight: 800;
-        color: v.$primary;
+        color: v.$warning;
       }
 
       .price-period {
         font-size: 1rem;
-        color: #666;
+        color: v.$secondary;
       }
     }
 
     .price-limited {
       font-size: 0.85rem;
-      color: #dc3545;
+      color: v.$secondary;
       font-weight: 600;
       margin: 0;
     }
@@ -105,10 +105,10 @@
       align-items: center;
       gap: 0.5rem;
       font-size: 0.95rem;
-      color: #333;
+      color: v.$primary;
 
       i {
-        color: v.$primary;
+        color: v.$warning;
         font-size: 1.1rem;
         flex-shrink: 0;
       }
@@ -184,7 +184,7 @@
 .opinion-section {
   padding: 2.5rem 1.25rem;
   text-align: center;
-  background: #eef6ff;
+  background: v.$bg-light;
 
   .opinion-icon {
     width: 64px;
@@ -194,8 +194,8 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(v.$primary, 0.1);
-    color: v.$primary;
+    background: rgba(v.$warning, 0.15);
+    color: v.$warning;
     font-size: 1.75rem;
   }
 
@@ -219,18 +219,20 @@
 .final-cta {
   padding: 2.5rem 1.25rem;
   text-align: center;
-  background: v.$primary;
-  color: #fff;
+  background: v.$bg-light;
+  color: v.$primary;
+  border-radius: 16px;
 
   h2 {
     font-size: 1.4rem;
     font-weight: 700;
+    color: v.$primary;
     margin-bottom: 0.5rem;
   }
 
   p {
     font-size: 1.05rem;
-    opacity: 0.9;
+    color: v.$secondary;
     margin-bottom: 1.5rem;
   }
 }

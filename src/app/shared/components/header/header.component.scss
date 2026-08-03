@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'variables' as v;
 
 .site-header {
@@ -9,7 +10,7 @@
   color: v.$primary;
   gap: 0.5rem;
   box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075); // Bootstrap shadow-sm
-  border-bottom: 2px solid #EDEEF5;
+  border-bottom: 2px solid color.adjust(v.$bg-light, $lightness: -3%);
 
   .logo {
     display: flex;
@@ -58,9 +59,9 @@
 
     &--practice {
       color: #fff;
-      background: linear-gradient(180deg, #F5A623 0%, #E8871E 100%);
+      background: linear-gradient(180deg, v.$orange-start 0%, v.$orange-end 100%);
       border: none;
-      box-shadow: 0 2px 6px rgba(232, 135, 30, 0.35);
+      box-shadow: 0 2px 6px rgba(v.$orange-end, 0.35);
 
       &:hover {
         filter: brightness(1.08);
@@ -70,11 +71,11 @@
 
     &--enter {
       color: v.$primary;
-      background-color: #F3F4F8;
-      border: 2px solid #EDEEF5;
+      background-color: v.$bg-light;
+      border: 2px solid color.adjust(v.$bg-light, $lightness: -3%);
 
       &:hover {
-        background-color: #E8E9F0;
+        background-color: color.adjust(v.$bg-light, $lightness: -5%);
         color: v.$primary;
       }
     }

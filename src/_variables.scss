@@ -6,13 +6,18 @@
 // Referencia completa: node_modules/bootstrap/scss/_variables.scss
 // ============================================================
 
-// --- Brand colors ---
-$primary:   #2C459A;   // Azul principal
+// --- Brand colors (paleta oficial) ---
+$primary:   #1B3A6B;   // Azul navy principal (headings, textos, bordes)
 $success:   #198754;   // Verde — botones de continuar / responder
-$warning:   #fbd029;   // Naranja — botones de regresar
+$warning:   #F7941D;   // Naranja — botones CTA, acentos, precios
 $danger:    #dc3545;   // Rojo — errores e incorrectas
-$info:      #0dcaf0;   // Cyan informativo
+$info:      #2B4C7E;   // Azul medio (footer, secciones oscuras)
 $secondary: #6c757d;   // Gris secundario
+
+// --- Paleta extendida ---
+$bg-light:  #F0F2F5;   // Fondo gris/azulado claro
+$orange-start: #F5A623; // Degradado naranja inicio
+$orange-end:   #E8871E; // Degradado naranja fin
 
 // --- You can also customize these ---
 // $body-bg:          #ffffff;
